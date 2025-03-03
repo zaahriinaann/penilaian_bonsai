@@ -32,10 +32,17 @@
     <div class="d-flex flex-column flex-root">
         <div class="page d-flex flex-row flex-column-fluid">
             <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
-                @include('layouts.header')
-                @include('layouts.toolbar')
+                <div id="kt_header" class="header align-items-stretch" data-kt-sticky="true"
+                    data-kt-sticky-name="header" data-kt-sticky-offset="{default: '200px', lg: '300px'}">
+                    @include('layouts.header')
+                </div>
+                <div class="container">
+                    @include('layouts.toolbar')
+                </div>
                 <div id="kt_content_container" class="d-flex flex-column-fluid align-items-start container-xxl">
-                    @yield('content')
+                    <div class="container">
+                        @yield('content')
+                    </div>
                 </div>
                 @include('layouts.footer')
             </div>
@@ -43,10 +50,11 @@
     </div>
 
     @inlcude('layouts.etc')
-    <script src="{{ asset('template/src/plugins/global/plugins.bundle.js') }}"></script>
+    <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
-    <script src="{{ asset('template/src/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
+    <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
     <script src="{{ asset('assets/js/custom/widgets.js') }}"></script>
+    @yield('script')
 </body>
 
 </html>
