@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -13,7 +14,12 @@ Auth::routes();
 
 Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('home', HomeController::class);
-    Route::resource('kontes', KontesController::class)->parameters([
-        'kontes' => 'slug'
-    ]);
+    Route::prefix('master')->group(function () {
+        Route::resource('kontes', KontesController::class)->parameters([
+            'kontes' => 'slug'
+        ]);
+        Route::resource('juri', JuriController::class)->parameters([
+            'juri' => 'slug'
+        ]);
+    });
 });

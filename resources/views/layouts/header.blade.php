@@ -29,15 +29,14 @@
                 data-kt-swapper-mode="prepend" data-kt-swapper-parent="{default: '#kt_body', lg: '#kt_header_nav'}">
                 <div class="menu menu-lg-rounded menu-column menu-lg-row menu-state-bg menu-title-gray-700 menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-400 fw-bold my-5 my-lg-0 align-items-stretch"
                     id="#kt_header_menu" data-kt-menu="true">
-                    <div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start"
-                        class="menu-item {{ request()->is('home') ? 'here' : '' }} menu-lg-down-accordion me-lg-1">
+                    <div class="menu-item {{ request()->is('home') ? 'here' : '' }} me-lg-1">
                         <a href="/home" class="menu-link py-3">
-                            <span class="menu-title">Dashboard</span>
-                            <span class="menu-arrow d-lg-none"></span>
+                            <span>Dashboard</span>
+                            {{-- <span class="menu-arrow d-lg-none"></span> --}}
                         </a>
                     </div>
                     <div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start"
-                        class="menu-item menu-lg-down-accordion me-lg-1">
+                        class="menu-item menu-lg-down-accordion me-lg-1 {{ request()->is('master/*') ? 'here' : '' }}">
                         <span class="menu-link py-3">
                             <span class="menu-title">Master</span>
                             <span class="menu-arrow d-lg-none"></span>
@@ -49,22 +48,22 @@
                             [
                                 'judul' => 'Kontes Bonsai',
                                 'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
-                                'link' => '/kontes',
+                                'link' => '/master/kontes',
                             ],
                             [
                                 'judul' => 'Juri Kontes',
                                 'description' => 'Anda dapat mengelola siapa saja juri yang akan menjadi juri pada kontes, serta menambahkan dan mengubah juri baru.',
-                                'link' => '/juri',
+                                'link' => '/master/juri',
                             ],
                             [
                                 'judul' => 'Bonsai Peserta',
                                 'description' => 'Anda dapat mengelola bonsai milik peserta yang hadir pada kontes, serta menambahkan bonsai baru yang akan diikutkan.',
-                                'link' => '/bonsai',
+                                'link' => '/master/bonsai',
                             ],
                             [
                                 'judul' => 'Penilaian Bonsai',
                                 'description' => 'Anda dapat mengelola penilaian bonsai milik peserta pada kontes, serta menambahkan dan mengubah penilaian baru.',
-                                'link' => '/penilaian',
+                                'link' => '/master/penilaian',
                             ],
                         ];
                         ?>
@@ -90,14 +89,15 @@
                 <div class="d-flex align-items-center ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
                     <div class="cursor-pointer symbol symbol-30px symbol-md-40px" data-kt-menu-trigger="click"
                         data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
-                        <img alt="Pic" src="assets/media/avatars/150-26.jpg" class="rounded-circle" />
+                        <img alt="Pic" src="{{ asset('assets/media/avatars/150-26.jpg') }}"
+                            class="rounded-circle" />
                     </div>
                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px"
                         data-kt-menu="true">
                         <div class="menu-item px-3">
                             <div class="menu-content d-flex align-items-center px-3">
                                 <div class="symbol symbol-50px me-5">
-                                    <img alt="Logo" src="assets/media/avatars/150-26.jpg" />
+                                    <img alt="Logo" src="{{ asset('assets/media/avatars/150-26.jpg') }}" />
                                 </div>
                                 <div class="d-flex flex-column">
                                     <div class="fw-bolder d-flex align-items-center fs-5">Max
@@ -165,41 +165,43 @@
                                     <span
                                         class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">English
                                         <img class="w-15px h-15px rounded-1 ms-2"
-                                            src="assets/media/flags/united-states.svg" alt="" /></span></span>
+                                            src="{{ asset('assets/media/flags/united-states.svg') }}"
+                                            alt="" /></span></span>
                             </a>
                             <div class="menu-sub menu-sub-dropdown w-175px py-4">
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link d-flex px-5 active">
                                         <span class="symbol symbol-20px me-4">
-                                            <img class="rounded-1" src="assets/media/flags/united-states.svg"
+                                            <img class="rounded-1"
+                                                src="{{ asset('assets/media/flags/united-states.svg') }}"
                                                 alt="" />
                                         </span>English</a>
                                 </div>
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link d-flex px-5">
                                         <span class="symbol symbol-20px me-4">
-                                            <img class="rounded-1" src="assets/media/flags/spain.svg"
+                                            <img class="rounded-1" src="{{ asset('assets/media/flags/spain.svg') }}"
                                                 alt="" />
                                         </span>Spanish</a>
                                 </div>
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link d-flex px-5">
                                         <span class="symbol symbol-20px me-4">
-                                            <img class="rounded-1" src="assets/media/flags/germany.svg"
-                                                alt="" />
+                                            <img class="rounded-1"
+                                                src="{{ asset('assets/media/flags/germany.svg') }}" alt="" />
                                         </span>German</a>
                                 </div>
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link d-flex px-5">
                                         <span class="symbol symbol-20px me-4">
-                                            <img class="rounded-1" src="assets/media/flags/japan.svg"
+                                            <img class="rounded-1" src="{{ asset('assets/media/flags/japan.svg') }}"
                                                 alt="" />
                                         </span>Japanese</a>
                                 </div>
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link d-flex px-5">
                                         <span class="symbol symbol-20px me-4">
-                                            <img class="rounded-1" src="assets/media/flags/france.svg"
+                                            <img class="rounded-1" src="{{ asset('assets/media/flags/france.svg') }}"
                                                 alt="" />
                                         </span>French</a>
                                 </div>
@@ -218,8 +220,7 @@
                                     class="form-check form-switch form-check-custom form-check-solid pulse pulse-success"
                                     for="kt_user_menu_dark_mode_toggle">
                                     <input class="form-check-input w-30px h-20px" type="checkbox" value="1"
-                                        name="mode" id="kt_user_menu_dark_mode_toggle"
-                                        data-kt-url="../dist/index.html" />
+                                        name="mode" id="kt_user_menu_dark_mode_toggle" data-kt-url="" />
                                     <span class="pulse-ring ms-n1"></span>
                                     <span class="form-check-label text-gray-600 fs-7">Dark
                                         Mode</span>

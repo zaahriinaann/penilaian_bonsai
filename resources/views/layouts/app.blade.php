@@ -31,7 +31,7 @@
     @yield('style')
 </head>
 
-<body id="kt_body" style="background-image: url(assets/media/patterns/header-bg.png)"
+<body id="kt_body" style="background-image: url({{ asset('assets/media/patterns/header-bg-green.png') }})"
     class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled">
     <div class="d-flex flex-column flex-root">
         <div class="page d-flex flex-row flex-column-fluid">
@@ -65,9 +65,33 @@
     <script>
         $(document).ready(function() {
             $('.table-data').DataTable();
+
+            setTimeout(() => {
+                $('.custom-left-alert').fadeOut();
+            }, 5000);
+
+            $('#search-input').on('keyup', function() {
+                const val = this.value.toLowerCase();
+                let hasVisibleRows = false;
+
+                $('.table-data tbody tr').not('.no-data').each(function() {
+                    const isVisible = $(this).text().toLowerCase().includes(val);
+                    $(this).toggle(isVisible);
+                    if (isVisible) hasVisibleRows = true;
+                });
+
+                $('.table-data tbody .no-data').remove();
+
+                if (!hasVisibleRows) {
+                    $('.table-data tbody').append(
+                        '<tr class="no-data"><td colspan="7" class="text-center">Data tidak ada</td></tr>'
+                    );
+                }
+            });
         });
+
         // Initialize SweetAlert
-        $(document).on('click', '.btn-danger', function() {
+        $(document).on('click', '.btn-delete', function() {
             const button = $(this);
             const id = button.data('id');
             const route = button.data('route');

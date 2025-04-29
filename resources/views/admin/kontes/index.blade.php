@@ -32,14 +32,14 @@
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Cari data">
                 </div>
             </div>
-            <table class="table table-striped table-borderless table-responsive table-data">
+            <table class="table table-hover table-borderless table-responsive table-data">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Nama Kontes</th>
                         <th>Tempat/Lokasi Kontes</th>
                         <th>Tanggal</th>
-                        <th>Jumlah Peserta</th>
+                        <th>Jumlah Peserta/Bonsai</th>
                         <th>Harga</th>
                         <th>Action</th>
                     </tr>
@@ -59,7 +59,7 @@
                                     </a>
                                 @endif
                             </td>
-                            <td>{{ \Carbon\Carbon::parse($item->tanggal_mulai_kontes)->timezone('Asia/Jakarta')->format('d F Y') . ' - ' . \Carbon\Carbon::parse($item->tanggal_selesai_kontes)->timezone('Asia/Jakarta')->format('d F Y') }}
+                            <td>{{ \Carbon\Carbon::parse($item->tanggal_mulai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') . ' - ' . \Carbon\Carbon::parse($item->tanggal_selesai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}
                             </td>
                             <td>{{ $item->jumlah_peserta }} Peserta</td>
                             <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td>
@@ -78,7 +78,8 @@
                                     </button>
 
                                     {{-- <form action="{{ route('kontes'. $item->id) }}" method="D"></form> --}}
-                                    <button class="btn btn-sm btn-danger" title="Hapus data" data-id="{{ $item->id }}"
+                                    <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
+                                        data-id="{{ $item->id }}"
                                         data-route="{{ route('kontes.destroy', $item->slug) }}">
                                         <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                 </div>
@@ -108,99 +109,79 @@
                     @method('POST')
                     <div class="modal-body">
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="nama_kontes" class="form-label">Nama Kontes</label>
-                                    <input type="text" class="form-control" name="nama_kontes" id="nama_kontes"
-                                        aria-describedby="nama_kontes" title="Nama Kontes" placeholder="Nama Kontes">
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="nama_kontes" class="form-label">Nama Kontes</label>
+                                <input type="text" class="form-control" name="nama_kontes" id="nama_kontes"
+                                    aria-describedby="nama_kontes" title="Nama Kontes" placeholder="Nama Kontes">
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <div class="d-flex gap-2 justify-content-between">
-                                        <label for="tempat_kontes" class="form-label">Tempat Kontes</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value=""
-                                                id="link_gmaps_checkbox">
-                                            <label class="form-check-label" for="link_gmaps_checkbox">
-                                                Google Maps
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <textarea class="form-control" name="tempat_kontes" id="tempat_kontes" aria-describedby="tempat_kontes"
-                                        title="Alamat Lengkap Tempat Kontes" placeholder="Alamat Lengkap Tempat Kontes" cols="3" rows="3"></textarea>
-
-                                </div>
-                            </div>
-                            <div class="col-md-12 d-none" id="form_gmaps">
-                                <div class="mb-3">
-                                    <label for="link_gmaps" class="form-label">Link Gmaps</label>
-                                    <input type="text" class="form-control" name="link_gmaps" id="link_gmaps"
-                                        aria-describedby="link_gmaps" title="Link Google Maps Tempat Kontes"
-                                        placeholder="Link Google Maps Tempat Kontes">
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="mb-3">
-                                    <label for="tanggal_kontes" class="form-label">Tanggal Kontes</label>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <input type="datetime-local" class="form-control" name="tanggal_mulai_kontes"
-                                            id="tanggal_mulai_kontes" aria-describedby="tanggal_mulai_kontes"
-                                            title="Tanggal Kontes">
-                                        <span>s/d</span>
-                                        <input type="datetime-local" class="form-control" name="tanggal_selesai_kontes"
-                                            id="tanggal_selesai_kontes" aria-describedby="tanggal_selesai_kontes"
-                                            title="Tanggal Kontes">
+                            <div class="col-md-12 mb-3">
+                                <div class="d-flex gap-2 justify-content-between">
+                                    <label for="tempat_kontes" class="form-label">Tempat Kontes</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value=""
+                                            id="link_gmaps_checkbox">
+                                        <label class="form-check-label" for="link_gmaps_checkbox">
+                                            Google Maps
+                                        </label>
                                     </div>
                                 </div>
+                                <textarea class="form-control" name="tempat_kontes" id="tempat_kontes" aria-describedby="tempat_kontes"
+                                    title="Alamat Lengkap Tempat Kontes" placeholder="Alamat Lengkap Tempat Kontes" cols="3" rows="3"></textarea>
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3" id="form_tingkat_kontes">
-                                    <label for="tingkat_kontes" class="form-label d-flex gap-2 align-items-center">
-                                        Tingkat Kontes
-                                        <i class="bi bi-question-circle-fill cursor-pointer" title="Lihat Panduan"
-                                            data-bs-toggle="modal" data-bs-target="#kt_modal_panduan_kontes"></i>
-                                    </label>
-                                    <div class="d-flex gap-2">
-                                        <select name="tingkat_kontes" id="tingkat_kontes"
-                                            class="form-select form-control">
-                                            <option selected disabled>Pilih Tingkat Kontes</option>
-                                            <option value="1">Madya</option>
-                                            <option value="2">Utama</option>
-                                        </select>
-                                    </div>
+                            <div class="col-md-12 mb-3 d-none" id="form_gmaps">
+                                <label for="link_gmaps" class="form-label">Link Gmaps</label>
+                                <input type="text" class="form-control" name="link_gmaps" id="link_gmaps"
+                                    aria-describedby="link_gmaps" title="Link Google Maps Tempat Kontes"
+                                    placeholder="Link Google Maps Tempat Kontes">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="tanggal_kontes" class="form-label">Tanggal Kontes</label>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="datetime-local" class="form-control" name="tanggal_mulai_kontes"
+                                        id="tanggal_mulai_kontes" aria-describedby="tanggal_mulai_kontes"
+                                        title="Tanggal Kontes">
+                                    <span>s/d</span>
+                                    <input type="datetime-local" class="form-control" name="tanggal_selesai_kontes"
+                                        id="tanggal_selesai_kontes" aria-describedby="tanggal_selesai_kontes"
+                                        title="Tanggal Kontes">
                                 </div>
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="jumlah_peserta"
-                                        class="form-label d-flex justify-content-between align-items-center">
-                                        <span>Jumlah Peserta</span>
-                                        <small id="jumlah_peserta_text" class="text-danger"></small></label>
-                                    <input type="number" class="form-control" name="jumlah_peserta" id="jumlah_peserta"
-                                        aria-describedby="jumlah_peserta" title="Jumlah Peserta" placeholder="100">
-                                </div>
+                            <div class="col-md-12 mb-3" id="form_tingkat_kontes">
+                                <label for="tingkat_kontes" class="form-label d-flex gap-2 align-items-center">
+                                    Tingkat Kontes
+                                    <i class="bi bi-question-circle-fill cursor-pointer" title="Lihat Panduan"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_panduan_kontes"></i>
+                                </label>
+                                <select name="tingkat_kontes" id="tingkat_kontes" class="form-select form-control">
+                                    <option selected disabled>Pilih Tingkat Kontes</option>
+                                    <option value="1">Madya</option>
+                                    <option value="2">Utama</option>
+                                </select>
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3" id="form_tiket_kontes">
-                                    <label for="harga_tiket_kontes" class="form-label">Harga Tiket Kontes</label>
-                                    <input type="text" class="form-control" name="harga_tiket_kontes"
-                                        id="harga_tiket_kontes" aria-describedby="harga_tiket_kontes"
-                                        title="Harga Tiket Kontes" placeholder="Rp0">
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="jumlah_peserta"
+                                    class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Jumlah Peserta/Bonsai</span>
+                                    <small id="jumlah_peserta_text" class="text-danger"></small></label>
+                                <input type="number" class="form-control" name="jumlah_peserta" id="jumlah_peserta"
+                                    aria-describedby="jumlah_peserta" title="Jumlah Peserta/Bonsai" placeholder="100">
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="poster_kontes" class="form-label">Poster Kontes</label>
-                                    <input type="file" class="form-control" name="poster_kontes" id="poster_kontes">
-                                </div>
+                            <div class="col-md-12 mb-3" id="form_tiket_kontes">
+                                <label for="harga_tiket_kontes" class="form-label">Harga Tiket Kontes</label>
+                                <input type="text" class="form-control" name="harga_tiket_kontes"
+                                    id="harga_tiket_kontes" aria-describedby="harga_tiket_kontes"
+                                    title="Harga Tiket Kontes" placeholder="Rp0">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="poster_kontes" class="form-label">Poster Kontes</label>
+                                <input type="file" class="form-control" name="poster_kontes" id="poster_kontes">
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="reset" id="reset-btn" class="btn btn-sm btn-danger"
                             data-bs-dismiss="modal">Batal</button>
-                        <button type="submits" class="btn btn-sm btn-primary">Simpan</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -221,22 +202,17 @@
                     <div class="modal-body">
                         <input type="hidden" name="slug" id="edit_kontes_slug">
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="edit_nama_kontes" class="form-label">Nama Kontes</label>
-                                    <input type="text" class="form-control" name="nama_kontes" id="edit_nama_kontes">
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="edit_nama_kontes" class="form-label">Nama Kontes</label>
+                                <input type="text" class="form-control" name="nama_kontes" id="edit_nama_kontes">
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <div class="d-flex gap-2 justify-content-between">
-                                        <label for="edit_tempat_kontes" class="form-label">Tempat Kontes</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox"
-                                                id="edit_link_gmaps_checkbox">
-                                            <label class="form-check-label" for="edit_link_gmaps_checkbox">Google
-                                                Maps</label>
-                                        </div>
+                            <div class="col-md-12 mb-3">
+                                <div class="d-flex gap-2 justify-content-between">
+                                    <label for="edit_tempat_kontes" class="form-label">Tempat Kontes</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit_link_gmaps_checkbox">
+                                        <label class="form-check-label" for="edit_link_gmaps_checkbox">Google
+                                            Maps</label>
                                     </div>
                                     {{-- <input type="text" class="form-control" name="tempat_kontes"
                                         id="edit_tempat_kontes"> --}}
@@ -244,58 +220,45 @@
                                         title="Alamat Lengkap Tempat Kontes" placeholder="Alamat Lengkap Tempat Kontes" cols="3" rows="3"></textarea>
                                 </div>
                             </div>
-                            <div class="col-md-12 d-none" id="edit_form_gmaps">
-                                <div class="mb-3">
-                                    <label for="edit_link_gmaps" class="form-label">Link Gmaps</label>
-                                    <input type="text" class="form-control" name="link_gmaps" id="edit_link_gmaps">
+                            <div class="col-md-12 mb-3 d-none" id="edit_form_gmaps">
+                                <label for="edit_link_gmaps" class="form-label">Link Gmaps</label>
+                                <input type="text" class="form-control" name="link_gmaps" id="edit_link_gmaps">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="edit_tanggal_mulai_kontes" class="form-label">Tanggal Kontes</label>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="datetime-local" class="form-control" name="tanggal_mulai_kontes"
+                                        id="edit_tanggal_mulai_kontes">
+                                    <span>s/d</span>
+                                    <input type="datetime-local" class="form-control" name="tanggal_selesai_kontes"
+                                        id="edit_tanggal_selesai_kontes">
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="mb-3">
-                                    <label for="edit_tanggal_mulai_kontes" class="form-label">Tanggal Kontes</label>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <input type="datetime-local" class="form-control" name="tanggal_mulai_kontes"
-                                            id="edit_tanggal_mulai_kontes">
-                                        <span>s/d</span>
-                                        <input type="datetime-local" class="form-control" name="tanggal_selesai_kontes"
-                                            id="edit_tanggal_selesai_kontes">
-                                    </div>
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="edit_tingkat_kontes" class="form-label d-flex gap-2 align-items-center">
+                                    Tingkat Kontes
+                                    <i class="bi bi-question-circle-fill cursor-pointer" title="Lihat Panduan"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_panduan_kontes"></i>
+                                </label>
+                                <select name="tingkat_kontes" id="edit_tingkat_kontes" class="form-select">
+                                    <option disabled>Pilih Tingkat Kontes</option>
+                                    <option value="1">Madya</option>
+                                    <option value="2">Utama</option>
+                                </select>
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="edit_tingkat_kontes" class="form-label d-flex gap-2 align-items-center">
-                                        Tingkat Kontes
-                                        <i class="bi bi-question-circle-fill cursor-pointer" title="Lihat Panduan"
-                                            data-bs-toggle="modal" data-bs-target="#kt_modal_edit_panduan_kontes"></i>
-                                    </label>
-                                    <select name="tingkat_kontes" id="edit_tingkat_kontes" class="form-select">
-                                        <option disabled>Pilih Tingkat Kontes</option>
-                                        <option value="1">Madya</option>
-                                        <option value="2">Utama</option>
-                                    </select>
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="edit_jumlah_peserta" class="form-label">Jumlah Peserta/Bonsai</label>
+                                <input type="number" class="form-control" name="jumlah_peserta"
+                                    id="edit_jumlah_peserta">
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="edit_jumlah_peserta" class="form-label">Jumlah Peserta</label>
-                                    <input type="number" class="form-control" name="jumlah_peserta"
-                                        id="edit_jumlah_peserta">
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="edit_harga_tiket_kontes" class="form-label">Harga Tiket Kontes</label>
+                                <input type="text" class="form-control" name="harga_tiket_kontes"
+                                    id="edit_harga_tiket_kontes">
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="edit_harga_tiket_kontes" class="form-label">Harga Tiket Kontes</label>
-                                    <input type="text" class="form-control" name="harga_tiket_kontes"
-                                        id="edit_harga_tiket_kontes">
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="edit_poster_kontes" class="form-label">Poster Kontes (Opsional)</label>
-                                    <input type="file" class="form-control" name="poster_kontes"
-                                        id="edit_poster_kontes">
-                                </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="edit_poster_kontes" class="form-label">Poster Kontes (Opsional)</label>
+                                <input type="file" class="form-control" name="poster_kontes" id="edit_poster_kontes">
                             </div>
                         </div>
                     </div>
@@ -324,7 +287,7 @@
                                 <tr>
                                     <th>Tingkat Kontes</th>
                                     <th>Persyaratan Bonsai</th>
-                                    <th>Jumlah Peserta</th>
+                                    <th>Jumlah Peserta/Bonsai</th>
                                     <th>Hasil Kontes</th>
                                     <th>Juri</th>
                                     <th>Anggota Dewan Juri</th>
@@ -394,7 +357,7 @@
                                 <tr>
                                     <th>Tingkat Kontes</th>
                                     <th>Persyaratan Bonsai</th>
-                                    <th>Jumlah Peserta</th>
+                                    <th>Jumlah Peserta/Bonsai</th>
                                     <th>Hasil Kontes</th>
                                     <th>Juri</th>
                                     <th>Anggota Dewan Juri</th>
@@ -471,7 +434,7 @@
             });
 
             $('#reset-btn').on('click', () => {
-                $('#form_gmaps, #form_tiket_kontes').addClass('d-none');
+                $('#form_gmaps').addClass('d-none');
             });
 
             $('#tingkat_kontes').on('change', function() {
@@ -494,33 +457,10 @@
                 }
             });
 
-            setTimeout(() => {
-                $('.custom-left-alert').fadeOut();
-            }, 5000);
-
-            $('#search-input').on('keyup', function() {
-                const val = this.value.toLowerCase();
-                let hasVisibleRows = false;
-
-                $('.table-data tbody tr').not('.no-data').each(function() {
-                    const isVisible = $(this).text().toLowerCase().includes(val);
-                    $(this).toggle(isVisible);
-                    if (isVisible) hasVisibleRows = true;
-                });
-
-                $('.table-data tbody .no-data').remove();
-
-                if (!hasVisibleRows) {
-                    $('.table-data tbody').append(
-                        '<tr class="no-data"><td colspan="7" class="text-center">Data tidak ada</td></tr>'
-                    );
-                }
-            });
-
             // ===================== EDIT KONTEST ======================
             $('.btn-edit').on('click', function() {
                 const btn = $(this);
-                $('#form_edit_kontes').attr('action', '/kontes/' + btn.data('slug'));
+                $('#form_edit_kontes').attr('action', '/master/kontes/' + btn.data('slug'));
                 $('#edit_kontes_slug').val(btn.data('slug'));
                 $('#edit_nama_kontes').val(btn.data('nama'));
                 $('#edit_tempat_kontes').val(btn.data('tempat'));

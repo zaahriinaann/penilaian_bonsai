@@ -5,7 +5,7 @@
         // get url
         $url = $_SERVER['REQUEST_URI'];
         
-        // explode then slice   
+        // explode then slice
         $url = explode('/', $url);
         $url = array_slice($url, 1);
         ?>

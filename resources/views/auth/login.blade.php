@@ -28,7 +28,7 @@
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 </head>
 
-<body id="kt_body" style="background-image: url(assets/media/patterns/header-bg.png)"
+<body id="kt_body" style="background-image: url(assets/media/patterns/header-bg-green.png)"
     class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled">
     <div class="d-flex flex-column flex-root">
         <div class="page d-flex flex-row flex-column-fluid">

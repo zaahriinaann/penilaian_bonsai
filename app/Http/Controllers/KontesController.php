@@ -20,9 +20,7 @@ class KontesController extends Controller
     public function index(Kontes $kontes)
     {
         $role = Auth::user()->role;
-
         $dataRender = $kontes::all();
-
         if ($role == 'admin') {
             return view('admin.kontes.index', compact('dataRender'));
         }
@@ -43,10 +41,7 @@ class KontesController extends Controller
     {
         try {
             $data = $request->all();
-
             $slug = strtolower(str_replace(' ', '-', $data['nama_kontes']));
-            // Normalize request
-            $slug = $slug; // slug
             $data['slug'] = $slug;
             $price = str_replace(['Rp', '.'], '', $data['harga_tiket_kontes']);
             $data['harga_tiket_kontes'] = (int) $price;
@@ -56,17 +51,11 @@ class KontesController extends Controller
             ) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
-            // End normalize request
-
-            // Store data
-            // dd($data);
             $kontes = Kontes::create($data);
-            // End store data
-
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali." . $e->getMessage());
+            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali.");
             return redirect()->back();
         }
     }
@@ -94,37 +83,22 @@ class KontesController extends Controller
     public function update(Request $request, $slug)
     {
         try {
-            // Cari kontes berdasarkan slug
             $kontes = Kontes::where('slug', $slug)->firstOrFail();
-
             $data = $request->all();
-
-            // Buat slug baru berdasarkan nama kontes
             $slug = strtolower(str_replace(' ', '-', $data['nama_kontes']));
-            // Normalize request
             $data['slug'] = $slug;
-
-            // Ubah harga tiket kontes menjadi integer
             $price = str_replace(['Rp', '.'], '', $data['harga_tiket_kontes']);
             $data['harga_tiket_kontes'] = (int) $price;
-
-            // Jika link gmaps tidak diawali dengan http atau https, tambahkan https://
             if (
                 strpos($data['link_gmaps'], 'http://') !== 0 &&
                 strpos($data['link_gmaps'], 'https://') !== 0
             ) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
-
-            // Update data kontes
             $kontes->update($data);
-
-            // Set pesan sukses
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
-            return redirect()->route('kontes.index');  // Bisa mengarah ke halaman index setelah update
-
+            return redirect()->route('kontes.index');
         } catch (\Exception $e) {
-            // Set pesan error jika ada masalah
             Session::flash('error', "Terdapat kesalahan pada saat memperbarui data, silahkan hubungi admin atau coba lagi lain kali.");
             return redirect()->back();
         }
@@ -137,9 +111,8 @@ class KontesController extends Controller
     public function destroy($slug)
     {
         $kontes = Kontes::where('slug', $slug)->firstOrFail();
-
         try {
-            $kontes->delete(); // Soft delete
+            $kontes->delete();
             return response()->json(['message' => `Kontes $kontes->nama_kontes berhasil dihapus.`]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal menghapus data.'], 500);

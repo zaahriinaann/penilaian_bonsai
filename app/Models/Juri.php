@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Kontes extends Model
+class Juri extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'kontes';
+    protected $table = 'juri';
     protected $guarded = [];
 }
