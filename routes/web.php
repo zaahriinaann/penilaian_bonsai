@@ -14,6 +14,6 @@ Auth::routes();
 Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('home', HomeController::class);
     Route::resource('kontes', KontesController::class)->parameters([
-        'kontes' => 'kontes'
+        'kontes' => 'slug'
     ]);
 });

@@ -66,7 +66,7 @@ class KontesController extends Controller
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali.");
+            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali." . $e->getMessage());
             return redirect()->back();
         }
     }
@@ -74,9 +74,10 @@ class KontesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Kontes $kontes)
+    public function show($slug)
     {
-        //
+        $kontes = Kontes::where('slug', $slug)->firstOrFail();
+        return view('kontes.show', compact('kontes'));
     }
 
     /**
@@ -90,16 +91,24 @@ class KontesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Kontes $kontes)
+    public function update(Request $request, $slug)
     {
         try {
+            // Cari kontes berdasarkan slug
+            $kontes = Kontes::where('slug', $slug)->firstOrFail();
+
             $data = $request->all();
 
+            // Buat slug baru berdasarkan nama kontes
             $slug = strtolower(str_replace(' ', '-', $data['nama_kontes']));
             // Normalize request
             $data['slug'] = $slug;
+
+            // Ubah harga tiket kontes menjadi integer
             $price = str_replace(['Rp', '.'], '', $data['harga_tiket_kontes']);
             $data['harga_tiket_kontes'] = (int) $price;
+
+            // Jika link gmaps tidak diawali dengan http atau https, tambahkan https://
             if (
                 strpos($data['link_gmaps'], 'http://') !== 0 &&
                 strpos($data['link_gmaps'], 'https://') !== 0
@@ -107,33 +116,31 @@ class KontesController extends Controller
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
 
-            $data['id'] = $data['kontes_id'];
-            unset($data['kontes_id']);
-            // End normalize request
-
-
-            // dd($data);
-            // Update data
+            // Update data kontes
             $kontes->update($data);
-            // End update data
 
+            // Set pesan sukses
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
-            return redirect()->back();
+            return redirect()->route('kontes.index');  // Bisa mengarah ke halaman index setelah update
+
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat memperbarui data, silahkan hubungi admin atau coba lain kali. " . $e->getMessage());
+            // Set pesan error jika ada masalah
+            Session::flash('error', "Terdapat kesalahan pada saat memperbarui data, silahkan hubungi admin atau coba lagi lain kali.");
             return redirect()->back();
         }
     }
 
+
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Kontes $kontes)
+    public function destroy($slug)
     {
-        \Log::info('Masuk ke destroy: ' . $kontes->id);
+        $kontes = Kontes::where('slug', $slug)->firstOrFail();
+
         try {
             $kontes->delete(); // Soft delete
-            return response()->json(['message' => 'Kontes berhasil dihapus.']);
+            return response()->json(['message' => `Kontes $kontes->nama_kontes berhasil dihapus.`]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal menghapus data.'], 500);
         }

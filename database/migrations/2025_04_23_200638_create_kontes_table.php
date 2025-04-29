@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('kontes', function (Blueprint $table) {
             $table->id();
             $table->string('nama_kontes');
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->string('tempat_kontes');
             $table->string('tingkat_kontes');
             $table->string('link_gmaps')->nullable();

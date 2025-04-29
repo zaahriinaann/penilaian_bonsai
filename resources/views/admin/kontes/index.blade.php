@@ -48,7 +48,10 @@
                     @forelse ($dataRender as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->nama_kontes }}</td>
+                            <td>
+                                <a class="text-dark fw-bold"
+                                    href="{{ route('kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
+                            </td>
                             <td>{{ $item->tempat_kontes }}
                                 @if ($item->link_gmaps)
                                     <a href="{{ $item->link_gmaps }}" target="_blank" title="Lihat di google maps">
@@ -69,14 +72,14 @@
                                         data-tanggal-selesai="{{ $item->tanggal_selesai_kontes }}"
                                         data-tingkat="{{ $item->tingkat_kontes }}"
                                         data-peserta="{{ $item->jumlah_peserta }}"
-                                        data-harga="{{ $item->harga_tiket_kontes }}" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_kontes" title="Edit data">
+                                        data-harga="{{ $item->harga_tiket_kontes }}" data-slug="{{ $item->slug }}"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_kontes" title="Edit data">
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
 
                                     {{-- <form action="{{ route('kontes'. $item->id) }}" method="D"></form> --}}
                                     <button class="btn btn-sm btn-danger" title="Hapus data" data-id="{{ $item->id }}"
-                                        data-route="{{ route('kontes.destroy', $item->id) }}">
+                                        data-route="{{ route('kontes.destroy', $item->slug) }}">
                                         <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                 </div>
                             </td>
@@ -216,7 +219,7 @@
                     @csrf
                     @method('PUT')
                     <div class="modal-body">
-                        <input type="hidden" name="kontes_id" id="edit_kontes_id">
+                        <input type="hidden" name="slug" id="edit_kontes_slug">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
@@ -374,7 +377,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="modal fade" id="kt_modal_edit_panduan_kontes" tabindex="-1" aria-labelledby="kt_modal_panduan_kontes"
         aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -517,9 +520,8 @@
             // ===================== EDIT KONTEST ======================
             $('.btn-edit').on('click', function() {
                 const btn = $(this);
-                $('#form_edit_kontes').attr('action', '/kontes/' + btn.data('id'));
-                $('#edit_kontes_id').val(btn.data('id'));
-
+                $('#form_edit_kontes').attr('action', '/kontes/' + btn.data('slug'));
+                $('#edit_kontes_slug').val(btn.data('slug'));
                 $('#edit_nama_kontes').val(btn.data('nama'));
                 $('#edit_tempat_kontes').val(btn.data('tempat'));
                 $('#edit_link_gmaps').val(btn.data('link') || '');
