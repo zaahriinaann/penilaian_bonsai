@@ -3,7 +3,8 @@
 
 <head>
     <base href="">
-    <title>PPBI | Aplikasi Penilaian Estetika Bonsai @yield('title')</title>
+    <title> Login | {{ env('APP_NAME') }} | Aplikasi Penilaian Estetika Bonsai</title>
+
     <meta name="description"
         content="Ceres admin dashboard live demo. Check out all the features of the admin panel. A large number of settings, additional services and widgets." />
     <meta name="keywords"
@@ -43,13 +44,13 @@
                                         alt="" class="w-50">
                                 </div>
                                 <div class="form-group mb-2">
-                                    <label for="username">Email</label>
-                                    <input id="email" type="email"
-                                        class="form-control @error('email') is-invalid @enderror" name="email"
-                                        value="{{ old('email') }}" required autocomplete="email" autofocus
-                                        placeholder="email">
+                                    <label for="username">Email atau Username</label>
+                                    <input id="username" type="text"
+                                        class="form-control @error('username') is-invalid @enderror" name="username"
+                                        value="{{ old('username') }}" required autocomplete="username" autofocus
+                                        placeholder="Masukkan email atau username">
 
-                                    @error('email')
+                                    @error('username')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>

@@ -16,6 +16,7 @@ class UserSeeder extends Seeder
         // Akun Admin
         User::create([
             'name' => 'Admin',
+            'username' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => bcrypt('admin123'),
             'role' => 'admin',

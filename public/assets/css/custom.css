@@ -1,0 +1,25 @@
+.menu-sub {
+    width: max-content !important;
+}
+
+.breadcrumb-item,
+.breadcrumb-item a {
+    color: rgb(191, 191, 191);
+}
+
+.breadcrumb-item a:hover {
+    color: white;
+}
+
+.breadcrumb-item.active {
+    color: white !important;
+}
+
+.custom-left-alert{
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    bottom: 1%;
+    left: 1%;
+}
