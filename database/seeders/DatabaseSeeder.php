@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\UserSeeder;
+use Database\Seeders\JuriSeeder;
+use Database\Seeders\KontesSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,6 +24,11 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         // Akun Admin
-        $this->call(UserSeeder::class);
+        $this->call([
+            UserSeeder::class,
+            JuriSeeder::class,
+            KontesSeeder::class,
+            BonsaiSeeder::class,
+        ]);
     }
 }

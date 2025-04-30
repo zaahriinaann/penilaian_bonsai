@@ -21,13 +21,19 @@
     <link rel="shortcut icon"
         href="https://ppbindonesia.com/wp-content/uploads/2024/05/cropped-Logo-PPBI-300x155.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
-    <link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" <link
-        href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"
+        type="text/css" />
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}" type="text/css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- <link href="{{ asset('assets/plugins/custom/select2/select2.min.css') }}" rel="stylesheet" /> --}}
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css"
+        integrity="sha512-pTaEn+6gF1IeWv3W1+7X7eM60TFu/agjgoHmYhAfLEU8Phuf6JKiiE8YmsNC0aCgQv4192s4Vai8YZ6VNM6vyQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     @yield('style')
 </head>
 
@@ -45,6 +51,18 @@
                 </div>
                 <div id="kt_content_container" class="d-flex flex-column-fluid align-items-start container-xxl">
                     <div class="container">
+                        <div class="custom-left-alert">
+                            @if (Session::has('message'))
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    {{ Session::get('message') }}
+                                </div>
+                            @endif
+                            @if (Session::has('error'))
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    {{ Session::get('error') }}
+                                </div>
+                            @endif
+                        </div>
                         @yield('content')
                     </div>
                 </div>
@@ -60,6 +78,10 @@
     <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <script src="{{ asset('assets/plugins/custom/sweetalert/sweetalert.bundle.js') }}"></script>
+    {{-- <script src="{{ asset('assets/plugins/custom/select2/select2.min.js') }}"></script> --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"
+        integrity="sha512-IOebNkvA/HZjMM7MxL0NYeLYEalloZ8ckak+NDtOViP7oiYzG5vn6WVXyrJDiJPhl4yRdmNAG49iuLmhkUdVsQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     @yield('script')
 
     <script>

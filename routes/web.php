@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BonsaiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
@@ -20,6 +21,9 @@ Route::middleware(['auth', 'web'])->group(function () {
         ]);
         Route::resource('juri', JuriController::class)->parameters([
             'juri' => 'slug'
+        ]);
+        Route::resource('bonsai', BonsaiController::class)->parameters([
+            'bonsai' => 'slug'
         ]);
     });
 });

@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Session;
 
 class JuriController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -36,18 +41,34 @@ class JuriController extends Controller
     {
         try {
             $data = $request->all();
-            $slug = strtolower(str_replace(' ', '-', $data['nama_juri']));
+
+            // Nomor Induk Juri
+            $tahun = date('Y');
+            $data['no_induk_juri'] = "JURI{$tahun}" . substr(preg_replace('/\D/', '', $data['no_telepon']), -4);
+            // Buat slug dasar dari nama juri
+            $slug = strtolower(trim($data['nama_juri']));
+            $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);  // Hapus karakter yang tidak diinginkan
+            $slug = preg_replace('/[\s\-]+/', '-', $slug);      // Ganti spasi dan tanda - lebih dari satu dengan -
+            $slug = trim($slug, '-');                            // Hapus - di awal atau akhir
+
+            // Gabungkan dengan 'juri' dan nomor induk juri
+            $slug .= '-juri-' . strtolower($data['no_induk_juri']);
+            // Assign slug yang telah dibuat ke data
             $data['slug'] = $slug;
-            $dateNow = substr(str_replace('-', '', date('Y-m-d')), 0, 4);
-            $notlp = substr($data['no_telepon'], -4);
-            $no_induk_juri = "JURI$dateNow$notlp";
-            $data['no_induk_juri'] = $no_induk_juri;
+
+            // Password default = no induk
+            $data['password'] = bcrypt($data['no_induk_juri']);
+
+            // Simpan ke DB
             $juri = Juri::create($data);
-            Session::flash('message', "Juri dengan Nomor Induk : ({$juri->no_induk_juri}) berhasil disimpan.");
+
+            // Berikan pesan sukses setelah menyimpan data
+            Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali. " . $e->getMessage());
-            return redirect()->back();
+            // Tangani error jika terjadi kesalahan saat menyimpan
+            Session::flash('error', "Gagal menyimpan data: " . $e->getMessage());
+            return redirect()->back()->withInput();
         }
     }
 
@@ -72,22 +93,47 @@ class JuriController extends Controller
      */
     public function update(Request $request, $slug)
     {
-
         try {
+            // Ambil data juri yang akan diupdate
             $juri = Juri::where('slug', $slug)->firstOrFail();
+
+            // Ambil data dari form
             $data = $request->all();
-            $slug = strtolower(str_replace(' ', '-', $data['nama_juri']));
+
+            // Buat slug dasar dari nama juri
+            $slug = strtolower(trim($data['nama_juri']));
+            $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);  // Hapus karakter yang tidak diinginkan
+            $slug = preg_replace('/[\s\-]+/', '-', $slug);      // Ganti spasi dan tanda - lebih dari satu dengan -
+            $slug = trim($slug, '-');                            // Hapus - di awal atau akhir
+
+            // Gabungkan dengan 'juri' dan nomor induk juri
+            $slug .= '-juri-' . strtolower(str_replace('JURI', '', $juri['no_induk_juri']));
+
+            // Assign slug yang telah dibuat ke data
             $data['slug'] = $slug;
-            $dateNow = substr(str_replace('-', '', date('Y-m-d')), 0, 4);
-            $notlp = substr($data['no_telepon'], -4);
-            $no_induk_juri = "JURI$dateNow$notlp";
-            $data['no_induk_juri'] = $no_induk_juri;
+
+            // Update Nomor Induk Juri
+            // $tahun = date('Y');
+            // $data['no_induk_juri'] = "JURI{$tahun}" . substr(preg_replace('/\D/', '', $data['no_telepon']), -4);
+
+            // Jika password kosong, biarkan password sebelumnya
+            if (empty($data['password'])) {
+                unset($data['password']);  // Jangan update password jika tidak diubah
+            } else {
+                // Jika password ada, hash dan update
+                $data['password'] = bcrypt($data['password']);
+            }
+
+            // Update data juri di database
             $juri->update($data);
-            Session::flash('message', "Juri dengan Nomor Induk : ({$juri->no_induk_juri}) berhasil diperbarui.");
+
+            // Berikan pesan sukses setelah update
+            Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil diperbarui.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali. " . $e->getMessage());
-            return redirect()->back();
+            // Tangani error jika terjadi kesalahan saat menyimpan
+            Session::flash('error', "Gagal memperbarui data: " . $e->getMessage());
+            return redirect()->back()->withInput();
         }
     }
 

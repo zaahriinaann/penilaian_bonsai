@@ -21,7 +21,9 @@ return new class extends Migration
             $table->datetime('tanggal_mulai_kontes');
             $table->datetime('tanggal_selesai_kontes');
             $table->bigInteger('jumlah_peserta');
+            $table->bigInteger('limit_peserta');
             $table->bigInteger('harga_tiket_kontes');
+            $table->string('status')->default(1);
             $table->timestamps();
             $table->softDeletes()->index();
         });

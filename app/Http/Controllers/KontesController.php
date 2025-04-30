@@ -41,22 +41,39 @@ class KontesController extends Controller
     {
         try {
             $data = $request->all();
+
+            $tingkatLabel = $tingkatMap[$data['tingkat_kontes']] ?? 'Unknown';
+            $data['tingkat_kontes'] = $tingkatLabel;
+
+            // Buat slug manual
             $slug = strtolower(str_replace(' ', '-', $data['nama_kontes']));
+            $slug = preg_replace('/[^a-z0-9\-]/', '', $slug); // hanya huruf, angka, dan tanda -
             $data['slug'] = $slug;
-            $price = str_replace(['Rp', '.'], '', $data['harga_tiket_kontes']);
+
+            // Bersihkan dan konversi harga tiket
+            $price = str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
             $data['harga_tiket_kontes'] = (int) $price;
+
+            // Alihkan jumlah_peserta ke limit_peserta (jika memang ada kolom ini)
+            $data['limit_peserta'] = (int) $data['jumlah_peserta'];
+
+            // Tambahkan https jika tidak ada
             if (
+                !empty($data['link_gmaps']) &&
                 strpos($data['link_gmaps'], 'http://') !== 0 &&
                 strpos($data['link_gmaps'], 'https://') !== 0
             ) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
+            // dd($data);
+            // Simpan data
             $kontes = Kontes::create($data);
+
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silahkan hubungi admin atau coba lain kali.");
-            return redirect()->back();
+            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silakan hubungi admin atau coba lagi.");
+            return redirect()->back()->withInput();
         }
     }
 
@@ -66,7 +83,7 @@ class KontesController extends Controller
     public function show($slug)
     {
         $kontes = Kontes::where('slug', $slug)->firstOrFail();
-        return view('kontes.show', compact('kontes'));
+        return view('admin.kontes.show', compact('kontes'));
     }
 
     /**
@@ -84,26 +101,36 @@ class KontesController extends Controller
     {
         try {
             $kontes = Kontes::where('slug', $slug)->firstOrFail();
+
             $data = $request->all();
-            $slug = strtolower(str_replace(' ', '-', $data['nama_kontes']));
-            $data['slug'] = $slug;
-            $price = str_replace(['Rp', '.'], '', $data['harga_tiket_kontes']);
+
+            // Buat slug manual dan aman
+            $slugBaru = strtolower(str_replace(' ', '-', $data['nama_kontes']));
+            $slugBaru = preg_replace('/[^a-z0-9\-]/', '', $slugBaru);
+            $data['slug'] = $slugBaru;
+
+            // Konversi harga tiket
+            $price = str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
             $data['harga_tiket_kontes'] = (int) $price;
+
+            // Periksa link GMaps jika diisi
             if (
+                !empty($data['link_gmaps']) &&
                 strpos($data['link_gmaps'], 'http://') !== 0 &&
                 strpos($data['link_gmaps'], 'https://') !== 0
             ) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
+
             $kontes->update($data);
+
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
             return redirect()->route('kontes.index');
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat memperbarui data, silahkan hubungi admin atau coba lagi lain kali.");
-            return redirect()->back();
+            Session::flash('error', "Terdapat kesalahan saat memperbarui data. Silakan coba lagi atau hubungi admin.");
+            return redirect()->back()->withInput();
         }
     }
-
 
     /**
      * Remove the specified resource from storage.

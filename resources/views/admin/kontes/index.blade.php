@@ -9,20 +9,6 @@
 @endsection
 
 @section('content')
-    {{-- alert --}}
-    <div class="custom-left-alert">
-        @if (Session::has('message'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ Session::get('message') }}
-            </div>
-        @endif
-        @if (Session::has('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ Session::get('error') }}
-            </div>
-        @endif
-    </div>
-
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -32,11 +18,15 @@
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Cari data">
                 </div>
             </div>
+
             <table class="table table-hover table-borderless table-responsive table-data">
-                <thead>
+                <thead class="align-middle">
                     <tr>
+                        <th hidden></th>
                         <th>#</th>
+                        <th>Poster</th>
                         <th>Nama Kontes</th>
+                        <th>Tingkat</th>
                         <th>Tempat/Lokasi Kontes</th>
                         <th>Tanggal</th>
                         <th>Jumlah Peserta/Bonsai</th>
@@ -44,14 +34,21 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="align-middle">
                     @forelse ($dataRender as $item)
                         <tr>
+                            <td class="list-slug" hidden>{{ $item->slug }}</td>
                             <td>{{ $loop->iteration }}</td>
+                            <td>
+                                <img src="https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg"
+                                    alt="Poster Kontes" class="rounded"
+                                    style="width: 75px; height: 75px; object-fit: cover;">
+                            </td>
                             <td>
                                 <a class="text-dark fw-bold"
                                     href="{{ route('kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
                             </td>
+                            <td>{{ $item->tingkat_kontes }}</td>
                             <td>{{ $item->tempat_kontes }}
                                 @if ($item->link_gmaps)
                                     <a href="{{ $item->link_gmaps }}" target="_blank" title="Lihat di google maps">
@@ -61,7 +58,7 @@
                             </td>
                             <td>{{ \Carbon\Carbon::parse($item->tanggal_mulai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') . ' - ' . \Carbon\Carbon::parse($item->tanggal_selesai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}
                             </td>
-                            <td>{{ $item->jumlah_peserta }} Peserta</td>
+                            <td>{{ $item->jumlah_peserta }} Peserta/Bonsai</td>
                             <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -111,8 +108,9 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="nama_kontes" class="form-label">Nama Kontes</label>
-                                <input type="text" class="form-control" name="nama_kontes" id="nama_kontes"
+                                <input type="text" class="form-control nama_kontes" name="nama_kontes" id="nama_kontes"
                                     aria-describedby="nama_kontes" title="Nama Kontes" placeholder="Nama Kontes">
+                                <span class="msg-slug"></span>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <div class="d-flex gap-2 justify-content-between">
@@ -154,8 +152,8 @@
                                 </label>
                                 <select name="tingkat_kontes" id="tingkat_kontes" class="form-select form-control">
                                     <option selected disabled>Pilih Tingkat Kontes</option>
-                                    <option value="1">Madya</option>
-                                    <option value="2">Utama</option>
+                                    <option value="madya">Madya</option>
+                                    <option value="utama">Utama</option>
                                 </select>
                             </div>
                             <div class="col-md-12 mb-3">
@@ -204,7 +202,9 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="edit_nama_kontes" class="form-label">Nama Kontes</label>
-                                <input type="text" class="form-control" name="nama_kontes" id="edit_nama_kontes">
+                                <input type="text" class="form-control edit_nama_kontes" name="nama_kontes"
+                                    id="edit_nama_kontes">
+                                <span class="edit_msg-slug"></span>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <div class="d-flex gap-2 justify-content-between">
@@ -214,11 +214,11 @@
                                         <label class="form-check-label" for="edit_link_gmaps_checkbox">Google
                                             Maps</label>
                                     </div>
-                                    {{-- <input type="text" class="form-control" name="tempat_kontes"
-                                        id="edit_tempat_kontes"> --}}
-                                    <textarea class="form-control" name="tempat_kontes" id="edit_tempat_kontes" aria-describedby="tempat_kontes"
-                                        title="Alamat Lengkap Tempat Kontes" placeholder="Alamat Lengkap Tempat Kontes" cols="3" rows="3"></textarea>
                                 </div>
+                                {{-- <input type="text" class="form-control" name="tempat_kontes"
+                                        id="edit_tempat_kontes"> --}}
+                                <textarea class="form-control" name="tempat_kontes" id="edit_tempat_kontes" aria-describedby="tempat_kontes"
+                                    title="Alamat Lengkap Tempat Kontes" placeholder="Alamat Lengkap Tempat Kontes" cols="3" rows="3"></textarea>
                             </div>
                             <div class="col-md-12 mb-3 d-none" id="edit_form_gmaps">
                                 <label for="edit_link_gmaps" class="form-label">Link Gmaps</label>
@@ -241,13 +241,16 @@
                                         data-bs-toggle="modal" data-bs-target="#kt_modal_edit_panduan_kontes"></i>
                                 </label>
                                 <select name="tingkat_kontes" id="edit_tingkat_kontes" class="form-select">
-                                    <option disabled>Pilih Tingkat Kontes</option>
-                                    <option value="1">Madya</option>
-                                    <option value="2">Utama</option>
+                                    <option selected>Pilih Tingkat Kontes</option>
+                                    <option value="madya">Madya</option>
+                                    <option value="utama">Utama</option>
                                 </select>
                             </div>
                             <div class="col-md-12 mb-3">
-                                <label for="edit_jumlah_peserta" class="form-label">Jumlah Peserta/Bonsai</label>
+                                <label for="edit_jumlah_peserta"
+                                    class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Jumlah Peserta/Bonsai</span>
+                                    <small id="edit_jumlah_peserta_text" class="text-danger"></small></label>
                                 <input type="number" class="form-control" name="jumlah_peserta"
                                     id="edit_jumlah_peserta">
                             </div>
@@ -263,7 +266,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="reset" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="reset" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-sm btn-primary">Perbarui</button>
                     </div>
                 </form>
@@ -335,7 +338,7 @@
                 </div>
                 <div class="modal-footer">
                     <button data-bs-toggle="modal" data-bs-target="#kt_modal_create_kontes"
-                        class="btn btn-sm btn-primary">Kembali</button>
+                        class="btn btn-sm btn-secondary">Kembali</button>
                 </div>
             </div>
         </div>
@@ -405,7 +408,7 @@
                 </div>
                 <div class="modal-footer">
                     <button data-bs-toggle="modal" data-bs-target="#kt_modal_edit_kontes"
-                        class="btn btn-sm btn-primary">Kembali</button>
+                        class="btn btn-sm btn-secondary">Kembali</button>
                 </div>
             </div>
         </div>
@@ -414,9 +417,74 @@
 @section('script')
     <script>
         $(document).ready(() => {
+
+            // ===================== UTILITAS ======================
+            function generateSlug(text) {
+                return text.toLowerCase()
+                    .replace(/ /g, '-')
+                    .replace(/[^\w-]+/g, '')
+                    .replace(/--+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            }
+
+            function formatHarga(value) {
+                const angka = value.toString().replace(/[^\d]/g, '');
+                return 'Rp' + angka.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            function setJumlahPeserta(tingkat, inputSelector, textSelector) {
+                if (tingkat === 'madya') {
+                    $(inputSelector).prop({
+                        min: 30,
+                        placeholder: 30
+                    });
+                    $(textSelector).text('Minimal 30 (tiga puluh) Bonsai/Peserta');
+                } else if (tingkat === 'utama') {
+                    $(inputSelector).prop({
+                        min: 20,
+                        placeholder: 20
+                    });
+                    $(textSelector).text('Minimal 20 (dua puluh) Bonsai/Peserta');
+                } else {
+                    $(inputSelector).prop('min', 0);
+                    $(textSelector).text('');
+                }
+            }
+
             // ===================== TAMBAH KONTEST ======================
             $('#link_gmaps_checkbox').on('change', function() {
                 $('#form_gmaps').toggleClass('d-none', !this.checked);
+            });
+
+            $('#reset-btn').on('click', () => {
+                $('#form_gmaps').addClass('d-none');
+            });
+
+            $('.nama_kontes, .edit_nama_kontes').on('change', function() {
+                const slug = generateSlug(this.value);
+                let slugExists = false;
+
+                $('.list-slug').each(function(e) {
+                    if ($(this).text().trim() === slug) {
+                        slugExists = true;
+                        return false;
+                    }
+                });
+
+                if (slugExists) {
+                    $('.msg-slug, .edit_msg-slug').text(
+                            'Nama kontes ini sudah dipakai. Silakan ubah nama agar unik.')
+                        .css({
+                            color: 'red',
+                            fontSize: '12px'
+                        });
+                } else {
+                    $('.msg-slug, .edit_msg-slug').text('Nama kontes tersedia dan bisa digunakan.')
+                        .css({
+                            color: 'green',
+                            fontSize: '12px'
+                        });
+                }
             });
 
             const today = new Date().toLocaleDateString('fr-ca');
@@ -429,54 +497,49 @@
             });
 
             $('#harga_tiket_kontes, #edit_harga_tiket_kontes').on('input', function() {
-                const value = this.value.replace(/[^\d]/g, '');
-                this.value = 'Rp' + value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            });
-
-            $('#reset-btn').on('click', () => {
-                $('#form_gmaps').addClass('d-none');
+                this.value = formatHarga(this.value);
             });
 
             $('#tingkat_kontes').on('change', function() {
-                const val = this.value;
-                if (val == 1) {
-                    $('#jumlah_peserta').val(30).prop({
-                        min: 30,
-                        placeholder: 30
-                    });
-                    $('#jumlah_peserta_text').text('Minimal 30 (tiga puluh) Bonsai/Peserta');
-                } else if (val == 2) {
-                    $('#jumlah_peserta').val(20).prop({
-                        min: 20,
-                        placeholder: 20
-                    });
-                    $('#jumlah_peserta_text').text('Minimal 20 (dua puluh) Bonsai/Peserta');
-                } else {
-                    $('#jumlah_peserta').prop('min', 0);
-                    $('#jumlah_peserta_text').text('');
-                }
+                const tingkat = this.value;
+                setJumlahPeserta(tingkat, '#jumlah_peserta', '#jumlah_peserta_text');
             });
 
             // ===================== EDIT KONTEST ======================
             $('.btn-edit').on('click', function() {
                 const btn = $(this);
-                $('#form_edit_kontes').attr('action', '/master/kontes/' + btn.data('slug'));
-                $('#edit_kontes_slug').val(btn.data('slug'));
-                $('#edit_nama_kontes').val(btn.data('nama'));
-                $('#edit_tempat_kontes').val(btn.data('tempat'));
-                $('#edit_link_gmaps').val(btn.data('link') || '');
-                $('#edit_tanggal_mulai_kontes').val(btn.data('tanggal-mulai'));
-                $('#edit_tanggal_selesai_kontes').val(btn.data('tanggal-selesai'));
-                $('#edit_tingkat_kontes').val(btn.data('tingkat'));
-                $('#edit_jumlah_peserta').val(btn.data('peserta'));
 
-                let harga = btn.data('harga') || 0;
-                harga = harga.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                harga = 'Rp' + harga.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                // harga = harga.replace(/Rp/g, '');
-                $('#edit_harga_tiket_kontes').val(harga);
+                const slug = btn.data('slug');
+                const nama = btn.data('nama');
+                const tempat = btn.data('tempat');
+                const tanggalMulai = btn.data('tanggal-mulai');
+                const tanggalSelesai = btn.data('tanggal-selesai');
+                const peserta = btn.data('peserta');
+                const tingkat = btn.data('tingkat')?.toString().trim().toLowerCase();
+                const link = btn.data('link') || '';
+                const harga = btn.data('harga') || 0;
 
-                const hasLink = !!btn.data('link');
+                $('#form_edit_kontes').attr('action', '/master/kontes/' + slug);
+                $('#edit_kontes_slug').val(slug);
+                $('#edit_nama_kontes').val(nama);
+                $('#edit_tempat_kontes').val(tempat);
+                $('#edit_link_gmaps').val(link);
+                $('#edit_tanggal_mulai_kontes').val(tanggalMulai);
+                $('#edit_tanggal_selesai_kontes').val(tanggalSelesai);
+                $('#edit_jumlah_peserta').val(peserta);
+                $('#edit_tingkat_kontes').val(tingkat).trigger('change');
+
+                $('#edit_tingkat_kontes').on('change', function() {
+                    const tingkat = this.value;
+                    setJumlahPeserta(tingkat, '#edit_jumlah_peserta', '#edit_jumlah_peserta_text');
+                });
+
+                setJumlahPeserta(tingkat, '#edit_jumlah_peserta', '#edit_jumlah_peserta_text');
+
+
+                $('#edit_harga_tiket_kontes').val(formatHarga(harga));
+
+                const hasLink = !!link;
                 $('#edit_link_gmaps_checkbox').prop('checked', hasLink);
                 $('#edit_form_gmaps').toggleClass('d-none', !hasLink);
             });
@@ -484,6 +547,7 @@
             $('#edit_link_gmaps_checkbox').on('change', function() {
                 $('#edit_form_gmaps').toggleClass('d-none', !this.checked);
             });
+
         });
     </script>
 @endsection

@@ -13,15 +13,16 @@ return new class extends Migration
     {
         Schema::create('juri', function (Blueprint $table) {
             $table->id();
+            $table->string('slug')->unique();
             $table->string('no_induk_juri')->nullable();
             $table->string('nama_juri');
-            $table->string('email')->nullable();
-            $table->string('password')->nullable();
-            $table->string('slug')->unique();
-            $table->string('no_telepon')->nullable();
-            $table->string('status')->default('active');
-            $table->string('role')->default('juri');
             $table->string('foto')->nullable();
+            $table->string('no_telepon')->nullable();
+            $table->string('email')->nullable();
+            $table->string('username')->nullable()->unique();
+            $table->string('password')->nullable();
+            $table->string('status')->default('1');
+            $table->string('role')->default('juri');
             $table->timestamps();
             $table->softDeletes();
         });
