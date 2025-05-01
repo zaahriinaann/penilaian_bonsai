@@ -142,12 +142,23 @@ class JuriController extends Controller
      */
     public function destroy($slug)
     {
-        $juri = Juri::where('slug', $slug)->firstOrFail();
         try {
+            $juri = Juri::where('slug', $slug)->firstOrFail();
+
+            // Hindari konflik slug dengan menambahkan suffix unik
+            $juri->update([
+                'slug' => $juri->slug . '-deleted-' . uniqid()
+            ]);
+
             $juri->delete();
-            return response()->json(['message' => `Juri dengan Nomor Induk : ({$juri->no_induk_juri}) berhasil disimpan.`]);
+
+            return response()->json([
+                'message' => "juri {$juri->nama_juri} berhasil dihapus."
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal menghapus data.'], 500);
+            return response()->json([
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

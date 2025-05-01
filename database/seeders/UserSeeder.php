@@ -20,6 +20,12 @@ class UserSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => bcrypt('admin123'),
             'role' => 'admin',
+
+            'no_anggota' => '0001',
+            'cabang' => 'Cabang Utama',
+            'no_hp' => '081234567890',
+            'alamat' => 'Jl. Raya No. 1',
+            'foto' => 'default.png',
         ]);
     }
 }

@@ -48,8 +48,8 @@
                                 <a class="text-dark fw-bold"
                                     href="{{ route('kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
                             </td>
-                            <td>{{ $item->tingkat_kontes }}</td>
-                            <td>{{ $item->tempat_kontes }}
+                            <td class="text-capitalize">{{ $item->tingkat_kontes }}</td>
+                            <td class="text-capitalize">{{ $item->tempat_kontes }}
                                 @if ($item->link_gmaps)
                                     <a href="{{ $item->link_gmaps }}" target="_blank" title="Lihat di google maps">
                                         <i class="bi bi-geo-alt-fill"></i>

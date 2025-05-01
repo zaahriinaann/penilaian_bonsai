@@ -262,19 +262,19 @@
             });
 
             // Handle username field changes (for slug check)
-            $('#username, #edit_username').on('change', function() {
+            $('#username, #edit_username').on('input', function() {
                 const slug = generateSlug(this.value);
                 let slugExists = false;
-
                 $('.list-username').each(function() {
                     if ($(this).text().trim() === slug) {
                         slugExists = true;
+                        sameSlug = true;
                         return false;
                     }
                 });
 
                 // Show slug availability message
-                const msgSlug = $('.msg-slug, .edit_msg_slug');
+                const msgSlug = $('.msg-slug, .edit_msg-slug');
                 if (slugExists) {
                     msgSlug.text('Username ini sudah dipakai. Silakan ubah nama agar unik.')
                         .css({
@@ -294,7 +294,7 @@
             function generateSlug(text) {
                 return text.toLowerCase()
                     .replace(/ /g, '-')
-                    .replace(/[^\w-]+/g, '')
+                    .replace(/[^\w.-]+/g, '')
                     .replace(/--+/g, '-')
                     .replace(/^-+|-+$/g, '');
             }

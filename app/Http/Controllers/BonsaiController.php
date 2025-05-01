@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Bonsai;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class BonsaiController extends Controller
 {
@@ -26,12 +29,10 @@ class BonsaiController extends Controller
         // get only pemilik
         $pemilik = $bonsai::select('pemilik', 'no_anggota', 'cabang')->get();
 
-        // Jika pemilik ada lebih dari 1, ambil salah satu saja
-        if ($pemilik->count() > 1) {
-            $pemilik = $pemilik->unique('pemilik')->values()->all();
-        } else {
-            $pemilik = $pemilik->first();
-        }
+        // get only pemilik unique
+        $pemilik = $pemilik->unique(function ($item) {
+            return $item['pemilik'] . '-' . $item['no_anggota'] . '-' . $item['cabang'];
+        });
 
         return view('admin.bonsai.index', compact('dataRender', 'pemilik'));
     }
@@ -53,38 +54,55 @@ class BonsaiController extends Controller
             $data = $request->all();
 
             // Gabungkan masa pemeliharaan
-            $data['masa_pemeliharaan'] = $data['masa_pemeliharaan'] . ' ' . $data['format_masa'];
+            $data['masa_pemeliharaan'] = "{$data['masa_pemeliharaan']} {$data['format_masa']}";
 
-            // Mapping ukuran_1
+            // Mapping ukuran_1 ke label
             $ukuranMap = [
                 1 => 'Small',
                 2 => 'Medium',
-                3 => 'Large',
+                3 => 'Large'
             ];
             $ukuranLabel = $ukuranMap[$data['ukuran_1']] ?? 'Unknown';
 
             // Gabungkan ukuran
-            $data['ukuran'] = $ukuranLabel . ' ' . $data['ukuran_2'] . ' ' . $data['format_ukuran'];
+            $data['ukuran'] = "{$ukuranLabel} ( {$data['ukuran_2']} {$data['format_ukuran']} )";
 
-            // Buat no induk pohon
-            $year = date('Y');
-            $random = random_int(1000, 9999);
-            $data['no_induk_pohon'] = "BONSAI{$year}{$random}";
+            // Generate no_induk_pohon
+            $data['no_induk_pohon'] = 'BONSAI' . date('Y') . random_int(1000, 9999);
 
-            // Buat slug manual
-            $slug = strtolower(str_replace(' ', '-', $data['nama_pohon'] . '-' . $data['pemilik'] . '-' . $ukuranLabel . '-ppbi-' . $data['cabang']));
-            $data['slug'] = preg_replace('/[^a-z0-9\-]/', '', $slug); // hanya huruf kecil, angka, strip
+            // Generate slug
+            $slugSource = "{$data['nama_pohon']}-{$data['pemilik']}-{$ukuranLabel}-ppbi-{$data['cabang']}";
+            $data['slug'] = Str::slug($slugSource, '-');
 
-            // Simpan ke database
-            // dd($data);
+            // Ganti nilai null dengan '-'
+            $data = Arr::map($data, fn($value) => $value ?? '-');
+
+            // Buat akun user jika belum pernah daftar
+            if ($request->has('pernahDaftar')) {
+                unset($data['pernahDaftar']);
+                try {
+                    $existingUser = User::where('no_anggota', $data['pemilik'])->first();
+                    if (!$existingUser) {
+                        User::create([
+                            'name' => $request['pemilik'],
+                            'username' => $request['pemilik'],
+                            'password' => bcrypt($request['no_anggota']),
+                            'role' => 'anggota',
+                            'no_anggota' => $request['no_anggota'],
+                            'cabang' => $request['cabang'],
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    return back()->with('error', 'Gagal membuat akun pengguna: ' . $e->getMessage());
+                }
+            }
+
+            // Simpan data bonsai
             $bonsai = Bonsai::create($data);
 
-            Session::flash('message', "Bonsai {$bonsai->nama_pohon} berhasil disimpan.");
-            return redirect()->back();
+            return back()->with('message', "Bonsai {$bonsai->nama_pohon} berhasil disimpan.");
         } catch (\Exception $e) {
-            // Tangani error
-            Session::flash('error', 'Terjadi kesalahan saat menyimpan data bonsai: ' . $e->getMessage());
-            return redirect()->back()->withInput();
+            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -110,28 +128,32 @@ class BonsaiController extends Controller
     public function update(Request $request, $slug)
     {
         try {
+            // Ambil data bonsai berdasarkan slug
             $bonsai = Bonsai::where('slug', $slug)->firstOrFail();
             $data = $request->all();
 
             // Gabungkan masa pemeliharaan
             $data['masa_pemeliharaan'] = $data['masa_pemeliharaan'] . ' ' . $data['format_masa'];
 
-            // Mapping ukuran_1
+            // Mapping ukuran
             $ukuranMap = [
                 1 => 'Small',
                 2 => 'Medium',
                 3 => 'Large',
             ];
             $ukuranLabel = $ukuranMap[$data['ukuran_1']] ?? 'Unknown';
+            $data['ukuran'] = "{$ukuranLabel} ( {$data['ukuran_2']} {$data['format_ukuran']} )";
 
-            // Gabungkan ukuran
-            $data['ukuran'] = $ukuranLabel . ' ' . $data['ukuran_2'] . ' ' . $data['format_ukuran'];
+            // Slug baru (dibersihkan)
+            $slugBaru = strtolower(str_replace(' ', '-', $data['nama_pohon'] . '-' . $bonsai->pemilik . '-' . $ukuranLabel . '-ppbi-' . $bonsai->cabang));
+            $data['slug'] = preg_replace('/[^a-z0-9\-]/', '', $slugBaru);
 
-            // Update slug (manual)
-            $slug = strtolower(str_replace(' ', '-', $data['nama_pohon'] . '-' . $data['pemilik'] . '-' . $ukuranLabel . '-ppbi-' . $data['cabang']));
-            $data['slug'] = preg_replace('/[^a-z0-9\-]/', '', $slug); // hanya huruf kecil, angka, strip
+            // Tetapkan ulang data yang tidak boleh berubah
+            $data['pemilik'] = $bonsai->pemilik;
+            $data['cabang'] = $bonsai->cabang;
+            $data['no_anggota'] = $bonsai->no_anggota;
 
-            // Update data bonsai
+            // Update
             $bonsai->update($data);
 
             Session::flash('message', "Bonsai {$bonsai->nama_pohon} berhasil diperbarui.");
@@ -142,12 +164,28 @@ class BonsaiController extends Controller
         }
     }
 
-
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Bonsai $bonsai)
+    public function destroy($slug)
     {
-        //
+        try {
+            $bonsai = Bonsai::where('slug', $slug)->firstOrFail();
+
+            // Hindari konflik slug dengan menambahkan suffix unik
+            $bonsai->update([
+                'slug' => $bonsai->slug . '-deleted-' . uniqid()
+            ]);
+
+            $bonsai->delete();
+
+            return response()->json([
+                'message' => "Kontes {$bonsai->nama_kontes} berhasil dihapus."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

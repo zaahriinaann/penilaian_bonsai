@@ -6,6 +6,7 @@ use App\Models\Kontes;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class KontesController extends Controller
@@ -42,7 +43,7 @@ class KontesController extends Controller
         try {
             $data = $request->all();
 
-            $tingkatLabel = $tingkatMap[$data['tingkat_kontes']] ?? 'Unknown';
+            $tingkatLabel = $data['tingkat_kontes'] ?? 'Unknown';
             $data['tingkat_kontes'] = $tingkatLabel;
 
             // Buat slug manual
@@ -72,7 +73,7 @@ class KontesController extends Controller
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silakan hubungi admin atau coba lagi.");
+            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silakan hubungi admin atau coba lagi." . $e->getMessage());
             return redirect()->back()->withInput();
         }
     }
@@ -127,7 +128,7 @@ class KontesController extends Controller
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
             return redirect()->route('kontes.index');
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan saat memperbarui data. Silakan coba lagi atau hubungi admin.");
+            Session::flash('error', "Terdapat kesalahan saat memperbarui data. Silakan coba lagi atau hubungi admin." . $e->getMessage());
             return redirect()->back()->withInput();
         }
     }
@@ -137,12 +138,23 @@ class KontesController extends Controller
      */
     public function destroy($slug)
     {
-        $kontes = Kontes::where('slug', $slug)->firstOrFail();
         try {
+            $kontes = Kontes::where('slug', $slug)->firstOrFail();
+
+            // Hindari konflik slug dengan menambahkan suffix unik
+            $kontes->update([
+                'slug' => $kontes->slug . '-deleted-' . uniqid()
+            ]);
+
             $kontes->delete();
-            return response()->json(['message' => `Kontes $kontes->nama_kontes berhasil dihapus.`]);
+
+            return response()->json([
+                'message' => "Kontes {$kontes->nama_kontes} berhasil dihapus."
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal menghapus data.'], 500);
+            return response()->json([
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
