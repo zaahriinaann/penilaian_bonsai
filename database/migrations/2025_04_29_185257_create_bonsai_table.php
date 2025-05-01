@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('pemilik');
             $table->string('no_anggota');
             $table->string('cabang');
+            $table->string('tingkatan')->nullable()->default('pratama');
             $table->string('foto')->nullable();
             $table->timestamps();
             $table->softDeletes();

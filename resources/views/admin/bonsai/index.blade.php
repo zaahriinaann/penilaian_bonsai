@@ -29,6 +29,7 @@
                             <br>
                             <b>(Nama Lokal/Nama Latin)</b>
                         </th>
+                        <th>Tingkatan</th>
                         <th>Ukuran</th>
                         <th>Masa Pemeliharaan</th>
                         <th>Pemilik</th>
@@ -59,6 +60,7 @@
                                     </small>
                                 </div>
                             </td>
+                            <td class="text-capitalize">{{ $item->tingkatan }}</td>
                             <td>{{ $item->ukuran }}</td>
                             <td>{{ $item->masa_pemeliharaan }}</td>
                             <td>{{ $item->pemilik }}</td>
@@ -74,7 +76,7 @@
                                         data-masa_pemeliharaan="{{ $item->masa_pemeliharaan }}"
                                         data-pemilik="{{ $item->pemilik }}" data-no_anggota="{{ $item->no_anggota }}"
                                         data-cabang="{{ $item->cabang }}" data-ukuran_1="{{ $item->ukuran_1 }}"
-                                        data-ukuran_2="{{ $item->ukuran_2 }}"
+                                        data-ukuran_2="{{ $item->ukuran_2 }}" data-tingkatan="{{ $item->tingkatan }}"
                                         data-format_ukuran="{{ $item->format_ukuran }}" data-bs-toggle="modal"
                                         data-bs-target="#kt_modal_edit_bonsai" title="Edit data">
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
@@ -99,13 +101,14 @@
     {{-- Modal --}}
     <div class="modal fade" id="kt_modal_create_bonsai" tabindex="-1" aria-labelledby="kt_modal_create_bonsai"
         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog change-modal modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="kt_modal_create_bonsai">Data Bonsai Peserta</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('bonsai.store') }}" enctype="multipart/form-data" method="POST">
+                <form id="form-create-bonsai" action="{{ route('bonsai.store') }}" enctype="multipart/form-data"
+                    method="POST">
                     @csrf
                     @method('POST')
                     <div class="modal-body">
@@ -138,8 +141,9 @@
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="cabang" class="form-label">PPBI Cabang</label>
-                                    <input type="text" class="form-control" name="cabang" id="cabang"
-                                        aria-describedby="cabang" title="PPBI Cabang" placeholder="Masukkan PPBI Cabang">
+                                    <select id="cabang" name="cabang"></select>
+                                    {{-- <input type="text" class="form-control" name="cabang" id="cabang"
+                                        aria-describedby="cabang" title="PPBI Cabang" placeholder="Masukkan PPBI Cabang"> --}}
                                 </div>
                                 <span class="msg-daftar"></span>
                             </div>
@@ -161,7 +165,7 @@
                                     <span class="fw-bold fs-5">Data List Pohon Pemilik</span>
                                 </div>
                                 <div class="table-responsive">
-                                    <table class="table table-hover table-borderless">
+                                    <table class="table table-hover table-borderless table-striped">
                                         <tbody class="align-middle" id="table-data-list-pohon">
                                         </tbody>
                                     </table>
@@ -197,6 +201,15 @@
                                                 placeholder="Masukkan Nama Latin">
                                         </div>
                                     </div>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="tingkatan" class="form-label">Tingkatan</label>
+                                    <select name="tingkatan" id="tingkatan" class="form-select form-control">
+                                        <option selected disabled>Pilih Tingkatan</option>
+                                        <option value="pratama">Pratama</option>
+                                        <option value="madya">Madya</option>
+                                        <option value="utama">Utama</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="ukuran" class="form-label">Ukuran Pohon</label>
@@ -237,7 +250,7 @@
                     <div class="modal-footer">
                         <button type="reset" id="reset-btn" class="btn btn-sm btn-danger"
                             data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                        <button type="button" class="btn btn-sm btn-primary btn-proceed disabled">Lanjut</button>
                     </div>
                 </form>
             </div>
@@ -274,6 +287,15 @@
                                     <label>Nama Latin</label>
                                     <input type="text" class="form-control" name="nama_latin" id="edit_nama_latin">
                                 </div>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="tingkatan" class="form-label">Tingkatan</label>
+                                <select name="tingkatan" id="edit_tingkatan" class="form-select form-control">
+                                    <option value="pratama">Pratama</option>
+                                    <option value="madya">Madya</option>
+                                    <option value="utama">Utama</option>
+                                </select>
                             </div>
 
                             <!-- Ukuran -->
@@ -330,20 +352,39 @@
             const cabangSelector = '#cabang';
             const tableDataListPohon = $('#table-data-list-pohon');
             const msgDaftar = $('.msg-daftar');
+            const btnProceed = $('.btn-proceed'); // Define btnProceed properly
 
             const noAnggotaPemilik = @json($pemilik->pluck('no_anggota')->unique());
             const dataPemilik = Object.values(@json($pemilik));
             const dataPohon = Object.values(@json($dataRender));
+            const province = @json($province);
+
+            let tempCabang = '';
+            let btnProceedClicked = false;
             msgDaftar.text('');
+
+            function setTempCabang(cabang) {
+                tempCabang = cabang;
+                console.log('Set cabang:', cabang);
+                return cabang;
+            }
+
+            function triggerSelect() {
+                $(cabangSelector).trigger('change');
+            }
 
             // RESET
             $('button[type="reset"]').on('click', () => {
                 $('#data-list-pohon-pemilik').hide();
+                $('#pemilikPernahDaftar').hide();
+                $('#pemilikBaruDaftar').show();
                 if (window.selectizeElement) {
                     window.selectizeElement.clear();
                 }
                 $('#data-pohon').hide();
                 msgDaftar.text('');
+                btnProceed.addClass('disabled').prop('type', 'button');
+                $('.change-modal').removeClass('modal-lg');
             });
 
             // TOGGLE Checkbox "Pernah Daftar"
@@ -354,12 +395,9 @@
                 if (window.selectizeElement) {
                     window.selectizeElement.clear();
                 }
+
                 if (!this.checked) {
-
-                    if (window.selectizeElement) {
-                        window.selectizeElement.clear();
-                    }
-
+                    $('.change-modal').removeClass('modal-lg');
                     msgDaftar.text('');
                     $(pemilikSelector).val('');
                     $(noAnggotaSelector).val('');
@@ -367,9 +405,6 @@
                     $('#data-list-pohon-pemilik').hide();
                     $('#data-pohon').hide();
                 }
-
-                $('#data-list-pohon-pemilik').hide();
-                $('#data-pohon').hide();
             });
 
             // INISIALISASI SELECTIZE
@@ -383,6 +418,7 @@
 
                     this.on('change', function(value) {
                         const selectedOption = this.options[value];
+                        $('.change-modal').addClass('modal-lg');
                         if (selectedOption) {
                             const valNoAnggota = selectedOption.no_anggota;
                             const valCabang = selectedOption.cabang;
@@ -395,6 +431,7 @@
                                 .no_anggota === valNoAnggota);
 
                             if (pemilikTerdaftar) {
+                                btnProceedClicked = true;
                                 msgDaftar.text('Anggota ini sudah terdaftar.').css({
                                     color: 'green',
                                     fontSize: '12px'
@@ -403,26 +440,28 @@
                                 // Tampilkan pohon milik anggota
                                 const pohonPemilik = dataPohon.filter(item => item
                                     .no_anggota === valNoAnggota);
-
                                 tableDataListPohon.empty();
                                 pohonPemilik.forEach((item) => {
                                     const row = `
-                                    <tr>
-                                        <td>${item.no_induk_pohon}</td>
-                                        <td>
-                                            <div class="d-grid" style="width: 250px">
-                                                <span>${item.nama_pohon}</span>
-                                                <small><b>(${item.nama_lokal}/${item.nama_latin})</b></small>
-                                            </div>
-                                        </td>
-                                        <td>${item.ukuran}</td>
-                                        <td>${item.masa_pemeliharaan}</td>
-                                    </tr>`;
+                                <tr>
+                                    <td>${item.no_induk_pohon}</td>
+                                    <td>
+                                        <div class="d-grid" style="width: 250px">
+                                            <span>${item.nama_pohon}</span>
+                                            <small><b>(${item.nama_lokal}/${item.nama_latin})</b></small>
+                                        </div>
+                                    </td>
+                                    <td class="text-capitalize">${item.tingkatan}</td>
+                                    <td>${item.ukuran}</td>
+                                    <td>${item.masa_pemeliharaan}</td>
+                                </tr>`;
                                     tableDataListPohon.append(row);
                                 });
 
                                 $('#data-list-pohon-pemilik').show();
                                 $('#data-pohon').hide();
+                                btnProceed.removeClass('disabled').text('Simpan').prop('type',
+                                    'submit');
                             } else {
                                 msgDaftar.text('Data anggota tidak ditemukan.').css({
                                     color: 'red',
@@ -447,6 +486,23 @@
                 }
             });
 
+            // Initialize Selectize for cabang
+            const cabangSelectize = $(cabangSelector).selectize({
+                allowEmptyOption: true,
+                placeholder: 'Pilih Cabang',
+                theme: 'bootstrap-5',
+                valueField: 'name',
+                labelField: 'name',
+                searchField: 'name',
+                options: province,
+                onInitialize: function() {
+                    this.on('change', function(value) {
+                        const provinceName = this.options[this.getValue()]?.name || '';
+                        $(this.$control_input).val(provinceName || tempCabang || '');
+                    });
+                }
+            })[0].selectize;
+
             // VALIDASI SAAT INPUT MANUAL
             $(`${pemilikSelector}, ${noAnggotaSelector}, ${cabangSelector}`).on('change', function() {
                 const valPemilik = $(pemilikSelector).val();
@@ -454,64 +510,93 @@
                 const valCabang = $(cabangSelector).val();
 
                 if (valPemilik && valNoAnggota && valCabang) {
-                    if (noAnggotaPemilik.includes(valNoAnggota)) {
-                        const pemilikTerdaftar = dataPemilik.find(item => item.no_anggota === valNoAnggota);
-                        if (!pemilikTerdaftar) return;
+                    btnProceed.removeClass('disabled');
 
-                        // Sinkron input manual
-                        $(pemilikSelector).val(pemilikTerdaftar.pemilik);
-                        $(noAnggotaSelector).val(pemilikTerdaftar.no_anggota);
-                        $(cabangSelector).val(pemilikTerdaftar.cabang);
+                    // Hanya daftarkan sekali
+                    if (!btnProceed.data('initialized')) {
+                        btnProceed.data('initialized', true);
 
-                        if (window.selectizeElement) {
-                            window.selectizeElement.clear();
-                            window.selectizeElement.addOption({
-                                value: pemilikTerdaftar.pemilik,
-                                text: `${pemilikTerdaftar.pemilik} - ${pemilikTerdaftar.no_anggota}`,
-                                no_anggota: pemilikTerdaftar.no_anggota,
-                                cabang: pemilikTerdaftar.cabang
-                            });
-                            window.selectizeElement.refreshOptions(false);
-                            window.selectizeElement.setValue(pemilikTerdaftar.pemilik);
-                        }
+                        btnProceed.on('click', function(e) {
+                            e.preventDefault();
+                            $('.change-modal').addClass('modal-lg');
 
-                        msgDaftar.text('Anggota ini sudah terdaftar.').css({
-                            color: 'green',
-                            fontSize: '12px'
+                            if (!btnProceedClicked) {
+                                btnProceedClicked = true;
+                                btnProceed.text('Simpan');
+
+                                if (noAnggotaPemilik.includes(valNoAnggota)) {
+                                    const pemilikTerdaftar = dataPemilik.find(item => item
+                                        .no_anggota === valNoAnggota);
+                                    if (!pemilikTerdaftar) return;
+
+                                    // Sinkronisasi input
+                                    $(pemilikSelector).val(pemilikTerdaftar.pemilik);
+                                    $(noAnggotaSelector).val(pemilikTerdaftar.no_anggota);
+                                    cabangSelectize.setValue(pemilikTerdaftar.cabang);
+                                    setTempCabang(pemilikTerdaftar.cabang);
+
+                                    if (window.selectizeElement) {
+                                        window.selectizeElement.clear();
+                                        window.selectizeElement.addOption({
+                                            value: pemilikTerdaftar.pemilik,
+                                            text: `${pemilikTerdaftar.pemilik} - ${pemilikTerdaftar.no_anggota}`,
+                                            no_anggota: pemilikTerdaftar.no_anggota,
+                                            cabang: pemilikTerdaftar.cabang
+                                        });
+                                        window.selectizeElement.refreshOptions(false);
+                                        window.selectizeElement.setValue(pemilikTerdaftar.pemilik);
+                                    }
+
+                                    msgDaftar.text('Anggota ini sudah terdaftar.').css({
+                                        color: 'green',
+                                        fontSize: '12px'
+                                    });
+
+                                    const pohonPemilik = dataPohon.filter(item => item
+                                        .no_anggota === valNoAnggota);
+                                    tableDataListPohon.empty();
+                                    pohonPemilik.forEach((item) => {
+                                        const row = `
+                                        <tr>
+                                            <td>${item.no_induk_pohon}</td>
+                                            <td>
+                                                <div class="d-grid" style="width: 250px">
+                                                    <span>${item.nama_pohon}</span>
+                                                    <small><b>(${item.nama_lokal}/${item.nama_latin})</b></small>
+                                                </div>
+                                            </td>
+                                            <td class="text-capitalize">${item.tingkatan}</td>
+                                            <td>${item.ukuran}</td>
+                                            <td>${item.masa_pemeliharaan}</td>
+                                        </tr>`;
+                                        tableDataListPohon.append(row);
+                                    });
+
+                                    $('#data-list-pohon-pemilik').show();
+                                    $('#data-pohon').hide();
+                                } else {
+                                    msgDaftar.text('');
+                                    tableDataListPohon.empty();
+                                    $('#data-list-pohon-pemilik').hide();
+                                    $('#data-pohon').show();
+                                }
+
+                                // Setelah klik pertama, ubah tipe agar bisa submit di klik berikutnya
+                                btnProceed.prop('type', 'submit');
+                            } else {
+                                $('#form-create-bonsai').submit();
+                            }
                         });
-
-                        const pohonPemilik = dataPohon.filter(item => item.no_anggota === valNoAnggota);
-
-                        tableDataListPohon.empty();
-                        pohonPemilik.forEach((item) => {
-                            const row = `
-                            <tr>
-                                <td>${item.no_induk_pohon}</td>
-                                <td>
-                                    <div class="d-grid" style="width: 250px">
-                                        <span>${item.nama_pohon}</span>
-                                        <small><b>(${item.nama_lokal}/${item.nama_latin})</b></small>
-                                    </div>
-                                </td>
-                                <td>${item.ukuran}</td>
-                                <td>${item.masa_pemeliharaan}</td>
-                            </tr>`;
-                            tableDataListPohon.append(row);
-                        });
-
-                        $('#data-list-pohon-pemilik').show();
-                        $('#data-pohon').hide();
-                    } else {
-                        msgDaftar.text('');
-                        tableDataListPohon.empty();
-                        $('#data-list-pohon-pemilik').hide();
-                        $('#data-pohon').show();
                     }
                 } else {
                     msgDaftar.text('');
                     tableDataListPohon.empty();
                     $('#data-list-pohon-pemilik').hide();
                     $('#data-pohon').hide();
+                    btnProceed.addClass('disabled');
+                    btnProceed.text('Lanjut');
+                    btnProceed.prop('type', 'button');
+                    btnProceedClicked = false;
                 }
             });
 
@@ -520,7 +605,6 @@
             });
 
             $(document).on('click', '.btn-edit', function() {
-                // Ambil semua data dari atribut data-*
                 const id = $(this).data('id');
                 const slug = $(this).data('slug');
                 const nama = $(this).data('nama');
@@ -532,8 +616,8 @@
                 const ukuran_1 = $(this).data('ukuran_1');
                 const ukuran_2 = $(this).data('ukuran_2');
                 const format_ukuran = $(this).data('format_ukuran');
+                const tingkatan = $(this).data('tingkatan');
 
-                // Isi form edit di modal
                 $('#form-edit-bonsai').attr('action', '/master/bonsai/' + slug);
                 $('#edit_id').val(id);
                 $('#edit_slug').val(slug);
@@ -541,17 +625,16 @@
                 $('#edit_nama_lokal').val(nama_lokal);
                 $('#edit_nama_latin').val(nama_latin);
                 $('#edit_no_induk_pohon').val(no_induk_pohon);
-
                 $('#edit_ukuran_1').val(ukuran_1);
                 $('#edit_ukuran_2').val(ukuran_2);
                 $('#edit_format_ukuran').val(format_ukuran);
+                $('#edit_tingkatan').val(tingkatan);
 
-                // Pisah masa_pemeliharaan "6 bulan" jadi 2 input
                 const masaSplit = masa_pemeliharaan.split(" ");
                 $('#edit_masa_pemeliharaan').val(parseInt(masaSplit[0]));
                 $('#edit_format_masa').val(masaSplit[1] || 'bulan');
             });
-
         });
     </script>
+
 @endsection

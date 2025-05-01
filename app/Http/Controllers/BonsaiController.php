@@ -34,7 +34,9 @@ class BonsaiController extends Controller
             return $item['pemilik'] . '-' . $item['no_anggota'] . '-' . $item['cabang'];
         });
 
-        return view('admin.bonsai.index', compact('dataRender', 'pemilik'));
+        $province = config('province.obj');
+        // dd($province);
+        return view('admin.bonsai.index', compact('dataRender', 'pemilik', 'province'));
     }
 
     /**
