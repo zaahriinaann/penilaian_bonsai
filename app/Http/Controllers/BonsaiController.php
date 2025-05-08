@@ -78,20 +78,20 @@ class BonsaiController extends Controller
 
             // Ganti nilai null dengan '-'
             $data = Arr::map($data, fn($value) => $value ?? '-');
-
+            $data['tingkatan'] = 'madya';
             // Buat akun user jika belum pernah daftar
             if ($request->has('pernahDaftar')) {
                 unset($data['pernahDaftar']);
                 try {
-                    $existingUser = User::where('no_anggota', $data['pemilik'])->first();
+                    $existingUser = User::where('no_anggota', $data['no_anggota'])->first();
                     if (!$existingUser) {
                         User::create([
-                            'name' => $request['pemilik'],
-                            'username' => $request['pemilik'],
-                            'password' => bcrypt($request['no_anggota']),
+                            'name' => $data['pemilik'],
+                            'username' => $data['pemilik'],
+                            'password' => bcrypt($data['no_anggota']),
                             'role' => 'anggota',
-                            'no_anggota' => $request['no_anggota'],
-                            'cabang' => $request['cabang'],
+                            'no_anggota' => $data['no_anggota'],
+                            'cabang' => $data['cabang'],
                         ]);
                     }
                 } catch (\Exception $e) {
@@ -154,6 +154,7 @@ class BonsaiController extends Controller
             $data['pemilik'] = $bonsai->pemilik;
             $data['cabang'] = $bonsai->cabang;
             $data['no_anggota'] = $bonsai->no_anggota;
+            $data['tingkatan'] = 'madya';
 
             // Update
             $bonsai->update($data);

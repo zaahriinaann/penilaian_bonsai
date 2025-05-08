@@ -4,6 +4,7 @@ use App\Http\Controllers\BonsaiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
+use App\Http\Controllers\PenilaianController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,9 @@ Route::middleware(['auth', 'web'])->group(function () {
         ]);
         Route::resource('bonsai', BonsaiController::class)->parameters([
             'bonsai' => 'slug'
+        ]);
+        Route::resource('psenilaian', PenilaianController::class)->parameters([
+            'penilaian' => 'slug'
         ]);
     });
 });

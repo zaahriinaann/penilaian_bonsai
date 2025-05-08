@@ -141,7 +141,7 @@
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="cabang" class="form-label">PPBI Cabang</label>
-                                    <select id="cabang" name="cabang"></select>
+                                    <input type="text" id="cabang" name="cabang"></input>
                                     {{-- <input type="text" class="form-control" name="cabang" id="cabang"
                                         aria-describedby="cabang" title="PPBI Cabang" placeholder="Masukkan PPBI Cabang"> --}}
                                 </div>
@@ -161,6 +161,7 @@
                                 </div>
                             </div>
                             <div id="data-list-pohon-pemilik" style="display: none;">
+                                <input type="hidden" name="cabang" id="cabang">
                                 <div class="col-md-12 mb-3" style="border-top: 1px dashed #ABABAB; padding-top: 10px;">
                                     <span class="fw-bold fs-5">Data List Pohon Pemilik</span>
                                 </div>
@@ -202,7 +203,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-12 mb-3">
+                                {{-- <div class="col-md-12 mb-3">
                                     <label for="tingkatan" class="form-label">Tingkatan</label>
                                     <select name="tingkatan" id="tingkatan" class="form-select form-control">
                                         <option selected disabled>Pilih Tingkatan</option>
@@ -210,7 +211,7 @@
                                         <option value="madya">Madya</option>
                                         <option value="utama">Utama</option>
                                     </select>
-                                </div>
+                                </div> --}}
                                 <div class="col-md-12 mb-3">
                                     <label for="ukuran" class="form-label">Ukuran Pohon</label>
                                     <div class="input-group">
@@ -289,14 +290,14 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-12 mb-3">
+                            {{-- <div class="col-md-12 mb-3">
                                 <label for="tingkatan" class="form-label">Tingkatan</label>
                                 <select name="tingkatan" id="edit_tingkatan" class="form-select form-control">
                                     <option value="pratama">Pratama</option>
                                     <option value="madya">Madya</option>
                                     <option value="utama">Utama</option>
                                 </select>
-                            </div>
+                            </div> --}}
 
                             <!-- Ukuran -->
                             <div class="col-md-12 mb-3">
@@ -422,6 +423,7 @@
                         if (selectedOption) {
                             const valNoAnggota = selectedOption.no_anggota;
                             const valCabang = selectedOption.cabang;
+                            $('#cabang').val(valCabang);
 
                             $(pemilikSelector).val(value);
                             $(noAnggotaSelector).val(valNoAnggota);
@@ -443,18 +445,19 @@
                                 tableDataListPohon.empty();
                                 pohonPemilik.forEach((item) => {
                                     const row = `
-                                <tr>
-                                    <td>${item.no_induk_pohon}</td>
-                                    <td>
-                                        <div class="d-grid" style="width: 250px">
-                                            <span>${item.nama_pohon}</span>
-                                            <small><b>(${item.nama_lokal}/${item.nama_latin})</b></small>
-                                        </div>
-                                    </td>
-                                    <td class="text-capitalize">${item.tingkatan}</td>
-                                    <td>${item.ukuran}</td>
-                                    <td>${item.masa_pemeliharaan}</td>
-                                </tr>`;
+                                        <tr>
+                                            <td>${item.no_induk_pohon}</td>
+                                            <td>
+                                                <div class="d-grid" style="width: 250px">
+                                                    <span>${item.nama_pohon}</span>
+                                                    <small><b>(${item.nama_lokal}/${item.nama_latin})</b></small>
+                                                </div>
+                                            </td>
+                                            <td class="text-capitalize">${item.tingkatan}</td>
+                                            <td>${item.ukuran}</td>
+                                            <td>${item.masa_pemeliharaan}</td>
+                                        </tr>
+                                        `;
                                     tableDataListPohon.append(row);
                                 });
 
