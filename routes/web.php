@@ -26,7 +26,7 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::resource('bonsai', BonsaiController::class)->parameters([
             'bonsai' => 'slug'
         ]);
-        Route::resource('psenilaian', PenilaianController::class)->parameters([
+        Route::resource('penilaian', PenilaianController::class)->parameters([
             'penilaian' => 'slug'
         ]);
     });

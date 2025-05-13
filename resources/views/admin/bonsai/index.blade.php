@@ -44,8 +44,8 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <img class="rounded-circle"
-                                    src="{{ $item->foto ?? asset('assets/media/avatars/blank.png') }}" alt="Foto Juri"
-                                    style="width: 75px; height: 75px; object-fit: cover;">
+                                    src="{{ asset('images/bonsai/' . $item->foto) ?? asset('assets/media/avatars/blank.png') }}"
+                                    alt="Foto Juri" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>{{ $item->no_induk_pohon }}</td>
                             <td>
@@ -77,8 +77,8 @@
                                         data-pemilik="{{ $item->pemilik }}" data-no_anggota="{{ $item->no_anggota }}"
                                         data-cabang="{{ $item->cabang }}" data-ukuran_1="{{ $item->ukuran_1 }}"
                                         data-ukuran_2="{{ $item->ukuran_2 }}" data-tingkatan="{{ $item->tingkatan }}"
-                                        data-format_ukuran="{{ $item->format_ukuran }}" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_bonsai" title="Edit data">
+                                        data-format_ukuran="{{ $item->format_ukuran }}" data-foto="{{ $item->foto }}"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_bonsai" title="Edit data">
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
@@ -90,7 +90,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center no-data">Data tidak tersedia</td>
+                            <td colspan="11" class="text-center no-data">Data tidak tersedia</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -112,6 +112,7 @@
                     @csrf
                     @method('POST')
                     <div class="modal-body">
+                        <input type="text" name="cabang" id="cabang-input">
                         <div class="row">
                             <div class="col-md-12 mb-3 d-flex justify-content-between align-items-center">
                                 <span class="fw-bold fs-5">Data Pemilik</span>
@@ -141,9 +142,7 @@
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="cabang" class="form-label">PPBI Cabang</label>
-                                    <input type="text" id="cabang" name="cabang"></input>
-                                    {{-- <input type="text" class="form-control" name="cabang" id="cabang"
-                                        aria-describedby="cabang" title="PPBI Cabang" placeholder="Masukkan PPBI Cabang"> --}}
+                                    <select type="text" id="cabang"></select>
                                 </div>
                                 <span class="msg-daftar"></span>
                             </div>
@@ -161,7 +160,6 @@
                                 </div>
                             </div>
                             <div id="data-list-pohon-pemilik" style="display: none;">
-                                <input type="hidden" name="cabang" id="cabang">
                                 <div class="col-md-12 mb-3" style="border-top: 1px dashed #ABABAB; padding-top: 10px;">
                                     <span class="fw-bold fs-5">Data List Pohon Pemilik</span>
                                 </div>
@@ -173,8 +171,7 @@
                                 </div>
                                 <div class="row">
                                     <button type="button" class="btn btn-sm btn-primary" id="tambah-pohon-baru">Tambah
-                                        Pohon
-                                        Baru</button>
+                                        Pohon Baru</button>
                                 </div>
                             </div>
                             <div id="data-pohon" style="display: none;">
@@ -244,6 +241,10 @@
                                             <option value="tahun">tahun</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="foto" class="form-label">Foto Bonsai</label>
+                                    <input type="file" class="form-control" name="foto" id="foto">
                                 </div>
                             </div>
                         </div>
@@ -330,6 +331,11 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="foto" class="form-label">Foto Bonsai</label>
+                                <input type="file" class="form-control" name="foto" id="foto">
+                                <input type="hidden" name="foto_lama" id="foto_lama">
+                            </div>
                         </div>
                     </div>
 
@@ -351,6 +357,7 @@
             const pemilikSelector = '#pemilik';
             const noAnggotaSelector = '#no_anggota';
             const cabangSelector = '#cabang';
+            const cabangInput = '#cabang-input';
             const tableDataListPohon = $('#table-data-list-pohon');
             const msgDaftar = $('.msg-daftar');
             const btnProceed = $('.btn-proceed'); // Define btnProceed properly
@@ -423,11 +430,10 @@
                         if (selectedOption) {
                             const valNoAnggota = selectedOption.no_anggota;
                             const valCabang = selectedOption.cabang;
-                            $('#cabang').val(valCabang);
-
+                            $(cabangSelector).val(valCabang);
+                            $(cabangInput).val(valCabang);
                             $(pemilikSelector).val(value);
                             $(noAnggotaSelector).val(valNoAnggota);
-                            $(cabangSelector).val(valCabang);
 
                             const pemilikTerdaftar = dataPemilik.find(item => item
                                 .no_anggota === valNoAnggota);
@@ -479,7 +485,7 @@
                             // Jika tidak ada yang dipilih
                             $(pemilikSelector).val('');
                             $(noAnggotaSelector).val('');
-                            $(cabangSelector).val('');
+                            $(cabangInput).val('');
                             msgDaftar.text('');
                             tableDataListPohon.empty();
                             $('#data-list-pohon-pemilik').hide();
@@ -497,11 +503,13 @@
                 valueField: 'name',
                 labelField: 'name',
                 searchField: 'name',
+                maxItems: 1,
                 options: province,
                 onInitialize: function() {
                     this.on('change', function(value) {
                         const provinceName = this.options[this.getValue()]?.name || '';
                         $(this.$control_input).val(provinceName || tempCabang || '');
+                        $(cabangInput).val(provinceName || tempCabang || '');
                     });
                 }
             })[0].selectize;
@@ -511,6 +519,8 @@
                 const valPemilik = $(pemilikSelector).val();
                 const valNoAnggota = $(noAnggotaSelector).val();
                 const valCabang = $(cabangSelector).val();
+                $(cabangInput).val(valCabang);
+
 
                 if (valPemilik && valNoAnggota && valCabang) {
                     btnProceed.removeClass('disabled');
@@ -620,6 +630,7 @@
                 const ukuran_2 = $(this).data('ukuran_2');
                 const format_ukuran = $(this).data('format_ukuran');
                 const tingkatan = $(this).data('tingkatan');
+                const foto_lama = $(this).data('foto');
 
                 $('#form-edit-bonsai').attr('action', '/master/bonsai/' + slug);
                 $('#edit_id').val(id);
@@ -632,6 +643,7 @@
                 $('#edit_ukuran_2').val(ukuran_2);
                 $('#edit_format_ukuran').val(format_ukuran);
                 $('#edit_tingkatan').val(tingkatan);
+                $('#foto_lama').val(foto_lama);
 
                 const masaSplit = masa_pemeliharaan.split(" ");
                 $('#edit_masa_pemeliharaan').val(parseInt(masaSplit[0]));

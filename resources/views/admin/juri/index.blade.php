@@ -41,8 +41,8 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <img class="rounded-circle"
-                                    src="{{ $item->foto ?? asset('assets/media/avatars/blank.png') }}" alt="Foto Juri"
-                                    style="width: 75px; height: 75px; object-fit: cover;">
+                                    src="{{ asset('images/juri/' . $item->foto) ?? asset('assets/media/avatars/blank.png') }}"
+                                    alt="Foto Juri" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>
                                 <div class="align-items-center d-flex gap-2">
@@ -65,8 +65,8 @@
                                         data-nama="{{ $item->nama_juri }}" data-email="{{ $item->email }}"
                                         data-no_telepon="{{ $item->no_telepon }}" data-status="{{ $item->status }}"
                                         data-foto="{{ $item->foto }}" data-no_induk="{{ $item->no_induk_juri }}"
-                                        data-username="{{ $item->username }}" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_juri" title="Edit data">
+                                        data-username="{{ $item->username }}" data-foto="{{ $item->foto }}"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_juri" title="Edit data">
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
@@ -184,6 +184,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="edit_foto" class="form-label">Foto Juri (Opsional)</label>
                                 <input type="file" class="form-control" name="foto" id="edit_foto">
+                                <input type="hidden" name="foto_lama" id="edit_foto_lama">
                             </div>
                             <div class="col-md-12 mb-3">
                                 <div class="form-check mb-2">
@@ -237,6 +238,7 @@
                 $('#edit_no_telepon').val(btn.data('no_telepon'));
                 $('#edit_status_juri').val(btn.data('status'));
                 $('#edit_username').val(btn.data('username'));
+                $('#edit_foto_lama').val(btn.data('foto'));
             });
 
             // Toggle password form visibility

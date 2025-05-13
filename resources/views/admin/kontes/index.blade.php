@@ -40,7 +40,7 @@
                             <td class="list-slug" hidden>{{ $item->slug }}</td>
                             <td>{{ $loop->iteration }}</td>
                             <td>
-                                <img src="https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg"
+                                <img src="{{ asset('images/kontes/' . $item->poster_kontes) ?? 'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg' }}"
                                     alt="Poster Kontes" class="rounded"
                                     style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
@@ -70,7 +70,8 @@
                                         data-tingkat="{{ $item->tingkat_kontes }}"
                                         data-peserta="{{ $item->jumlah_peserta }}"
                                         data-harga="{{ $item->harga_tiket_kontes }}" data-slug="{{ $item->slug }}"
-                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_kontes" title="Edit data">
+                                        data-poster="{{ $item->poster_kontes }}" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_kontes" title="Edit data">
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
 
@@ -262,6 +263,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="edit_poster_kontes" class="form-label">Poster Kontes (Opsional)</label>
                                 <input type="file" class="form-control" name="poster_kontes" id="edit_poster_kontes">
+                                <input type="hidden" name="poster_kontes_lama" id="edit_poster_kontes_lama">
                             </div>
                         </div>
                     </div>
@@ -518,6 +520,7 @@
                 const tingkat = btn.data('tingkat')?.toString().trim().toLowerCase();
                 const link = btn.data('link') || '';
                 const harga = btn.data('harga') || 0;
+                const poster = btn.data('poster') || '';
 
                 $('#form_edit_kontes').attr('action', '/master/kontes/' + slug);
                 $('#edit_kontes_slug').val(slug);
@@ -528,6 +531,7 @@
                 $('#edit_tanggal_selesai_kontes').val(tanggalSelesai);
                 $('#edit_jumlah_peserta').val(peserta);
                 $('#edit_tingkat_kontes').val(tingkat).trigger('change');
+                $('#edit_poster_kontes_lama').val(poster);
 
                 $('#edit_tingkat_kontes').on('change', function() {
                     const tingkat = this.value;

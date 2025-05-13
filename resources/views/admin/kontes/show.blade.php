@@ -11,7 +11,7 @@
         <div class="card-body">
             <h5>Data Kontes {{ $kontes->nama_kontes }}</h5>
             <div class="d-flex gap-5">
-                <img src="https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg"
+                <img src="{{ asset($kontes->poster_kontes) ?? 'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg' }}"
                     alt="Poster Kontes" class="w-25 rounded">
                 <table class="table table-bordered table-striped table-hover align-middle">
                     <tr>
