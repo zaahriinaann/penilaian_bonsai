@@ -55,6 +55,16 @@ class BonsaiController extends Controller
         try {
             $data = $request->all();
 
+            if($request->has('cabang2')){
+                $data['cabang'] = $data['cabang2'];
+                unset($data['cabang2']);
+            }
+            
+            if($request->has('cabang-input')){
+                $data['cabang'] = $data['cabang-input'];
+                unset($data['cabang-input']);
+            }
+
             // Gabungkan masa pemeliharaan
             $data['masa_pemeliharaan'] = "{$data['masa_pemeliharaan']} {$data['format_masa']}";
 
@@ -99,6 +109,8 @@ class BonsaiController extends Controller
                 }
             }
 
+            $data['foto'] = $this->handleImageUpload($request, 'store');
+            // dd($data);
             // Simpan data bonsai
             $bonsai = Bonsai::create($data);
 
@@ -156,6 +168,9 @@ class BonsaiController extends Controller
             $data['no_anggota'] = $bonsai->no_anggota;
             $data['tingkatan'] = 'madya';
 
+            $data['foto'] = $this->handleImageUpload($request, 'update');
+            // dd($data);
+            unset($data['foto_lama']);
             // Update
             $bonsai->update($data);
 
@@ -190,5 +205,36 @@ class BonsaiController extends Controller
                 'message' => 'Gagal menghapus data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    protected function handleImageUpload($request, $typeInput)
+    {
+        if ($request->hasFile('foto') && $typeInput) {
+            $image = $request->file('foto');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('images/bonsai');
+
+            // Buat folder jika belum ada (opsional)
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            if ($typeInput === 'store') {
+                $image->move($destinationPath, $imageName);
+                return $imageName;
+            } elseif ($typeInput === 'update') {
+                $fotoLama = $request->input('foto_lama');
+                $oldImagePath = $destinationPath . '/' . $fotoLama;
+
+                if (!empty($fotoLama) && file_exists($oldImagePath) && is_file($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+
+                $image->move($destinationPath, $imageName);
+                return $imageName;
+            }
+        }
+
+        return null;
     }
 }

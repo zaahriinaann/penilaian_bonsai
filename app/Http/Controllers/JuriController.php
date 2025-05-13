@@ -59,6 +59,8 @@ class JuriController extends Controller
             // Password default = no induk
             $data['password'] = bcrypt($data['no_induk_juri']);
 
+            $data['foto'] = $this->handleImageUpload($request, 'store');
+
             // Simpan ke DB
             $juri = Juri::create($data);
 
@@ -124,6 +126,10 @@ class JuriController extends Controller
                 $data['password'] = bcrypt($data['password']);
             }
 
+            // dd($data);
+            $data['foto'] = $this->handleImageUpload($request, 'update');
+            unset($data['foto_lama']);
+
             // Update data juri di database
             $juri->update($data);
 
@@ -160,5 +166,36 @@ class JuriController extends Controller
                 'message' => 'Gagal menghapus data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    protected function handleImageUpload($request, $typeInput)
+    {
+        if ($request->hasFile('foto') && $typeInput) {
+            $image = $request->file('foto');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('images/juri');
+
+            // Buat folder jika belum ada (opsional)
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            if ($typeInput === 'store') {
+                $image->move($destinationPath, $imageName);
+                return $imageName;
+            } elseif ($typeInput === 'update') {
+                $fotoLama = $request->input('foto_lama');
+                $oldImagePath = $destinationPath . '/' . $fotoLama;
+
+                if (!empty($fotoLama) && file_exists($oldImagePath) && is_file($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+
+                $image->move($destinationPath, $imageName);
+                return $imageName;
+            }
+        }
+
+        return null;
     }
 }

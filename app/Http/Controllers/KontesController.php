@@ -66,7 +66,11 @@ class KontesController extends Controller
             ) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
-            // dd($data);
+
+            // Handle image dengan function handleImageUpload
+            $data['poster_kontes'] = $this->handleImageUpload($request, 'store');
+
+            dd($data);
             // Simpan data
             $kontes = Kontes::create($data);
 
@@ -123,6 +127,8 @@ class KontesController extends Controller
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
 
+            $data['poster_kontes'] = $this->handleImageUpload($request, 'update');
+            unset($data['poster_kontes_lama']);
             $kontes->update($data);
 
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
@@ -156,5 +162,35 @@ class KontesController extends Controller
                 'message' => 'Gagal menghapus data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    protected function handleImageUpload($request, $typeInput)
+    {
+        if ($request->hasFile('poster_kontes') && $typeInput) {
+            $image = $request->file('poster_kontes');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('images/kontes');
+
+            // Buat folder jika belum ada (opsional)
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            if ($typeInput === 'store') {
+                $image->move($destinationPath, $imageName);
+                return $imageName;
+            } elseif ($typeInput === 'update') {
+                $fotoLama = $request->input('poster_kontes_lama');
+                $oldImagePath = $destinationPath . '/' . $fotoLama;
+
+                if (!empty($fotoLama) && file_exists($oldImagePath) && is_file($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+
+                $image->move($destinationPath, $imageName);
+                return $imageName;
+            }
+        }
+        return null;
     }
 }

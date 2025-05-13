@@ -24,6 +24,7 @@ return new class extends Migration
             $table->bigInteger('limit_peserta');
             $table->bigInteger('harga_tiket_kontes');
             $table->string('status')->default(1);
+            $table->string('poster_kontes')->nullable();
             $table->timestamps();
             $table->softDeletes()->index();
         });
