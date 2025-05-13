@@ -90,7 +90,7 @@
 
             setTimeout(() => {
                 $('.custom-left-alert').fadeOut();
-            }, 5000);
+            }, 4000);
 
             $('#search-input').on('keyup', function() {
                 const val = this.value.toLowerCase();
