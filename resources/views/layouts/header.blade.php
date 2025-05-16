@@ -46,22 +46,27 @@
                         // Menu Dropdown
                         $dropdownMaster = [
                             [
-                                'judul' => 'Kontes Bonsai',
-                                'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
-                                'link' => '/master/kontes',
+                                'judul' => 'Peserta',
+                                'description' => 'Anda dapat mengelola peserta yang hadir pada kontes, serta menambahkan peserta baru.',
+                                'link' => '/master/peserta',
                             ],
                             [
-                                'judul' => 'Juri Kontes',
-                                'description' => 'Anda dapat mengelola siapa saja juri yang akan menjadi juri pada kontes, serta menambahkan dan mengubah juri baru.',
-                                'link' => '/master/juri',
-                            ],
-                            [
-                                'judul' => 'Bonsai Peserta',
+                                'judul' => 'Bonsai',
                                 'description' => 'Anda dapat mengelola bonsai milik peserta yang hadir pada kontes, serta menambahkan bonsai baru yang akan diikutkan.',
                                 'link' => '/master/bonsai',
                             ],
                             [
-                                'judul' => 'Penilaian Bonsai',
+                                'judul' => 'Kontes',
+                                'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
+                                'link' => '/master/kontes',
+                            ],
+                            [
+                                'judul' => 'Juri',
+                                'description' => 'Anda dapat mengelola siapa saja juri yang akan menjadi juri pada kontes, serta menambahkan dan mengubah juri baru.',
+                                'link' => '/master/juri',
+                            ],
+                            [
+                                'judul' => 'Penilaian',
                                 'description' => 'Anda dapat mengelola penilaian bonsai milik peserta pada kontes, serta menambahkan dan mengubah penilaian baru.',
                                 'link' => '/master/penilaian',
                             ],
@@ -211,7 +216,12 @@
                             <a href="#" class="menu-link px-5">Account Settings</a>
                         </div>
                         <div class="menu-item px-5">
-                            <a href="#" class="menu-link px-5">Sign Out</a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <a onclick="event.preventDefault(); this.closest('form').submit();"
+                                    class="menu-link px-5">Sign Out</a>
+
+                            </form>
                         </div>
                         <div class="separator my-2"></div>
                         <div class="menu-item px-5">

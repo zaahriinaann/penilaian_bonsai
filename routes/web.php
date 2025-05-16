@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
 use App\Http\Controllers\PenilaianController;
+use App\Http\Controllers\PesertaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -29,5 +30,6 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::resource('penilaian', PenilaianController::class)->parameters([
             'penilaian' => 'slug'
         ]);
+        Route::resource('peserta', PesertaController::class);
     });
 });

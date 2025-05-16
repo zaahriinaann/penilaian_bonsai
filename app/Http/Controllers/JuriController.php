@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Juri;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -63,6 +64,15 @@ class JuriController extends Controller
 
             // Simpan ke DB
             $juri = Juri::create($data);
+
+            // simpan ke db user
+            $user = User::create([
+                'name' => $data['nama_juri'],
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'role' => 'juri',
+            ]);
 
             // Berikan pesan sukses setelah menyimpan data
             Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil disimpan.");
