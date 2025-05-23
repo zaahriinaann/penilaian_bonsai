@@ -79,17 +79,21 @@ class PenilaianController extends Controller
     {
         // Proses penilaian reguler (dari form matrix input)
         foreach ($request->all() as $kriteria => $himpunanSet) {
-            // Abaikan input yang bukan array (seperti _token)
             if (!is_array($himpunanSet)) continue;
 
             foreach ($himpunanSet as $huruf => $nilai) {
                 if (!empty($nilai['min']) && !empty($nilai['max'])) {
-                    Penilaian::create([
-                        'kriteria' => $kriteria,
-                        'himpunan' => $huruf,
-                        'min' => $nilai['min'],
-                        'max' => $nilai['max'],
-                    ]);
+                    Penilaian::updateOrCreate(
+                        [
+                            'kriteria' => $kriteria,
+                            'himpunan' => $huruf,
+                            'sub_kriteria' => null
+                        ],
+                        [
+                            'min' => $nilai['min'],
+                            'max' => $nilai['max'],
+                        ]
+                    );
                 }
             }
         }
@@ -98,8 +102,7 @@ class PenilaianController extends Controller
         if ($request->has('add_kriteria')) {
             $kriteria = $request->input('kriteria');
             $subKriteria = $request->input('sub_kriteria');
-
-            $hurufList = ['a', 'b', 'c', 'd'];
+            $hurufList = ['Baik_Sekali', 'Baik', 'Cukup', 'Kurang'];
 
             foreach ($hurufList as $huruf) {
                 $himpunan = $request->input("himpunan_$huruf");
@@ -107,19 +110,50 @@ class PenilaianController extends Controller
                 $max = $request->input("max_$huruf");
 
                 if (!empty($himpunan) && !empty($min) && !empty($max)) {
-                    Penilaian::create([
-                        'kriteria' => $kriteria,
-                        'sub_kriteria' => $subKriteria,
-                        'himpunan' => $himpunan,
-                        'min' => $min,
-                        'max' => $max,
-                    ]);
+                    Penilaian::updateOrCreate(
+                        [
+                            'kriteria' => $kriteria,
+                            'sub_kriteria' => $subKriteria,
+                            'himpunan' => $himpunan,
+                        ],
+                        [
+                            'min' => $min,
+                            'max' => $max,
+                        ]
+                    );
+                }
+            }
+        }
+
+        if ($request->has('add_sub_kriteria')) {
+            $kriteria = $request->input('kriteria');
+            $subKriteria = $request->input('sub_kriteria');
+            $hurufList = ['Baik_Sekali', 'Baik', 'Cukup', 'Kurang'];
+
+            foreach ($hurufList as $huruf) {
+                $himpunan = $request->input("himpunan_$huruf");
+                $min = $request->input("min_$huruf");
+                $max = $request->input("max_$huruf");
+
+                if (!empty($himpunan) && !empty($min) && !empty($max)) {
+                    Penilaian::updateOrCreate(
+                        [
+                            'kriteria' => $kriteria,
+                            'sub_kriteria' => $subKriteria,
+                            'himpunan' => $himpunan,
+                        ],
+                        [
+                            'min' => $min,
+                            'max' => $max,
+                        ]
+                    );
                 }
             }
         }
 
         return redirect()->back()->with('success', 'Data penilaian berhasil disimpan!');
     }
+
 
 
     /**
@@ -149,8 +183,24 @@ class PenilaianController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Penilaian $penilaian)
+    public function destroy(Request $request, Penilaian $penilaian)
     {
-        //
+        // find parameter
+        $kriteria = $request->input('kriteria');
+        $subKriteria = $request->input('sub_kriteria');
+        $himpunan = $request->input('himpunan');
+
+        if ($subKriteria != null) {
+            $data = $penilaian->where('sub_kriteria', $subKriteria)->get();
+            foreach ($data as $item) {
+                $item->delete();
+            }
+            return redirect()->back()->with('success', 'Data penilaian berhasil dihapus!');
+        }
+
+        $data = $penilaian->where('kriteria', $kriteria)->where('sub_kriteria', $subKriteria)->where('himpunan', $himpunan)->first();
+        $data->delete();
+
+        return redirect()->back()->with('success', 'Data penilaian berhasil dihapus!');
     }
 }

@@ -4,7 +4,7 @@
 
 
 @section('button-toolbar')
-    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria">
+    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
         Tambah Kriteria
     </button>
 @endsection
@@ -65,12 +65,13 @@
         </div>
     </div>
 
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="card">
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
 
         <div class="card-body text-capitalize">
             <h1>Penilaian</h1>
@@ -86,7 +87,14 @@
                     @php $index = 0; @endphp
 
                     @foreach ($kategori as $namaKategori => $subkriteria)
-                        <h4 class="mt-4">{{ $namaKategori }}</h4>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mt-4">{{ $namaKategori }}</h4>
+
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#modal_sub_{{ $namaKategori }}" type="button">
+                                Tambah Data {{ $namaKategori }}
+                            </button>
+                        </div>
 
                         @foreach ($subkriteria as $item)
                             @php
@@ -109,36 +117,54 @@
                                     <div class="accordion-body">
                                         <table class="table table-borderless table-hover">
                                             <tr>
-                                                <th>Himpunan</th>
-                                                <th>Min</th>
-                                                <th>Max</th>
+                                                <th class="align-middle">Himpunan</th>
+                                                <th class="align-middle text-center">Min</th>
+                                                <th class="align-middle text-center">Max</th>
+                                                <th class="align-middle">
+                                                    <button type="button" onclick="deleteAll('{{ $item }}')"
+                                                        class="btn btn-sm btn-danger w-100">
+                                                        <i class="fa fa-trash mx-0 px-0"></i> Hapus Data
+                                                        {{ $item }}
+                                                    </button>
+                                                </th>
                                             </tr>
-                                            <tr>
+                                            {{-- <tr>
                                                 <th>Semesta Pembicaraan</th>
                                                 <th colspan="3">[50 - 90]</th>
-                                            </tr>
+                                            </tr> --}}
 
                                             @foreach ($penilaiansItem as $huruf => $range)
                                                 <tr>
-                                                    <td>{{ strtoupper($huruf) }}</td>
-                                                    <td>
+                                                    <td class="align-middle">{{ strtoupper($huruf) }}</td>
+                                                    <td class="align-middle">
                                                         <input type="number" class="form-control form-control-sm"
                                                             name="{{ $slug }}[{{ $huruf }}][min]"
                                                             value="{{ $range['min'] }}" placeholder="Min">
                                                     </td>
-                                                    <td>
+                                                    <td class="align-middle">
                                                         <input type="number" class="form-control form-control-sm"
                                                             name="{{ $slug }}[{{ $huruf }}][max]"
                                                             value="{{ $range['max'] }}" placeholder="Max">
                                                     </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-danger">
-                                                            <i class="fa fa-trash"></i>
-                                                        </button>
+                                                    <td class="align-middle">
+                                                        <form action="{{ route('penilaian.destroy', true) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <input type="hidden" name="kriteria"
+                                                                value="{{ $namaKategori }}">
+                                                            <input type="hidden" name="sub_kriteria"
+                                                                value="{{ $item }}">
+                                                            <input type="hidden" name="himpunan"
+                                                                value="{{ $huruf }}">
+                                                            <button class="btn btn-sm btn-danger w-100">
+                                                                <i class="fa fa-trash mx-0 px-0"></i>
+                                                                Hapus
+                                                            </button>
+                                                        </form>
                                                     </td>
                                                 </tr>
                                             @endforeach
-
                                         </table>
                                     </div>
                                 </div>
@@ -147,7 +173,7 @@
                     @endforeach
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-4 {{ count($penilaians) < 1 ? 'd-none' : '' }}">
                     <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
                 </div>
             </form>
@@ -156,7 +182,7 @@
 
     <div class="modal fade" id="kt_modal_create_kriteria" tabindex="-1" aria-labelledby="kt_modal_create_kriteria"
         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="kt_modal_create_kriteria">Data Kriteria</h1>
@@ -179,13 +205,19 @@
                                     aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Kriteria">
                             </div>
                             <?php
-                            $himpunan = ['a', 'b', 'c', 'd'];
+                            $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
                             ?>
                             @foreach ($himpunan as $huruf)
-                                <span>Himpunan {{ $huruf }}</span>
                                 <input type="hidden" name="himpunan_{{ $huruf }}" value="{{ $huruf }}"
                                     id="">
-                                <div class="col-12 d-flex gap-1">
+                                <div class="col-12 row align-items-center">
+                                    <div class="col mb-3">
+                                        <span>Himpunan
+                                            <span class="fw-bold">
+                                                {{ $huruf }}
+                                            </span>
+                                        </span>
+                                    </div>
                                     <div class="col mb-3">
                                         <label for="min_{{ $huruf }}" class="form-label">Min</label>
                                         <input type="number" class="form-control" name="min_{{ $huruf }}"
@@ -211,8 +243,83 @@
             </div>
         </div>
     </div>
+
+    @foreach ($kategori as $namaKategori => $subkriteria)
+        <div class="modal fade" id="modal_sub_{{ $namaKategori }}" tabindex="-1"
+            aria-labelledby="modal_sub_{{ $namaKategori }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modal_sub_{{ $namaKategori }}">Data Kriteria
+                            {{ $namaKategori }}</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('penilaian.store') }}" enctype="multipart/form-data" method="POST"
+                        id="form-create-{{ $namaKategori }}">
+                        @csrf
+                        @method('POST')
+                        <input type="hidden" name="add_sub_kriteria" value="1">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="kriteria" class="form-label">Kriteria</label>
+                                    <input type="text" class="form-control" name="kriteria" id="kriteria"
+                                        aria-describedby="kriteria" title="Kriteria" placeholder="Masukkan Kriteria"
+                                        value="{{ $namaKategori }}" readonly>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
+                                    <input type="text" class="form-control" name="sub_kriteria" id="sub_kriteria"
+                                        aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Kriteria">
+                                </div>
+                                <?php
+                                $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
+                                ?>
+                                @foreach ($himpunan as $huruf)
+                                    <span>Himpunan {{ $huruf }}</span>
+                                    <input type="hidden" name="himpunan_{{ $huruf }}"
+                                        value="{{ $huruf }}" id="">
+                                    <div class="col-12 d-flex gap-1">
+                                        <div class="col mb-3">
+                                            <label for="min_{{ $huruf }}" class="form-label">Min</label>
+                                            <input type="number" class="form-control" name="min_{{ $huruf }}"
+                                                id="min_{{ $huruf }}" aria-describedby="min_{{ $huruf }}"
+                                                min="0">
+                                        </div>
+                                        <div class="col mb-3">
+                                            <label for="max_{{ $huruf }}" class="form-label">Max</label>
+                                            <input type="number" class="form-control" name="max_{{ $huruf }}"
+                                                id="max_{{ $huruf }}" aria-describedby="max_{{ $huruf }}"
+                                                min="0">
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="reset" id="reset-btn" class="btn btn-sm btn-danger"
+                                data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
+
+    <form action="{{ route('penilaian.destroy', true) }}" method="POST" id="form-delete-all">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="sub_kriteria">
+    </form>
 @endsection
 
 @section('script')
-    <script></script>
+    <script>
+        function deleteAll(e) {
+            console.log(e);
+            $('#form-delete-all').find('input[name="sub_kriteria"]').val(e);
+            $('#form-delete-all').submit();
+        }
+    </script>
 @endsection
