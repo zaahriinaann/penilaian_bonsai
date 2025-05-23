@@ -13,6 +13,10 @@ Route::get('/', function () {
     return view('auth.login');
 })->middleware('guest');
 
+Route::get('/register', function () {
+    return view('auth.register');
+})->middleware('guest');
+
 Auth::routes();
 
 Route::middleware(['auth', 'web'])->group(function () {

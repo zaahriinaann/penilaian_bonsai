@@ -115,7 +115,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Semesta Pembicaraan</th>
-                                                <th colspan="2">[50 - 90]</th>
+                                                <th colspan="3">[50 - 90]</th>
                                             </tr>
 
                                             @foreach ($penilaiansItem as $huruf => $range)
@@ -130,6 +130,11 @@
                                                         <input type="number" class="form-control form-control-sm"
                                                             name="{{ $slug }}[{{ $huruf }}][max]"
                                                             value="{{ $range['max'] }}" placeholder="Max">
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-danger">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             @endforeach
