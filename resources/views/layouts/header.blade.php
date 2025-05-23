@@ -20,7 +20,7 @@
         </a>
     </div>
     <div class="d-flex align-items-stretch justify-content-between flex-lg-grow-1">
-        {{-- Navigation --}}
+        {{-- Navigation Admin --}}
         <div class="d-flex align-items-stretch" id="kt_header_nav">
             <div class="header-menu align-items-stretch" data-kt-drawer="true" data-kt-drawer-name="header-menu"
                 data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true"
@@ -36,58 +36,77 @@
                         </a>
                     </div>
                     <div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start"
-                        class="menu-item menu-lg-down-accordion me-lg-1 {{ request()->is('master/*') ? 'here' : '' }} {{ Auth::user('role') == 'admin' ? '' : 'd-none' }}">
-                        <span class="menu-link py-3">
+                        class="menu-item menu-lg-down-accordion me-lg-1 {{ request()->is('master/*') ? 'here' : '' }}">
+                        <span class="menu-link
+                        py-3">
                             <span class="menu-title">Master</span>
                             <span class="menu-arrow d-lg-none"></span>
                         </span>
 
                         <?php
                         // Menu Dropdown
-                        $dropdownMaster = [
+                        $dropdown = [
                             [
-                                'judul' => 'Peserta',
-                                'description' => 'Anda dapat mengelola peserta yang hadir pada kontes, serta menambahkan peserta baru.',
-                                'link' => '/master/peserta',
-                            ],
-                            [
-                                'judul' => 'Bonsai',
-                                'description' => 'Anda dapat mengelola bonsai milik peserta yang hadir pada kontes, serta menambahkan bonsai baru yang akan diikutkan.',
-                                'link' => '/master/bonsai',
-                            ],
-                            [
-                                'judul' => 'Kontes',
-                                'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
-                                'link' => '/master/kontes',
-                            ],
-                            [
-                                'judul' => 'Juri',
-                                'description' => 'Anda dapat mengelola siapa saja juri yang akan menjadi juri pada kontes, serta menambahkan dan mengubah juri baru.',
-                                'link' => '/master/juri',
-                            ],
-                            [
-                                'judul' => 'Penilaian',
-                                'description' => 'Anda dapat mengelola penilaian bonsai milik peserta pada kontes, serta menambahkan dan mengubah penilaian baru.',
-                                'link' => '/master/penilaian',
+                                'menu' => 'master',
+                                'submenu' => [
+                                    [
+                                        'judul' => 'Peserta',
+                                        'description' => 'Anda dapat mengelola peserta yang hadir pada kontes, serta menambahkan peserta baru.',
+                                        'link' => '/master/peserta',
+                                        'role' => ['admin'],
+                                    ],
+                                    [
+                                        'judul' => 'Bonsai',
+                                        'description' => 'Anda dapat mengelola bonsai milik peserta yang hadir pada kontes, serta menambahkan bonsai baru yang akan diikutkan.',
+                                        'link' => '/master/bonsai',
+                                        'role' => ['admin'],
+                                    ],
+                                    [
+                                        'judul' => 'Kontes',
+                                        'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
+                                        'link' => '/master/kontes',
+                                        'role' => ['admin'],
+                                    ],
+                                    [
+                                        'judul' => 'Juri',
+                                        'description' => 'Anda dapat mengelola siapa saja juri yang akan menjadi juri pada kontes, serta menambahkan dan mengubah juri baru.',
+                                        'link' => '/master/juri',
+                                        'role' => ['admin'],
+                                    ],
+                                    [
+                                        'judul' => 'Penilaian',
+                                        'description' => 'Anda dapat mengelola penilaian bonsai milik peserta pada kontes, serta menambahkan dan mengubah penilaian baru.',
+                                        'link' => '/master/penilaian',
+                                        'role' => ['admin'],
+                                    ],
+                                ],
                             ],
                         ];
                         ?>
-                        <div
-                            class="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-rounded-0 py-lg-4 w-lg-225px">
-                            @foreach ($dropdownMaster as $dropdownItem)
-                                <div class="menu-item">
-                                    <a class="menu-link py-3" href="{{ $dropdownItem['link'] }}"
-                                        title="{{ $dropdownItem['description'] }}" data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover" data-bs-dismiss="click" data-bs-placement="right">
-                                        <span class="menu-title">Kelola {{ $dropdownItem['judul'] }}</span>
-                                    </a>
-                                </div>
-                            @endforeach
-                        </div>
+
+                        @foreach ($dropdown as $dropdownItem)
+                            <div
+                                class="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-rounded-0 py-lg-4 w-lg-225px">
+                                @foreach ($dropdownItem['submenu'] as $item)
+                                    @if (in_array(auth()->user()->role, $item['role']))
+                                        <div class="menu-item">
+                                            <a class="menu-link py-3" href="{{ $item['link'] }}"
+                                                title="{{ $item['description'] }}" data-bs-toggle="tooltip"
+                                                data-bs-trigger="hover" data-bs-dismiss="click"
+                                                data-bs-placement="right">
+                                                <span class="menu-title">Kelola {{ $item['judul'] }}</span>
+                                            </a>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endforeach
+
                     </div>
                 </div>
             </div>
         </div>
+
         {{-- Profile --}}
         <div class="d-flex align-items-stretch flex-shrink-0">
             <div class="topbar d-flex align-items-stretch flex-shrink-0">
