@@ -185,22 +185,29 @@ class PenilaianController extends Controller
      */
     public function destroy(Request $request, Penilaian $penilaian)
     {
-        // find parameter
         $kriteria = $request->input('kriteria');
         $subKriteria = $request->input('sub_kriteria');
         $himpunan = $request->input('himpunan');
 
-        if ($subKriteria != null) {
-            $data = $penilaian->where('sub_kriteria', $subKriteria)->get();
-            foreach ($data as $item) {
-                $item->delete();
-            }
-            return redirect()->back()->with('success', 'Data penilaian berhasil dihapus!');
+        // Query dasar
+        $query = $penilaian->newQuery();
+
+        if ($himpunan && $subKriteria) {
+            $query->where('himpunan', $himpunan)->where('sub_kriteria', $subKriteria);
+        } elseif ($subKriteria) {
+            $query->where('sub_kriteria', $subKriteria);
+        } elseif ($kriteria) {
+            $query->where('kriteria', $kriteria);
+        } else {
+            return redirect()->back()->with('error', 'Parameter penghapusan tidak lengkap!');
         }
 
-        $data = $penilaian->where('kriteria', $kriteria)->where('sub_kriteria', $subKriteria)->where('himpunan', $himpunan)->first();
-        $data->delete();
+        $deletedCount = $query->delete();
 
-        return redirect()->back()->with('success', 'Data penilaian berhasil dihapus!');
+        if ($deletedCount > 0) {
+            return redirect()->back()->with('success', 'Data penilaian berhasil dihapus!');
+        } else {
+            return redirect()->back()->with('warning', 'Tidak ada data yang dihapus.');
+        }
     }
 }

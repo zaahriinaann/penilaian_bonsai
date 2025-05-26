@@ -147,21 +147,12 @@
                                                             value="{{ $range['max'] }}" placeholder="Max">
                                                     </td>
                                                     <td class="align-middle">
-                                                        <form action="{{ route('penilaian.destroy', true) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <input type="hidden" name="kriteria"
-                                                                value="{{ $namaKategori }}">
-                                                            <input type="hidden" name="sub_kriteria"
-                                                                value="{{ $item }}">
-                                                            <input type="hidden" name="himpunan"
-                                                                value="{{ $huruf }}">
-                                                            <button class="btn btn-sm btn-danger w-100">
-                                                                <i class="fa fa-trash mx-0 px-0"></i>
-                                                                Hapus
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" class="btn btn-sm btn-danger w-100"
+                                                            id="delete-nilai-{{ $huruf }}-{{ $item }}"
+                                                            onclick="deleteNilai('{{ $huruf }}', '{{ $item }}')">
+                                                            <i class="fa fa-trash mx-0 px-0"></i>
+                                                            Hapus
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -311,14 +302,22 @@
         @csrf
         @method('DELETE')
         <input type="hidden" name="sub_kriteria">
+        <input type="hidden" name="himpunan">
     </form>
+
 @endsection
 
 @section('script')
     <script>
         function deleteAll(e) {
-            console.log(e);
             $('#form-delete-all').find('input[name="sub_kriteria"]').val(e);
+            $('#form-delete-all').submit();
+        }
+
+        function deleteNilai(himpunan, sub_kriteria) {
+            console.log(himpunan, sub_kriteria);
+            $('#form-delete-all').find('input[name="sub_kriteria"]').val(sub_kriteria);
+            $('#form-delete-all').find('input[name="himpunan"]').val(himpunan);
             $('#form-delete-all').submit();
         }
     </script>
