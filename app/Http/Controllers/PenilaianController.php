@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Penilaian;
 use App\Http\Controllers\Controller;
+use App\Models\HelperKriteria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -15,53 +16,65 @@ class PenilaianController extends Controller
     public function index()
     {
         $penilaians = Penilaian::all();
+        $helperKriteria = HelperKriteria::all()->map(function ($item) {
+            return [
+                'kriteria'      => $item->kriteria,
+                'sub_kriteria'  => $item->sub_kriteria,
+                'himpunan'      => $item->himpunan,
+                'min'           => $item->min,
+                'max'           => $item->max,
+            ];
+        });
 
-        $isEmpty = false;
+        $kriteria = HelperKriteria::distinct('kriteria')->pluck('kriteria')->toArray();
+
         if ($penilaians->isEmpty()) {
-            $isEmpty = true;
             return view('admin.penilaian.index', [
-                'kategori' => [],
-                'himpunan' => [],
-                'penilaians' => [],
-                'isEmpty' => $isEmpty,
+                'kategori'       => [],
+                'himpunan'       => [],
+                'penilaians'     => [],
+                'isEmpty'        => true,
+                'helperKriteria' => $helperKriteria,
+                'kriteria'       => $kriteria,
             ]);
         }
 
-        // [Kriteria => [Sub_kriteria1, Sub_kriteria2]]
-        $kategori = [];
-
-        // [slug_sub_kriteria => [A => ['min'=>x, 'max'=>y], ...]]
+        $kategori         = [];
         $penilaianGrouped = [];
-
-        // [A => [min, max], ...] – hanya satu contoh range himpunan untuk form batas input
-        $himpunanRange = [];
+        $himpunanRange    = [];
 
         foreach ($penilaians as $item) {
-            $kategori[$item->kriteria][] = $item->sub_kriteria;
+            $kategori[$item->kriteria][$item->sub_kriteria] = true;
 
             $slug = Str::slug($item->sub_kriteria, '_');
 
             $penilaianGrouped[$slug][$item->himpunan] = [
                 'min' => $item->min,
-                'max' => $item->max
+                'max' => $item->max,
             ];
-            // Catat range global (semesta pembicaraan per huruf)
-            $himpunanRange[$item->himpunan] = [$item->min, $item->max];
+
+            // Only store one representative min/max per himpunan
+            if (!isset($himpunanRange[$item->himpunan])) {
+                $himpunanRange[$item->himpunan] = [$item->min, $item->max];
+            }
         }
 
-        // Unikkan sub-kriteria per kriteria
-        foreach ($kategori as &$subs) {
-            $subs = array_unique($subs);
+        // Flatten kategori to unique sub_kriteria lists
+        foreach ($kategori as $key => $subs) {
+            $kategori[$key] = array_keys($subs);
         }
 
-        // dd($kategori, $penilaianGrouped, $himpunanRange);
+
         return view('admin.penilaian.index', [
-            'kategori' => $kategori,
-            'himpunan' => $himpunanRange,
-            'penilaians' => $penilaianGrouped,
-            'isEmpty' => $isEmpty,
+            'kategori'       => $kategori,
+            'himpunan'       => $himpunanRange,
+            'penilaians'     => $penilaianGrouped,
+            'isEmpty'        => false,
+            'helperKriteria' => $helperKriteria,
+            'kriteria'       => $kriteria,
         ]);
     }
+
 
 
     /**
@@ -75,86 +88,19 @@ class PenilaianController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, HelperKriteria $helperKriteria)
     {
-        // Proses penilaian reguler (dari form matrix input)
-        foreach ($request->all() as $kriteria => $himpunanSet) {
-            if (!is_array($himpunanSet)) continue;
+        $data = $request->only(['kriteria', 'sub_kriteria']);
+        $helperData = $helperKriteria->where('kriteria', $data['kriteria'])->get(['himpunan', 'min', 'max']);
 
-            foreach ($himpunanSet as $huruf => $nilai) {
-                if (!empty($nilai['min']) && !empty($nilai['max'])) {
-                    Penilaian::updateOrCreate(
-                        [
-                            'kriteria' => $kriteria,
-                            'himpunan' => $huruf,
-                            'sub_kriteria' => null
-                        ],
-                        [
-                            'min' => $nilai['min'],
-                            'max' => $nilai['max'],
-                        ]
-                    );
-                }
-            }
-        }
+        $penilaianData = $helperData->map(function ($item) use ($data) {
+            return array_merge($data, $item->only(['himpunan', 'min', 'max']));
+        })->toArray();
 
-        // Jika menambahkan kriteria dan sub-kriteria baru
-        if ($request->has('add_kriteria')) {
-            $kriteria = $request->input('kriteria');
-            $subKriteria = $request->input('sub_kriteria');
-            $hurufList = ['Baik_Sekali', 'Baik', 'Cukup', 'Kurang'];
-
-            foreach ($hurufList as $huruf) {
-                $himpunan = $request->input("himpunan_$huruf");
-                $min = $request->input("min_$huruf");
-                $max = $request->input("max_$huruf");
-
-                if (!empty($himpunan) && !empty($min) && !empty($max)) {
-                    Penilaian::updateOrCreate(
-                        [
-                            'kriteria' => $kriteria,
-                            'sub_kriteria' => $subKriteria,
-                            'himpunan' => $himpunan,
-                        ],
-                        [
-                            'min' => $min,
-                            'max' => $max,
-                        ]
-                    );
-                }
-            }
-        }
-
-        if ($request->has('add_sub_kriteria')) {
-            $kriteria = $request->input('kriteria');
-            $subKriteria = $request->input('sub_kriteria');
-            $hurufList = ['Baik_Sekali', 'Baik', 'Cukup', 'Kurang'];
-
-            foreach ($hurufList as $huruf) {
-                $himpunan = $request->input("himpunan_$huruf");
-                $min = $request->input("min_$huruf");
-                $max = $request->input("max_$huruf");
-
-                if (!empty($himpunan) && !empty($min) && !empty($max)) {
-                    Penilaian::updateOrCreate(
-                        [
-                            'kriteria' => $kriteria,
-                            'sub_kriteria' => $subKriteria,
-                            'himpunan' => $himpunan,
-                        ],
-                        [
-                            'min' => $min,
-                            'max' => $max,
-                        ]
-                    );
-                }
-            }
-        }
+        Penilaian::insert($penilaianData);
 
         return redirect()->back()->with('success', 'Data penilaian berhasil disimpan!');
     }
-
-
 
     /**
      * Display the specified resource.

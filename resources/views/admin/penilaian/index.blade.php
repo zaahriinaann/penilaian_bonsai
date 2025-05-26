@@ -83,7 +83,6 @@
     <div class="card">
         <div class="card-header">
             <h1 class="card-title">Kelola Kriteria Penilaian</h1>
-
         </div>
         <div class="card-body text-capitalize">
             @if ($isEmpty)
@@ -148,14 +147,16 @@
                                                 <tr>
                                                     <td class="align-middle">{{ strtoupper($huruf) }}</td>
                                                     <td class="align-middle">
-                                                        <input type="number" class="form-control form-control-sm"
+                                                        <input type="number"
+                                                            class="form-control form-control-sm text-center w-25 mx-auto"
                                                             name="{{ $slug }}[{{ $huruf }}][min]"
-                                                            value="{{ $range['min'] }}" placeholder="Min">
+                                                            value="{{ $range['min'] }}" readonly placeholder="Min">
                                                     </td>
                                                     <td class="align-middle">
-                                                        <input type="number" class="form-control form-control-sm"
+                                                        <input type="number"
+                                                            class="form-control form-control-sm text-center w-25 mx-auto"
                                                             name="{{ $slug }}[{{ $huruf }}][max]"
-                                                            value="{{ $range['max'] }}" placeholder="Max">
+                                                            value="{{ $range['max'] }}" readonly placeholder="Max">
                                                     </td>
                                                     <td class="align-middle">
                                                         <button type="button" class="btn btn-sm btn-danger w-100"
@@ -199,12 +200,12 @@
                             <div class="col-md-12 mb-3">
                                 <label for="kriteria" class="form-label">Kriteria</label>
                                 <select class="form-select" name="kriteria" id="kriteria" aria-describedby="kriteria"
-                                    title="Kriteria">
+                                    title="Kriteria" onchange="changeKriteria()">
                                     <option value="" disabled selected>Pilih Kriteria</option>
-                                    <option value="Penampilan">Penampilan</option>
-                                    <option value="Gerak Dasar">Gerak Dasar</option>
-                                    <option value="Keserasian">Keserasian</option>
-                                    <option value="Kematangan">Kematangan</option>
+                                    @foreach ($kriteria as $itemKriteria)
+                                        <option value="{{ $itemKriteria }}">{{ $itemKriteria }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-12 mb-3">
@@ -218,7 +219,8 @@
                             @foreach ($himpunan as $huruf)
                                 <input type="hidden" name="himpunan_{{ $huruf }}" value="{{ $huruf }}"
                                     id="">
-                                <div class="col-12 row align-items-center">
+                                <div class="col-12 row align-items-center himpunan-set" style="display: none"
+                                    id="himpunan-{{ $huruf }}">
                                     <div class="col mb-3">
                                         <span>Himpunan
                                             <span class="fw-bold">
@@ -228,15 +230,17 @@
                                     </div>
                                     <div class="col mb-3">
                                         <label for="min_{{ $huruf }}" class="form-label">Min</label>
-                                        <input type="number" class="form-control" name="min_{{ $huruf }}"
-                                            id="min_{{ $huruf }}" aria-describedby="min_{{ $huruf }}"
-                                            min="0">
+                                        <input type="number"
+                                            class="form-control {{ $huruf == 'Baik Sekali' ? 'min_baik_sekali' : '' }}"
+                                            name="min_{{ $huruf }}" id="min_{{ $huruf }}" readonly
+                                            aria-describedby="min_{{ $huruf }}" min="0">
                                     </div>
                                     <div class="col mb-3">
                                         <label for="max_{{ $huruf }}" class="form-label">Max</label>
-                                        <input type="number" class="form-control" name="max_{{ $huruf }}"
-                                            id="max_{{ $huruf }}" aria-describedby="max_{{ $huruf }}"
-                                            min="0">
+                                        <input type="number"
+                                            class="form-control {{ $huruf == 'Baik Sekali' ? 'max_baik_sekali' : '' }}"
+                                            name="max_{{ $huruf }}" id="max_{{ $huruf }}" readonly
+                                            aria-describedby="max_{{ $huruf }}" min="0">
                                     </div>
                                 </div>
                             @endforeach
@@ -278,30 +282,27 @@
                                 <div class="col-md-12 mb-3">
                                     <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
                                     <input type="text" class="form-control" name="sub_kriteria" id="sub_kriteria"
-                                        aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Kriteria">
+                                        aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Sub Kriteria">
                                 </div>
-                                <?php
-                                $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
-                                ?>
-                                @foreach ($himpunan as $huruf)
-                                    <span>Himpunan {{ $huruf }}</span>
+                                {{-- @foreach ($himpunan as $index => $huruf)
+                                    <span>Himpunan <b>{{ $huruf }}</b></span>
                                     <input type="hidden" name="himpunan_{{ $huruf }}"
                                         value="{{ $huruf }}" id="">
                                     <div class="col-12 d-flex gap-1">
                                         <div class="col mb-3">
                                             <label for="min_{{ $huruf }}" class="form-label">Min</label>
                                             <input type="number" class="form-control" name="min_{{ $huruf }}"
-                                                id="min_{{ $huruf }}" aria-describedby="min_{{ $huruf }}"
-                                                min="0">
+                                                id="min_{{ $huruf }}" value="{{ $himpunan[0] }}"
+                                                aria-describedby="min_{{ $huruf }}" min="0">
                                         </div>
                                         <div class="col mb-3">
                                             <label for="max_{{ $huruf }}" class="form-label">Max</label>
                                             <input type="number" class="form-control" name="max_{{ $huruf }}"
-                                                id="max_{{ $huruf }}" aria-describedby="max_{{ $huruf }}"
-                                                min="0">
+                                                id="max_{{ $huruf }}" value=""
+                                                aria-describedby="max_{{ $huruf }}" min="0">
                                         </div>
                                     </div>
-                                @endforeach
+                                @endforeach --}}
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -332,10 +333,33 @@
         }
 
         function deleteNilai(himpunan, sub_kriteria) {
-            console.log(himpunan, sub_kriteria);
             $('#form-delete-all').find('input[name="sub_kriteria"]').val(sub_kriteria);
             $('#form-delete-all').find('input[name="himpunan"]').val(himpunan);
             $('#form-delete-all').submit();
+        }
+
+        function changeKriteria() {
+            $('.himpunan-set').show();
+            let kriteria = $('#kriteria').val();
+            const data = @json($helperKriteria);
+
+            let detailKriteria = data.filter(item => item.kriteria == kriteria).map(item => item.himpunan).join(',');
+            let detailMinKriteria = data.filter(item => item.kriteria == kriteria).map(item => item.min).join(',');
+            let detailMaxKriteria = data.filter(item => item.kriteria == kriteria).map(item => item.max).join(',');
+
+            detailKriteria = detailKriteria.split(',');
+            detailMinKriteria = detailMinKriteria.split(',');
+            detailMaxKriteria = detailMaxKriteria.split(',');
+
+            detailKriteria.forEach((item, index) => {
+                if (item === 'Baik Sekali') {
+                    $('.min_baik_sekali').val(detailMinKriteria[3]).attr('readonly', true);
+                    $('.max_baik_sekali').val(detailMaxKriteria[3]).attr('readonly', true);
+                }
+
+                $('#min_' + item).val(detailMinKriteria[index]).attr('readonly', true);
+                $('#max_' + item).val(detailMaxKriteria[index]).attr('readonly', true);
+            })
         }
     </script>
 @endsection
