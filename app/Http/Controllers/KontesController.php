@@ -70,7 +70,7 @@ class KontesController extends Controller
             // Handle image dengan function handleImageUpload
             $data['poster_kontes'] = $this->handleImageUpload($request, 'store');
 
-            dd($data);
+            /*  dd($data); */
             // Simpan data
             $kontes = Kontes::create($data);
 

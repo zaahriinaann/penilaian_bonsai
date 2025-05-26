@@ -1,16 +1,25 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Penilaian')
+@section('title', 'Kelola Kriteria Penilaian')
 
 
-@section('button-toolbar')
+{{-- @section('button-toolbar')
     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
         Tambah Kriteria
     </button>
-@endsection
+@endsection --}}
 
 @section('content')
     <div class="card mb-5">
+        <div class="card-header">
+            <h1 class="card-title">Data Kriteria Penilaian</h1>
+            <div class="card-toolbar">
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#kt_modal_create_kriteria">
+                    Tambah Kriteria
+                </button>
+            </div>
+        </div>
         <div class="card-body">
             <div class="accordion" id="accordionExample">
                 <div class="accordion-item">
@@ -72,9 +81,11 @@
     @endif
 
     <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Kelola Kriteria Penilaian</h1>
 
+        </div>
         <div class="card-body text-capitalize">
-            <h1>Penilaian</h1>
             @if ($isEmpty)
                 <div class="alert alert-danger text-center">
                     <span>Belum ada kriteria penilaian</span>
@@ -187,8 +198,14 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="kriteria" class="form-label">Kriteria</label>
-                                <input type="text" class="form-control" name="kriteria" id="kriteria"
-                                    aria-describedby="kriteria" title="Kriteria" placeholder="Masukkan Kriteria">
+                                <select class="form-select" name="kriteria" id="kriteria" aria-describedby="kriteria"
+                                    title="Kriteria">
+                                    <option value="" disabled selected>Pilih Kriteria</option>
+                                    <option value="Penampilan">Penampilan</option>
+                                    <option value="Gerak Dasar">Gerak Dasar</option>
+                                    <option value="Keserasian">Keserasian</option>
+                                    <option value="Kematangan">Kematangan</option>
+                                </select>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
