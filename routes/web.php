@@ -36,4 +36,10 @@ Route::middleware(['auth', 'web'])->group(function () {
         ]);
         Route::resource('peserta', PesertaController::class);
     });
+    Route::prefix('kontes')->group(function () {
+        Route::resource('bonsai', BonsaiController::class)->parameters([
+            'bonsai' => 'slug'
+        ]);
+        Route::resource('peserta', PesertaController::class);
+    });
 });
