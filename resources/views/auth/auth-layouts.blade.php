@@ -26,6 +26,8 @@
         type="text/css" />
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}" type="text/css" />
 </head>
 
 <body id="kt_body" style="background-image: url(assets/media/patterns/header-bg-green.png)"
@@ -34,12 +36,13 @@
         <div class="page d-flex flex-row flex-column-fluid">
             <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
                 @yield('content')
-
+                
                 @include('layouts.footer')
             </div>
         </div>
     </div>
-
+    
+    @yield('script')
     <script src="{{ asset('template/src/plugins/global/plugins.bundle.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
     <script src="{{ asset('template/src/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>

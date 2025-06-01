@@ -1,4 +1,4 @@
-@extends('auth.auth-layouts')s
+@extends('auth.auth-layouts')
 
 @section('content')
     <div id="kt_content_container" class="d-flex flex-column-fluid align-items-start container-xl">
@@ -51,10 +51,15 @@
                     <div class="row mb-3">
                         <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
 
-                        <div class="col-md">
-                            <input id="password" type="password"
-                                class="form-control @error('password') is-invalid @enderror" name="password" required
-                                autocomplete="new-password">
+                        <div class="col-md password-input">
+                            <div class="eye-reveal">
+                                <input id="password" type="password"
+                                    class="form-control @error('password') is-invalid @enderror" name="password" required
+                                    autocomplete="new-password">
+                                <i class="bi bi-eye-fill" id="password-eye" onclick="togglePassword('password')"></i>
+                                <i class="bi bi-eye-slash-fill d-none" id="password-slash-eye"
+                                    onclick="togglePassword('password')"></i>
+                            </div>
 
                             @error('password')
                                 <span class="invalid-feedback" role="alert">
@@ -68,9 +73,16 @@
                         <label for="password-confirm"
                             class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
 
-                        <div class="col-md">
-                            <input id="password-confirm" type="password" class="form-control" name="password_confirmation"
-                                required autocomplete="new-password">
+                        <div class="col-md password-input">
+                            <div class="eye-reveal-confirm-password">
+                                <input id="password-confirm" type="password" class="form-control"
+                                    name="password_confirmation" required autocomplete="new-password">
+                                <i class="bi bi-eye-fill" onclick="togglePassword('password-confirm')"
+                                    id="password-confirm-eye"></i>
+                                <i class="bi bi-eye-slash-fill d-none" onclick="togglePassword('password-confirm')"
+                                    id="password-confirm-slash-eye"></i>
+                            </div>
+
                         </div>
                     </div>
 
@@ -85,4 +97,22 @@
             </form>
         </div>
     </div>
+@endsection
+
+@section('script')
+    <script>
+        function togglePassword(e) {
+            const x = document.getElementById(e);
+
+            if (x.type === "password") {
+                x.type = "text";
+                document.getElementById(e + '-eye').classList.add('d-none');
+                document.getElementById(e + '-slash-eye').classList.remove('d-none');
+            } else {
+                x.type = "password";
+                document.getElementById(e + '-eye').classList.remove('d-none');
+                document.getElementById(e + '-slash-eye').classList.add('d-none');
+            }
+        }
+    </script>
 @endsection

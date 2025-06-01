@@ -50,6 +50,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
     z-index: 9999 !important;
 }
+
 /* 
 .selectize-input::after {
     content: '' !important;
@@ -65,3 +66,25 @@
     background-size: contain !important;
     pointer-events: none !important;
 } */
+
+/* Password Eye Reveal */
+
+.password-input {
+    position: relative;
+}
+
+.eye-reveal i,
+.eye-reveal-confirm-password i {
+    color: #6e6e6e;
+    position: absolute;
+    z-index: 99;
+    cursor: pointer;
+    font-size: 20px;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+}
+
+.eye-reveal-confirm-password i {
+    top: 40%;
+}

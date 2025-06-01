@@ -115,9 +115,9 @@
                                     aria-describedby="cabang" title="Cabang" placeholder="Masukkan Cabang">
                             </div>
                             <div class="col-md-12 mb-3">
-                                <label for="nomor_hp" class="form-label">Nomor Hp</label>
-                                <input type="text" class="form-control" name="nomor_hp" id="nomor_hp"
-                                    aria-describedby="nomor_hp" title="Nomor Hp" placeholder="Masukkan Nomor Hp">
+                                <label for="no_hp" class="form-label">Nomor Hp</label>
+                                <input type="text" class="form-control" name="no_hp" id="no_hp"
+                                    aria-describedby="no_hp" title="Nomor Hp" placeholder="Masukkan Nomor Hp">
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="alamat" class="form-label">Alamat</label>

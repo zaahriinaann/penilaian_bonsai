@@ -31,10 +31,13 @@ class PesertaController extends Controller
      */
     public function store(Request $request)
     {
+        // username sama password disamain pake nomer anggota
+
         $data = $request->all();
 
         $data['name'] = $data['nama'];
         $data['role'] = 'anggota';
+        $data['username'] = $data['no_anggota'];
         $data['password'] = bcrypt($data['no_anggota']);
         $data['foto'] = $this->handleImageUpload($request, 'store');
         $data['email_verified_at'] = now();

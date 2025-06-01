@@ -1,10 +1,16 @@
 @extends('auth.auth-layouts')
 
 @section('content')
-    <div id="kt_content_container" class="d-flex flex-column-fluid align-items-start container-xl">
+    <div id="kt_content_container" class="d-flex flex-column-fluid align-items-center container-xl">
+
         <div class="card m-auto">
             <form method="POST" action="{{ route('login') }}">
                 @csrf
+                @if (session('status'))
+                    <div class="alert alert-success">
+                        {{ session('status') }}
+                    </div>
+                @endif
                 <div class="card-body">
                     <h2 class="text-center mb-5 fs-1">Login</h2>
                     <div class="text-center mb-5">
