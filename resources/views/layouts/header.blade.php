@@ -182,8 +182,9 @@
                                     <div class="fw-bolder d-flex align-items-center fs-5 text-capitalize">
                                         {{ Auth::user()->name }}
                                     </div>
-                                    <a href="#"
-                                        class="fw-bold text-muted text-hover-primary fs-7">{{ Auth::user()->email }}</a>
+                                    <span
+                                        class="fw-bold text-muted text-hover-primary fs-7">{{ Auth::user()->email }}</span>
+                                    <span class="fw-bold fs-7 badge bg-light-success text-success text-capitalize">{{ Auth::user()->role }}</span>
                                 </div>
                             </div>
                         </div>
