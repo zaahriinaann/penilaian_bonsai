@@ -125,14 +125,14 @@
                                 <div id="{{ $collapseId }}" class="accordion-collapse collapse text-capitalize"
                                     data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
-                                        <table class="table table-borderless table-hover">
+                                        <table class="table table-responsive table-borderless table-hover" style="width: 100%"> 
                                             <tr>
                                                 <th class="align-middle">Himpunan</th>
-                                                <th class="align-middle text-center">Min</th>
-                                                <th class="align-middle text-center">Max</th>
+                                                <th class="align-middle">Min</th>
+                                                <th class="align-middle">Max</th>
                                                 <th class="align-middle">
                                                     <button type="button" onclick="deleteAll('{{ $item }}')"
-                                                        class="btn btn-sm btn-danger w-100">
+                                                        class="btn btn-sm btn-danger">
                                                         <i class="fa fa-trash mx-0 px-0"></i> Hapus Data
                                                         {{ $item }}
                                                     </button>
@@ -147,25 +147,28 @@
                                                 <tr>
                                                     <td class="align-middle">{{ strtoupper($huruf) }}</td>
                                                     <td class="align-middle">
-                                                        <input type="number"
+                                                        {{ $range['min'] }}
+                                                        {{-- <input type="number"
                                                             class="form-control form-control-sm text-center w-25 mx-auto"
                                                             name="{{ $slug }}[{{ $huruf }}][min]"
-                                                            value="{{ $range['min'] }}" readonly placeholder="Min">
+                                                            value="{{ $range['min'] }}" readonly placeholder="Min"> --}}
                                                     </td>
                                                     <td class="align-middle">
-                                                        <input type="number"
+                                                        {{ $range['max'] }}
+                                                        {{-- <input type="number"
                                                             class="form-control form-control-sm text-center w-25 mx-auto"
                                                             name="{{ $slug }}[{{ $huruf }}][max]"
-                                                            value="{{ $range['max'] }}" readonly placeholder="Max">
+                                                            value="{{ $range['max'] }}" readonly placeholder="Max"> --}}
                                                     </td>
-                                                    <td class="align-middle">
+                                                    <td></td>
+                                                    {{-- <td class="align-middle">
                                                         <button type="button" class="btn btn-sm btn-danger w-100"
                                                             id="delete-nilai-{{ $huruf }}-{{ $item }}"
                                                             onclick="deleteNilai('{{ $huruf }}', '{{ $item }}')">
                                                             <i class="fa fa-trash mx-0 px-0"></i>
                                                             Hapus
                                                         </button>
-                                                    </td>
+                                                    </td> --}}
                                                 </tr>
                                             @endforeach
                                         </table>
