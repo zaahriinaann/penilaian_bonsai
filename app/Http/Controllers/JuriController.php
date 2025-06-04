@@ -58,7 +58,7 @@ class JuriController extends Controller
             $data['slug'] = $slug;
 
             // Password default = no induk
-            $data['password'] = bcrypt($data['no_induk_juri']);
+            $data['password'] = bcrypt($data['password']);
 
             $data['foto'] = $this->handleImageUpload($request, 'store');
 
