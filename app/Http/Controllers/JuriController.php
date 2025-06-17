@@ -164,7 +164,8 @@ class JuriController extends Controller
 
             // Hindari konflik slug dengan menambahkan suffix unik
             $juri->update([
-                'slug' => $juri->slug . '-deleted-' . uniqid()
+                'slug' => $juri->slug . '-deleted-' . uniqid(),
+                'username' => $juri->username . '-deleted-' . uniqid()
             ]);
 
             $user->delete();
