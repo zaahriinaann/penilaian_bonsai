@@ -183,7 +183,8 @@
                                         {{ Auth::user()->name }}
                                     </div>
                                     <span
-                                        class="fw-bold text-muted text-hover-primary fs-7">{{ Auth::user()->email }}</span>
+                                    class="fw-bold text-muted text-hover-primary fs-7">{{ Auth::user()->email }}</span>
+                                    <div class="separator my-2"></div>
                                     <span class="fw-bold fs-7 badge bg-light-success text-success text-capitalize">{{ Auth::user()->role }}</span>
                                 </div>
                             </div>
