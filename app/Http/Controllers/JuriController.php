@@ -160,12 +160,14 @@ class JuriController extends Controller
     {
         try {
             $juri = Juri::where('slug', $slug)->firstOrFail();
+            $user = User::where('username', $juri->username)->firstOrFail();
 
             // Hindari konflik slug dengan menambahkan suffix unik
             $juri->update([
                 'slug' => $juri->slug . '-deleted-' . uniqid()
             ]);
 
+            $user->delete();
             $juri->delete();
 
             return response()->json([
