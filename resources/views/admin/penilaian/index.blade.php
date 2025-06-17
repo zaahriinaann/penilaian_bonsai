@@ -158,14 +158,14 @@
                                                             name="{{ $slug }}[{{ $huruf }}][max]"
                                                             value="{{ $range['max'] }}" readonly placeholder="Max">
                                                     </td>
-                                                    <td class="align-middle">
+                                                    {{--  <td class="align-middle">
                                                         <button type="button" class="btn btn-sm btn-danger w-100"
                                                             id="delete-nilai-{{ $huruf }}-{{ $item }}"
                                                             onclick="deleteNilai('{{ $huruf }}', '{{ $item }}')">
                                                             <i class="fa fa-trash mx-0 px-0"></i>
                                                             Hapus
                                                         </button>
-                                                    </td>
+                                                    </td> --}}
                                                 </tr>
                                             @endforeach
                                         </table>
@@ -282,7 +282,8 @@
                                 <div class="col-md-12 mb-3">
                                     <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
                                     <input type="text" class="form-control" name="sub_kriteria" id="sub_kriteria"
-                                        aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Sub Kriteria">
+                                        aria-describedby="sub_kriteria" title="Kriteria"
+                                        placeholder="Masukkan Sub Kriteria">
                                 </div>
                                 {{-- @foreach ($himpunan as $index => $huruf)
                                     <span>Himpunan <b>{{ $huruf }}</b></span>
