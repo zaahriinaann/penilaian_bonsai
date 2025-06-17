@@ -37,8 +37,8 @@ class PesertaController extends Controller
 
         $data['name'] = $data['nama'];
         $data['role'] = 'anggota';
-        $data['username'] = $data['no_anggota'];
-        $data['password'] = bcrypt($data['no_anggota']);
+        $data['username'] = $data['username'];
+        $data['password'] = bcrypt($data['username']);
         $data['foto'] = $this->handleImageUpload($request, 'store');
         $data['email_verified_at'] = now();
 
