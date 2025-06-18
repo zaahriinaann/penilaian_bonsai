@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Peserta;
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Session;
 
 class PesertaController extends Controller
 {
@@ -31,21 +31,21 @@ class PesertaController extends Controller
      */
     public function store(Request $request)
     {
-        // username sama password disamain pake nomer anggota
 
+        // Persiapan data
         $data = $request->all();
-
         $data['name'] = $data['nama'];
         $data['role'] = 'anggota';
-        $data['username'] = $data['username'];
-        $data['password'] = bcrypt($data['username']);
+        $data['password'] = bcrypt($data['username']); // password = username
         $data['foto'] = $this->handleImageUpload($request, 'store');
         $data['email_verified_at'] = now();
 
+        // Simpan user
         User::create($data);
 
         return redirect()->route('peserta.index')->with('success', 'Peserta berhasil ditambahkan.');
     }
+
 
     /**
      * Display the specified resource.
@@ -66,18 +66,44 @@ class PesertaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        //
+        $peserta = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
+            'email' => 'required|email',
+            'no_anggota' => 'nullable|string',
+            'cabang' => 'nullable|string',
+            'no_hp' => 'nullable|string',
+            'alamat' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('foto')) {
+            $filename = time() . '.' . $request->foto->extension();
+            $request->foto->move(public_path('images/peserta'), $filename);
+            $validated['foto'] = $filename;
+
+            // Hapus foto lama kalau ada
+            if ($request->foto_lama && file_exists(public_path('images/peserta/' . $request->foto_lama))) {
+                unlink(public_path('images/peserta/' . $request->foto_lama));
+            }
+        } else {
+            $validated['foto'] = $peserta->foto;
+        }
+
+        $peserta->update($validated);
+
+        return redirect()->back()->with('success', 'Data peserta berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy()
-    {
-        //
-    }
+    public function destroy($slug) {}
+
 
     protected function handleImageUpload($request, $typeInput)
     {
