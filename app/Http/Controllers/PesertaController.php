@@ -68,35 +68,42 @@ class PesertaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $peserta = User::findOrFail($id);
+        try {
+            $peserta = User::findOrFail($id);
 
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => 'required|email',
-            'no_anggota' => 'nullable|string',
-            'cabang' => 'nullable|string',
-            'no_hp' => 'nullable|string',
-            'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+            $validated = $request->validate([
+                'nama' => 'required|string|max:255',
+                'username' => 'required|string|max:255',
+                'email' => 'required|email',
+                'no_anggota' => 'nullable|string',
+                'cabang' => 'nullable|string',
+                'no_hp' => 'nullable|string',
+                'alamat' => 'nullable|string',
+                'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ]);
 
-        if ($request->hasFile('foto')) {
-            $filename = time() . '.' . $request->foto->extension();
-            $request->foto->move(public_path('images/peserta'), $filename);
-            $validated['foto'] = $filename;
+            if ($request->hasFile('foto')) {
+                $filename = time() . '.' . $request->foto->extension();
+                $request->foto->move(public_path('images/peserta'), $filename);
+                $validated['foto'] = $filename;
 
-            // Hapus foto lama kalau ada
-            if ($request->foto_lama && file_exists(public_path('images/peserta/' . $request->foto_lama))) {
-                unlink(public_path('images/peserta/' . $request->foto_lama));
+                // Hapus foto lama kalau ada
+                if ($request->foto_lama && file_exists(public_path('images/peserta/' . $request->foto_lama))) {
+                    unlink(public_path('images/peserta/' . $request->foto_lama));
+                }
+            } else {
+                $validated['foto'] = $peserta->foto;
             }
-        } else {
-            $validated['foto'] = $peserta->foto;
+
+            $peserta->update($validated);
+            // Berikan pesan sukses setelah update
+            Session::flash('message', "peserta dengan Nomor Anggota: ({$peserta->no_anggota}) berhasil diperbarui.");
+            return redirect()->back();
+        } catch (\Exception $e) {
+            // Tangani error jika terjadi kesalahan saat menyimpan
+            Session::flash('error', "Gagal memperbarui data: " . $e->getMessage());
+            return redirect()->back()->withInput();
         }
-
-        $peserta->update($validated);
-
-        return redirect()->back()->with('success', 'Data peserta berhasil diperbarui.');
     }
 
     /**
