@@ -99,7 +99,7 @@ class PesertaController extends Controller
         return response()->json([
             // 'data' => $user,
             'message' => "Peserta berhasil dihapus."
-        ]);
+        ], 200);
     }
 
     protected function handleImageUpload($request, $typeInput)
