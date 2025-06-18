@@ -60,7 +60,8 @@
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
-                                        data-id="{{ $item->id }}" data-route="">
+                                        data-id="{{ $item->id }}"
+                                        data-route="{{ route('peserta.destroy', $item->id) }}">
                                         <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                 </div>
                             </td>
@@ -81,7 +82,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="kt_modal_create_peserta">Data Juri Kontes</h1>
+                    <h1 class="modal-title fs-5" id="kt_modal_create_peserta">Data Peserta Kontes</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{{ route('peserta.store') }}" enctype="multipart/form-data" method="POST">
