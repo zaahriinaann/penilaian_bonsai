@@ -109,10 +109,6 @@ class PesertaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-<<<<<<< HEAD
-    public function destroy($slug) {}
-
-=======
     public function destroy($id)
     {
         // ini udah bisa, tinggal tambahin aja delete kaya biasa atau mau pake soft delete juga bisa
@@ -140,7 +136,7 @@ class PesertaController extends Controller
             'message' => "Peserta berhasil dihapus."
         ], 200);
     }
->>>>>>> e1af197713f0bf65f69078e6e2963825467aed95
+
 
     protected function handleImageUpload($request, $typeInput)
     {
