@@ -109,8 +109,38 @@ class PesertaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+<<<<<<< HEAD
     public function destroy($slug) {}
 
+=======
+    public function destroy($id)
+    {
+        // ini udah bisa, tinggal tambahin aja delete kaya biasa atau mau pake soft delete juga bisa
+        // kalau mau pake soft delete, contohnya kaya yang juri, tambah "delete-" di depan username
+        // atau lait di database, jika ada yang unique, contohnya email, tambah "delete-" di depan email
+        // begitu seterusnya, cari id/slug nya, opsinya update data atau delete data
+        // coba liat web.php untuk contoh parameter route nya
+        // karena ini campuran pakai js, kalau mau cek data nya ke kirim atau ga
+        // pakai return json, contohnya return response()->json(data);
+        // cek di app.blade.php terus nyalain console.log(response) kalau mau cek datanya
+        // kalo udah buka console di inspect element, comment swalnya dulu
+
+        $user = User::where('id', $id)->first();
+
+        // ini null safety, sebenernya sama kaya try() catch() yang aku bkin di controller lain, cuman ini cek manual pake if
+        if (!$user) {
+            return response()->json([
+                'message' => "Peserta tidak ditemukan."
+            ], 404);
+        }
+
+        $user->delete();
+        return response()->json([
+            // 'data' => $user,
+            'message' => "Peserta berhasil dihapus."
+        ], 200);
+    }
+>>>>>>> e1af197713f0bf65f69078e6e2963825467aed95
 
     protected function handleImageUpload($request, $typeInput)
     {

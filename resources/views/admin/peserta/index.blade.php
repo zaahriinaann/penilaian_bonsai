@@ -61,7 +61,8 @@
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
-                                        data-id="{{ $item->id }}" data-route="">
+                                        data-id="{{ $item->id }}"
+                                        data-route="{{ route('peserta.destroy', $item->id) }}">
                                         <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                 </div>
                             </td>
