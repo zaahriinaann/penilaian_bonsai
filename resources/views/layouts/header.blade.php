@@ -15,7 +15,7 @@
     {{-- Logo --}}
     <div class="header-logo me-5 me-md-10 flex-grow-1 flex-lg-grow-0">
         <a href="/home">
-            <img src="https://ppbindonesia.com/wp-content/uploads/2024/05/cropped-Logo-PPBI-300x155.png" alt=""
+            <img src="{{ asset('assets/media/logos/logo-ppbi-small-nobg.png') }}" alt=""
                 style="width: 100px;">
         </a>
     </div>

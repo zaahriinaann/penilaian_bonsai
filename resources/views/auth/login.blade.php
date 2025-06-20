@@ -12,11 +12,11 @@
                     </div>
                 @endif
                 <div class="card-body">
-                    <h2 class="text-center mb-5 fs-1">Login</h2>
                     <div class="text-center mb-5">
-                        <img src="https://ppbindonesia.com/wp-content/uploads/2024/05/cropped-Logo-PPBI-300x155.png"
+                        <img src="{{ asset('assets/media/logos/logo-ppbi-small-nobg.png') }}"
                             alt="" class="w-50">
                     </div>
+                    <h2 class="text-center mb-5 fs-1">Login</h2>
                     <div class="form-group mb-2">
                         <label for="username">Email atau Username</label>
                         <input id="username" type="text" class="form-control @error('username') is-invalid @enderror"

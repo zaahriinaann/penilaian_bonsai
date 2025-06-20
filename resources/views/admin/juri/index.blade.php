@@ -29,6 +29,7 @@
                         <th>Email</th>
                         <th>Username</th>
                         <th>No Telepon</th>
+                        <th>Sertifikat</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -41,7 +42,7 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <img class="rounded"
-                                    src="{{ asset('images/juri/' . $item->foto) ?? asset('assets/media/avatars/blank.png') }}"
+                                    src="{{ $item->foto ? asset('images/juri/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
                                     alt="Foto Juri" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>
@@ -59,6 +60,12 @@
                             <td>{{ $item->username }}</td>
                             <td>{{ $item->no_telepon }}</td>
                             <td>
+                                <a class="btn btn-sm btn-primary" title="Lihat Sertifikat"
+                                    href="{{ asset('images/sertifikat/' . $item->sertifikat) }}" target="_blank">
+                                    <i class="bi bi-file-earmark-text-fill m-0 p-0"></i> Lihat Sertifikat
+                                </a>
+                            </td>
+                            <td>
                                 <div class="d-flex gap-2 m-0 p-0">
                                     <button type="button" class="btn btn-sm btn-warning btn-edit"
                                         data-id="{{ $item->id }}" data-slug="{{ $item->slug }}"
@@ -66,7 +73,8 @@
                                         data-no_telepon="{{ $item->no_telepon }}" data-status="{{ $item->status }}"
                                         data-foto="{{ $item->foto }}" data-no_induk="{{ $item->no_induk_juri }}"
                                         data-username="{{ $item->username }}" data-foto="{{ $item->foto }}"
-                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_juri" title="Edit data">
+                                        data-sertifikat="{{ $item->sertifikat }}" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_juri" title="Edit data">
                                         <i class="bi bi-pencil-square m-0 p-0"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
@@ -78,7 +86,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center no-data">Data tidak tersedia</td>
+                            <td colspan="9" class="text-center no-data">Data tidak tersedia</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -113,7 +121,8 @@
                             <div class="col-md-12 mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="username" class="form-control" name="username" id="username"
-                                    aria-describedby="username" title="Username Juri" placeholder="Masukkan Username Juri">
+                                    aria-describedby="username" title="Username Juri"
+                                    placeholder="Masukkan Username Juri">
                                 <span class="msg-slug"></span>
                             </div>
                             <div class="col-md-12 mb-3">
@@ -122,9 +131,15 @@
                                     aria-describedby="no_telepon" title="No Telepon Juri"
                                     placeholder="Masukkan No Telepon Juri">
                             </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="foto" class="form-label">Foto Juri</label>
-                                <input type="file" class="form-control" name="foto" id="foto">
+                            <div class="col d-flex gap-2">
+                                <div class="mb-3">
+                                    <label for="foto" class="form-label">Foto Juri</label>
+                                    <input type="file" class="form-control" name="foto" id="foto">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="sertifikat" class="form-label">Sertifikat</label>
+                                    <input type="file" class="form-control" name="sertifikat" id="sertifikat">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -181,10 +196,18 @@
                                     <option value="2">Non Aktif</option>
                                 </select>
                             </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="edit_foto" class="form-label">Foto Juri (Opsional)</label>
-                                <input type="file" class="form-control" name="foto" id="edit_foto">
-                                <input type="hidden" name="foto_lama" id="edit_foto_lama">
+                            <div class="col d-flex gap-2">
+                                <div class="mb-3">
+                                    <label for="edit_foto" class="form-label">Foto Juri (Opsional)</label>
+                                    <input type="file" class="form-control" name="foto" id="edit_foto">
+                                    <input type="hidden" name="foto_lama" id="edit_foto_lama">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_sertifikat" class="form-label">Sertifikat (Opsional)</label>
+                                    <input type="file" class="form-control" name="sertifikat" id="edit_sertifikat">
+                                    <input type="hidden" name="sertifikat_lama" id="edit_sertifikat_lama">
+                                </div>
+
                             </div>
                             <div class="col-md-12 mb-3">
                                 <div class="form-check mb-2">
@@ -239,6 +262,7 @@
                 $('#edit_status_juri').val(btn.data('status'));
                 $('#edit_username').val(btn.data('username'));
                 $('#edit_foto_lama').val(btn.data('foto'));
+                $('#edit_sertifikat_lama').val(btn.data('sertifikat'));
             });
 
             // Toggle password form visibility

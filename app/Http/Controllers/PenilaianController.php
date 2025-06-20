@@ -18,11 +18,11 @@ class PenilaianController extends Controller
         $penilaians = Penilaian::all();
         $helperKriteria = HelperKriteria::all()->map(function ($item) {
             return [
-                'kriteria'      => $item->kriteria,
-                'sub_kriteria'  => $item->sub_kriteria,
-                'himpunan'      => $item->himpunan,
-                'min'           => $item->min,
-                'max'           => $item->max,
+                'kriteria' => $item->kriteria,
+                'sub_kriteria' => $item->sub_kriteria,
+                'himpunan' => $item->himpunan,
+                'min' => $item->min,
+                'max' => $item->max,
             ];
         });
 
@@ -30,18 +30,18 @@ class PenilaianController extends Controller
 
         if ($penilaians->isEmpty()) {
             return view('admin.penilaian.index', [
-                'kategori'       => [],
-                'himpunan'       => [],
-                'penilaians'     => [],
-                'isEmpty'        => true,
+                'kategori' => [],
+                'himpunan' => [],
+                'penilaians' => [],
+                'isEmpty' => true,
                 'helperKriteria' => $helperKriteria,
-                'kriteria'       => $kriteria,
+                'kriteria' => $kriteria,
             ]);
         }
 
-        $kategori         = [];
+        $kategori = [];
         $penilaianGrouped = [];
-        $himpunanRange    = [];
+        $himpunanRange = [];
 
         foreach ($penilaians as $item) {
             $kategori[$item->kriteria][$item->sub_kriteria] = true;
@@ -64,14 +64,13 @@ class PenilaianController extends Controller
             $kategori[$key] = array_keys($subs);
         }
 
-
         return view('admin.penilaian.index', [
-            'kategori'       => $kategori,
-            'himpunan'       => $himpunanRange,
-            'penilaians'     => $penilaianGrouped,
-            'isEmpty'        => false,
+            'kategori' => $kategori,
+            'himpunan' => $himpunanRange,
+            'penilaians' => $penilaianGrouped,
+            'isEmpty' => false,
             'helperKriteria' => $helperKriteria,
-            'kriteria'       => $kriteria,
+            'kriteria' => $kriteria,
         ]);
     }
 
@@ -90,17 +89,53 @@ class PenilaianController extends Controller
      */
     public function store(Request $request, HelperKriteria $helperKriteria)
     {
-        $data = $request->only(['kriteria', 'sub_kriteria']);
-        $helperData = $helperKriteria->where('kriteria', $data['kriteria'])->get(['himpunan', 'min', 'max']);
+        if ($request->has('add_kriteria')) {
+            // Proses tambah data dari tombol Tambah Data
+            $data = $request->only(['kriteria', 'sub_kriteria']);
 
-        $penilaianData = $helperData->map(function ($item) use ($data) {
-            return array_merge($data, $item->only(['himpunan', 'min', 'max']));
-        })->toArray();
+            $helperData = $helperKriteria->where('kriteria', $data['kriteria'])
+                ->get(['himpunan', 'min', 'max']);
 
-        Penilaian::insert($penilaianData);
+            $penilaianData = $helperData->map(function ($item) use ($data) {
+                return [
+                    'kriteria'     => $data['kriteria'],
+                    'sub_kriteria' => $data['sub_kriteria'],
+                    'himpunan'     => $item->himpunan,
+                    'min'          => $item->min,
+                    'max'          => $item->max,
+                ];
+            })->toArray();
+
+            Penilaian::insert($penilaianData);
+        } else {
+            $allInput = $request->all();
+
+            foreach ($allInput as $key => $himpunanSet) {
+                if (!is_array($himpunanSet)) continue;
+                $kriteria = $allInput['kriteria'];
+                $subKriteria = $key;
+                $subKriteria = str_replace('_', ' ', $subKriteria);
+                $subKriteria = ucfirst($subKriteria);
+                // dd($kriteria, $subKriteria, $allInput);
+                foreach ($himpunanSet as $himpunan => $range) {
+                    Penilaian::updateOrCreate(
+                        [
+                            'kriteria' => $kriteria,
+                            'sub_kriteria' => $subKriteria,
+                            'himpunan' => $himpunan,
+                        ],
+                        [
+                            'min' => $range['min'],
+                            'max' => $range['max'],
+                        ]
+                    );
+                }
+            }
+        }
 
         return redirect()->back()->with('success', 'Data penilaian berhasil disimpan!');
     }
+
 
     /**
      * Display the specified resource.

@@ -19,7 +19,7 @@
     {{-- <link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" /> --}}
     {{-- https://ppbindonesia.com/wp-content/uploads/2024/05/cropped-Logo-PPBI-300x155.png --}}
     <link rel="shortcut icon"
-        href="https://ppbindonesia.com/wp-content/uploads/2024/05/cropped-Logo-PPBI-300x155.png" />
+        href="{{ asset('assets/media/logos/logo-ppbi-small-nobg.png') }}" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
     <link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"
@@ -139,8 +139,7 @@
                         // headers: {
                         //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                         // },
-                        success: function(response) {
-                            // console.log(response);
+                        success: function(response) { 
                             Swal.fire({
                                 title: 'Berhasil!',
                                 text: 'Data telah dihapus!',

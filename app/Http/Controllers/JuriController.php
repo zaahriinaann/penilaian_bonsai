@@ -60,7 +60,19 @@ class JuriController extends Controller
             // Password default = no induk
             $data['password'] = bcrypt($data['username']);
 
-            $data['foto'] = $this->handleImageUpload($request, 'store');
+            // Tangani upload foto & sertifikat sekaligus
+            $uploadedFiles = $this->handleImageUpload($request, 'store');
+
+            if ($uploadedFiles) {
+                if (isset($uploadedFiles['foto'])) {
+                    $data['foto'] = $uploadedFiles['foto'];
+                    unset($data['foto_lama']);
+                }
+                if (isset($uploadedFiles['sertifikat'])) {
+                    $data['sertifikat'] = $uploadedFiles['sertifikat'];
+                    unset($data['sertifikat_lama']);
+                }
+            }
 
             // Simpan ke DB
             $juri = Juri::create($data);
@@ -69,6 +81,7 @@ class JuriController extends Controller
             $user = User::create([
                 'name' => $data['nama_juri'],
                 'username' => $data['username'],
+                'no_anggota' => $data['no_induk_juri'],
                 'email' => $data['email'],
                 'password' => $data['username'],
                 'role' => 'juri',
@@ -79,7 +92,7 @@ class JuriController extends Controller
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal menyimpan data: " . $e->getMessage());
+            Session::flash('error', "Gagal menyimpan data, silahkan coba lagi.");
             return redirect()->back()->withInput();
         }
     }
@@ -140,19 +153,33 @@ class JuriController extends Controller
             if ($request->hasFile('foto')) {
                 $data['foto'] = $this->handleImageUpload($request, 'update');
                 unset($data['foto_lama']);
+                unset($data['sertifikat_lama']);
             } else {
                 unset($data['foto_lama']);
+                unset($data['sertifikat_lama']);
             }
 
             // Update data juri di database
             $juri->update($data);
+
+            // Find user
+            $user = User::where('username', $juri['username'])->first();
+            if ($user) {
+                // dd($user);
+                $user->update([
+                    'name' => $data['nama_juri'],
+                    'username' => $data['username'],
+                    'email' => $data['email'],
+                    'role' => 'juri',
+                ]);
+            }
 
             // Berikan pesan sukses setelah update
             Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil diperbarui.");
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal memperbarui data: " . $e->getMessage());
+            Session::flash('error', "Gagal memperbarui data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
     }
@@ -180,39 +207,67 @@ class JuriController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                'message' => 'Gagal menghapus data, silakan hubungi admin atau coba lagi.'
             ], 500);
         }
     }
 
     protected function handleImageUpload($request, $typeInput)
     {
-        if (!$request->hasFile('foto') || !$typeInput) {
+        // Jika tidak ada salah satu file, jangan lanjut
+        if ((!$request->hasFile('foto') && !$request->hasFile('sertifikat')) || !$typeInput) {
             return null;
         }
 
-        $image = $request->file('foto');
-        $imageName = time() . '.' . $image->getClientOriginalExtension();
+        $imageName = null;
+        $imageNameSertifikat = null;
+
         $destinationPath = public_path('images/juri');
+        $destinationPathSertifikat = public_path('images/sertifikat');
 
         // Buat folder jika belum ada
         if (!file_exists($destinationPath)) {
             mkdir($destinationPath, 0755, true);
         }
 
-        if ($typeInput === 'update') {
-            $fotoLama = $request->input('foto_lama');
-            $oldImagePath = $destinationPath . '/' . $fotoLama;
-
-            if (!empty($fotoLama) && file_exists($oldImagePath) && is_file($oldImagePath)) {
-                unlink($oldImagePath);
-            }
-
-            unset($request['foto_lama']);
+        if (!file_exists($destinationPathSertifikat)) {
+            mkdir($destinationPathSertifikat, 0755, true);
         }
 
-        // Pindahkan file baru
-        $image->move($destinationPath, $imageName);
-        return $imageName;
+        if ($typeInput === 'update') {
+            $fotoLama = $request->input('foto_lama');
+            $sertifikatLama = $request->input('sertifikat_lama');
+
+            if (!empty($fotoLama)) {
+                $oldImagePath = $destinationPath . '/' . $fotoLama;
+                if (file_exists($oldImagePath) && is_file($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            if (!empty($sertifikatLama)) {
+                $oldImagePathSertifikat = $destinationPathSertifikat . '/' . $sertifikatLama;
+                if (file_exists($oldImagePathSertifikat) && is_file($oldImagePathSertifikat)) {
+                    unlink($oldImagePathSertifikat);
+                }
+            }
+        }
+
+        if ($request->hasFile('foto')) {
+            $image = $request->file('foto');
+            $imageName = time() . '_foto.' . $image->getClientOriginalExtension();
+            $image->move($destinationPath, $imageName);
+        }
+
+        if ($request->hasFile('sertifikat')) {
+            $imageSertifikat = $request->file('sertifikat');
+            $imageNameSertifikat = time() . '_sertifikat.' . $imageSertifikat->getClientOriginalExtension();
+            $imageSertifikat->move($destinationPathSertifikat, $imageNameSertifikat);
+        }
+
+        return [
+            'foto' => $imageName,
+            'sertifikat' => $imageNameSertifikat,
+        ];
     }
 }

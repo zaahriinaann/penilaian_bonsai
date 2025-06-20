@@ -10,176 +10,181 @@
 @endsection --}}
 
 @section('content')
-    <div class="card mb-5">
-        <div class="card-header">
-            <h1 class="card-title">Data Kriteria Penilaian</h1>
-            <div class="card-toolbar">
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                    data-bs-target="#kt_modal_create_kriteria">
-                    Tambah Kriteria
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="accordion" id="accordionExample">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseTable" aria-expanded="true" aria-controls="collapseTable">
-                            Table Kriteria
-                        </button>
-                    </h2>
-                    <div id="collapseTable" class="accordion-collapse collapse p-3" aria-labelledby="headingOne"
-                        data-bs-parent="#accordionExample">
-                        <table class="table table-hover table-bordered table-data">
-                            <thead>
-                                <tr class="fw-bold">
-                                    <th style="width: 25%;">Kriteria</th>
-                                    <th>Sub Kriteria</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($kategori as $namaKategori => $subkriteria)
-                                    <tr>
-                                        <td><strong>{{ $namaKategori }}</strong></td>
-                                        <td>
-                                            <ul class="list-group list-group-flush">
-                                                @foreach ($subkriteria as $item)
-                                                    <li class="list-group-item bg-transparent">
-                                                        <div>
-                                                            <strong>{{ $item }}</strong>
-                                                            <ul class="mt-1 ps-3 list-unstyled">
-                                                                @foreach ($himpunan as $huruf => $range)
-                                                                    <li>
-                                                                        <span class="text-muted">
-                                                                            {{ $huruf }} :
-                                                                            [{{ $range[0] }} -
-                                                                            {{ $range[1] }}]
-                                                                        </span>
-                                                                    </li>
-                                                                @endforeach
-                                                            </ul>
-                                                        </div>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="card">
-        <div class="card-header">
-            <h1 class="card-title">Kelola Kriteria Penilaian</h1>
-        </div>
-        <div class="card-body text-capitalize">
-            @if ($isEmpty)
-                <div class="alert alert-danger text-center">
-                    <span>Belum ada kriteria penilaian</span>
+    <div class="d-flex gap-2 justify-content-between ">
+        <div class="card w-100 mb-5 card-kriteria">
+            <div class="card-header">
+                <h1 class="card-title">Data Kriteria Penilaian</h1>
+                <div class="card-toolbar">
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_create_kriteria">
+                        Tambah Kriteria
+                    </button>
                 </div>
-            @endif
-            <form method="POST" action="{{ route('penilaian.store') }}">
-                @csrf
-
-                <div class="accordion text-capitalize" id="accordionExample">
-                    @php $index = 0; @endphp
-
-                    @foreach ($kategori as $namaKategori => $subkriteria)
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h4 class="mt-4">{{ $namaKategori }}</h4>
-
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#modal_sub_{{ $namaKategori }}" type="button">
-                                Tambah Data {{ $namaKategori }}
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="accordionExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseTable" aria-expanded="true" aria-controls="collapseTable">
+                                Table Kriteria
                             </button>
+                        </h2>
+                        <div id="collapseTable" class="accordion-collapse collapse p-3" aria-labelledby="headingOne"
+                            data-bs-parent="#accordionExample">
+                            <table class="table table-hover table-bordered table-data">
+                                <thead>
+                                    <tr class="fw-bold">
+                                        <th style="width: 25%;">Kriteria</th>
+                                        <th>Sub Kriteria</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($kategori as $namaKategori => $subkriteria)
+                                        <tr>
+                                            <td><strong>{{ $namaKategori }}</strong></td>
+                                            <td>
+                                                <ul class="list-group list-group-flush">
+                                                    @foreach ($subkriteria as $item)
+                                                        <li class="list-group-item bg-transparent">
+                                                            <div>
+                                                                <strong>{{ $item }}</strong>
+                                                                <ul class="mt-1 ps-3 list-unstyled">
+                                                                    @foreach ($himpunan as $huruf => $range)
+                                                                        <li>
+                                                                            <span class="text-muted">
+                                                                                {{ $huruf }} :
+                                                                                [{{ $range[0] }} -
+                                                                                {{ $range[1] }}]
+                                                                            </span>
+                                                                        </li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        @foreach ($subkriteria as $item)
-                            @php
-                                $collapseId = 'collapse' . $index++;
-                                $slug = Str::slug($item, '_');
-                                $penilaiansItem = $penilaians[$slug] ?? [];
-                            @endphp
+        <div class="card w-100 mb-5 card-kelola">
+            <div class="card-header">
+                <h1 class="card-title">Kelola Kriteria Penilaian</h1>
+            </div>
+            <div class="card-body text-capitalize">
+                @if ($isEmpty)
+                    <div class="alert alert-danger text-center">
+                        <span>Belum ada kriteria penilaian</span>
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('penilaian.store') }}">
+                    @csrf
 
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed text-capitalize" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
-                                        aria-expanded="false" aria-controls="{{ $collapseId }}">
-                                        {{ $item }}
-                                    </button>
-                                </h2>
+                    <div class="accordion text-capitalize" id="accordionExample">
+                        @php $index = 0; @endphp
 
-                                <div id="{{ $collapseId }}" class="accordion-collapse collapse text-capitalize"
-                                    data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <table class="table table-borderless table-hover">
-                                            <tr>
-                                                <th class="align-middle">Himpunan</th>
-                                                <th class="align-middle text-center">Min</th>
-                                                <th class="align-middle text-center">Max</th>
-                                                <th class="align-middle">
-                                                    <button type="button" onclick="deleteAll('{{ $item }}')"
-                                                        class="btn btn-sm btn-danger w-100">
-                                                        <i class="fa fa-trash mx-0 px-0"></i> Hapus Data
-                                                        {{ $item }}
-                                                    </button>
-                                                </th>
-                                            </tr>
-                                            {{-- <tr>
-                                                <th>Semesta Pembicaraan</th>
-                                                <th colspan="3">[50 - 90]</th>
-                                            </tr> --}}
+                        @foreach ($kategori as $namaKategori => $subkriteria)
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4>{{ $namaKategori }}</h4>
 
-                                            @foreach ($penilaiansItem as $huruf => $range)
+                                <button class="btn btn-sm btn-primary d-none" data-bs-toggle="modal"
+                                    data-bs-target="#modal_sub_{{ $namaKategori }}" type="button">
+                                    Tambah Data {{ $namaKategori }}
+                                </button>
+                            </div>
+                            <input type="text" hidden name="kriteria" value="{{ $namaKategori }}" class="form-control">
+
+                            @foreach ($subkriteria as $item)
+                                @php
+                                    $collapseId = 'collapse' . $index++;
+                                    $slug = Str::slug($item, '_');
+                                    $penilaiansItem = $penilaians[$slug] ?? [];
+                                @endphp
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed text-capitalize" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
+                                            aria-expanded="false" aria-controls="{{ $collapseId }}">
+                                            {{ $item }}
+                                        </button>
+                                    </h2>
+
+                                    <div id="{{ $collapseId }}" class="accordion-collapse collapse text-capitalize"
+                                        data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            <table class="table table-borderless table-hover">
                                                 <tr>
-                                                    <td class="align-middle">{{ strtoupper($huruf) }}</td>
-                                                    <td class="align-middle">
-                                                        <input type="number"
-                                                            class="form-control form-control-sm text-center w-25 mx-auto"
-                                                            name="{{ $slug }}[{{ $huruf }}][min]"
-                                                            value="{{ $range['min'] }}" readonly placeholder="Min">
-                                                    </td>
-                                                    <td class="align-middle">
-                                                        <input type="number"
-                                                            class="form-control form-control-sm text-center w-25 mx-auto"
-                                                            name="{{ $slug }}[{{ $huruf }}][max]"
-                                                            value="{{ $range['max'] }}" readonly placeholder="Max">
-                                                    </td>
-                                                    {{--  <td class="align-middle">
-                                                        <button type="button" class="btn btn-sm btn-danger w-100"
-                                                            id="delete-nilai-{{ $huruf }}-{{ $item }}"
-                                                            onclick="deleteNilai('{{ $huruf }}', '{{ $item }}')">
+                                                    <th class="align-middle">Himpunan</th>
+                                                    <th class="align-middle text-center">Min</th>
+                                                    <th class="align-middle text-center">Max</th>
+                                                    <th class="align-middle">
+                                                        <button type="button" onclick="deleteAll('{{ $item }}')"
+                                                            class="btn btn-sm btn-danger w-100 ">
                                                             <i class="fa fa-trash mx-0 px-0"></i>
-                                                            Hapus
+                                                            {{-- Hapus Data --}}
+                                                            {{-- {{ $item }} --}}
                                                         </button>
-                                                    </td> --}}
+                                                    </th>
                                                 </tr>
-                                            @endforeach
-                                        </table>
+                                                {{-- <tr>
+                                                    <th>Semesta Pembicaraan</th>
+                                                    <th colspan="3">[50 - 90]</th>
+                                                </tr> --}}
+                                                @foreach ($penilaiansItem as $huruf => $range)
+                                                    <tr>
+                                                        <td class="align-middle">
+                                                            {{ strtoupper($huruf) }}</td>
+
+                                                        <td class="align-middle">
+                                                            <input type="number"
+                                                                class="form-control form-control-sm text-center w-50 mx-auto"
+                                                                name="{{ $slug }}[{{ $huruf }}][min]"
+                                                                value="{{ $range['min'] }}" placeholder="Min">
+                                                        </td>
+                                                        <td class="align-middle">
+                                                            <input type="number"
+                                                                class="form-control form-control-sm text-center w-50 mx-auto"
+                                                                name="{{ $slug }}[{{ $huruf }}][max]"
+                                                                value="{{ $range['max'] }}" placeholder="Max">
+                                                        </td>
+                                                        {{--  <td class="align-middle">
+                                                            <button type="button" class="btn btn-sm btn-danger w-100"
+                                                                id="delete-nilai-{{ $huruf }}-{{ $item }}"
+                                                                onclick="deleteNilai('{{ $huruf }}', '{{ $item }}')">
+                                                                <i class="fa fa-trash mx-0 px-0"></i>
+                                                                Hapus
+                                                            </button>
+                                                        </td> --}}
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            @endforeach
                         @endforeach
-                    @endforeach
-                </div>
+                    </div>
 
-                <div class="mt-4 {{ count($penilaians) < 1 ? 'd-none' : '' }}">
-                    <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
-                </div>
-            </form>
+                    <div class="mt-4 {{ count($penilaians) < 1 ? 'd-none' : '' }}">
+                        <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -363,4 +368,14 @@
             })
         }
     </script>
+@endsection
+
+@section('style')
+    <style>
+        .card-kriteria,
+        .card-kelola {
+            height: 400px;
+            overflow-y: scroll;
+        }
+    </style>
 @endsection

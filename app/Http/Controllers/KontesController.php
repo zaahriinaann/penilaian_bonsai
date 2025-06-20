@@ -76,7 +76,7 @@ class KontesController extends Controller
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silakan hubungi admin atau coba lagi." . $e->getMessage());
+            Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
     }
@@ -137,7 +137,7 @@ class KontesController extends Controller
             return redirect()->route('kontes.index');
         } catch (\Exception $e) {
             // Logging optional: Log::error($e);
-            Session::flash('error', "Terdapat kesalahan saat memperbarui data: " . $e->getMessage());
+            Session::flash('error', "Terdapat kesalahan saat memperbarui data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
     }
@@ -162,7 +162,7 @@ class KontesController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                'message' => 'Gagal menghapus data, silakan hubungi admin atau coba lagi.'
             ], 500);
         }
     }
