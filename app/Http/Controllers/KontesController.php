@@ -70,7 +70,6 @@ class KontesController extends Controller
             // Handle image dengan function handleImageUpload
             $data['poster_kontes'] = $this->handleImageUpload($request, 'store');
 
-            /*  dd($data); */
             // Simpan data
             $kontes = Kontes::create($data);
 
@@ -104,37 +103,41 @@ class KontesController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        try {
-            $kontes = Kontes::where('slug', $slug)->firstOrFail();
+        $kontes = Kontes::where('slug', $slug)->firstOrFail();
 
+        try {
             $data = $request->all();
 
-            // Buat slug manual dan aman
-            $slugBaru = strtolower(str_replace(' ', '-', $data['nama_kontes']));
-            $slugBaru = preg_replace('/[^a-z0-9\-]/', '', $slugBaru);
+            // Slug baru dari nama kontes
+            $slugBaru = strtolower(preg_replace('/[^a-z0-9\-]/', '', str_replace(' ', '-', $data['nama_kontes'])));
             $data['slug'] = $slugBaru;
 
             // Konversi harga tiket
-            $price = str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
-            $data['harga_tiket_kontes'] = (int) $price;
+            $data['harga_tiket_kontes'] = (int) str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
 
-            // Periksa link GMaps jika diisi
+            // Validasi dan normalkan link GMaps
             if (
                 !empty($data['link_gmaps']) &&
-                strpos($data['link_gmaps'], 'http://') !== 0 &&
-                strpos($data['link_gmaps'], 'https://') !== 0
+                !preg_match('/^https?:\/\//', $data['link_gmaps'])
             ) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
 
-            $data['poster_kontes'] = $this->handleImageUpload($request, 'update');
-            unset($data['poster_kontes_lama']);
+            // Upload gambar jika ada
+            if ($request->hasFile('poster_kontes')) {
+                $data['poster_kontes'] = $this->handleImageUpload($request, 'update');
+                unset($data['poster_kontes_lama']);
+            } else {
+                unset($data['poster_kontes_lama']);
+            }
+
             $kontes->update($data);
 
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
             return redirect()->route('kontes.index');
         } catch (\Exception $e) {
-            Session::flash('error', "Terdapat kesalahan saat memperbarui data. Silakan coba lagi atau hubungi admin." . $e->getMessage());
+            // Logging optional: Log::error($e);
+            Session::flash('error', "Terdapat kesalahan saat memperbarui data: " . $e->getMessage());
             return redirect()->back()->withInput();
         }
     }
@@ -166,31 +169,32 @@ class KontesController extends Controller
 
     protected function handleImageUpload($request, $typeInput)
     {
-        if ($request->hasFile('poster_kontes') && $typeInput) {
-            $image = $request->file('poster_kontes');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $destinationPath = public_path('images/kontes');
-
-            // Buat folder jika belum ada (opsional)
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            if ($typeInput === 'store') {
-                $image->move($destinationPath, $imageName);
-                return $imageName;
-            } elseif ($typeInput === 'update') {
-                $fotoLama = $request->input('poster_kontes_lama');
-                $oldImagePath = $destinationPath . '/' . $fotoLama;
-
-                if (!empty($fotoLama) && file_exists($oldImagePath) && is_file($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
-
-                $image->move($destinationPath, $imageName);
-                return $imageName;
-            }
+        if (!$request->hasFile('poster_kontes') || !$typeInput) {
+            return null;
         }
-        return null;
+
+        $image = $request->file('poster_kontes');
+        $imageName = time() . '.' . $image->getClientOriginalExtension();
+        $destinationPath = public_path('images/kontes');
+
+        // Buat folder jika belum ada
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+
+        if ($typeInput === 'update') {
+            $fotoLama = $request->input('poster_kontes_lama');
+            $oldImagePath = $destinationPath . '/' . $fotoLama;
+
+            if (!empty($fotoLama) && file_exists($oldImagePath) && is_file($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+
+            unset($request['poster_kontes_lama']);
+        }
+
+        // Pindahkan file baru
+        $image->move($destinationPath, $imageName);
+        return $imageName;
     }
 }
