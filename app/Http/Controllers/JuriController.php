@@ -92,7 +92,7 @@ class JuriController extends Controller
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal menyimpan data, silahkan coba lagi." . $e->getMessage(), 500);
+            Session::flash('error', "Gagal menyimpan data, silahkan coba lagi.");
             return redirect()->back()->withInput();
         }
     }
@@ -147,7 +147,6 @@ class JuriController extends Controller
             } else {
                 // Jika password ada, hash dan update
                 $data['password'] = bcrypt($data['password']);
-                $passwordUser = $data['password'];
             }
 
             // Upload gambar jika ada
@@ -164,13 +163,12 @@ class JuriController extends Controller
             $juri->update($data);
 
             // Find user
-            $user = User::where('no_anggota', $juri['no_induk_juri'])->first();
+            $user = User::where('username', $juri['username'])->first();
             if ($user) {
                 // dd($user);
                 $user->update([
                     'name' => $data['nama_juri'],
                     'username' => $data['username'],
-                    'password' => $passwordUser,
                     'email' => $data['email'],
                     'role' => 'juri',
                 ]);
@@ -181,7 +179,7 @@ class JuriController extends Controller
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal memperbarui data, silakan hubungi admin atau coba lagi." . $e->getMessage(), 500);
+            Session::flash('error', "Gagal memperbarui data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
     }

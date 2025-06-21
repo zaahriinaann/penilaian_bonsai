@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('no_induk_juri')->nullable();
             $table->string('nama_juri');
             $table->string('foto')->nullable();
-            $table->string('sertifikat');
             $table->string('no_telepon')->nullable();
             $table->string('email')->nullable();
             $table->string('username')->nullable()->unique();
