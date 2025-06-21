@@ -112,7 +112,7 @@
                     @csrf
                     @method('POST')
                     <div class="modal-body">
-                        <input type="text" name="cabang" id="cabang-input">
+                        <input type="hidden" name="cabang" id="cabang-input">
                         <div class="row">
                             <div class="col-md-12 mb-3 d-flex justify-content-between align-items-center">
                                 <span class="fw-bold fs-5">Data Pemilik</span>
@@ -469,27 +469,35 @@
 
                                 $('#data-list-pohon-pemilik').show();
                                 $('#data-pohon').hide();
-                                btnProceed.removeClass('disabled').text('Simpan').prop('type',
-                                    'submit');
+                                btnProceedClicked ? btnProceed.removeClass('disabled').text(
+                                    'Simpan').prop('type',
+                                    'submit') : btnProceed.prop('type', 'button');
                             } else {
                                 msgDaftar.text('Data anggota tidak ditemukan.').css({
                                     color: 'red',
                                     fontSize: '12px'
                                 });
+                                    console.log('Pemilik belum terdaftar');
 
+
+                                btnProceedClicked = true;
+                                btnProceedClicked ? btnProceed.removeClass('disabled').text(
+                                    'Simpan').prop('type',
+                                    'submit') : btnProceed.prop('type', 'button');
                                 tableDataListPohon.empty();
                                 $('#data-list-pohon-pemilik').hide();
-                                $('#data-pohon').show();
+                                $('#data-pohon').hide();
                             }
                         } else {
                             // Jika tidak ada yang dipilih
                             $(pemilikSelector).val('');
                             $(noAnggotaSelector).val('');
                             $(cabangInput).val('');
+
                             msgDaftar.text('');
                             tableDataListPohon.empty();
                             $('#data-list-pohon-pemilik').hide();
-                            $('#data-pohon').hide();
+                            $('#data-pohon').addClass('d-none').hide();
                         }
                     });
                 }
@@ -520,7 +528,6 @@
                 const valNoAnggota = $(noAnggotaSelector).val();
                 const valCabang = $(cabangSelector).val();
                 $(cabangInput).val(valCabang);
-
 
                 if (valPemilik && valNoAnggota && valCabang) {
                     btnProceed.removeClass('disabled');

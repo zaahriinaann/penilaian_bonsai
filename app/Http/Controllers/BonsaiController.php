@@ -29,9 +29,20 @@ class BonsaiController extends Controller
         // get only pemilik
         $pemilik = $bonsai::select('pemilik', 'no_anggota', 'cabang')->get();
 
+        if (isset($pemilik)) {
+            $user = User::where('role', 'anggota')->get();
+            $pemilik = $user->map(function ($item) {
+                return (object)[
+                    'pemilik' => $item->name,
+                    'no_anggota' => $item->no_anggota,
+                    'cabang' => $item->cabang,
+                ];
+            });
+        }
+
         // get only pemilik unique
         $pemilik = $pemilik->unique(function ($item) {
-            return $item['pemilik'] . '-' . $item['no_anggota'] . '-' . $item['cabang'];
+            return $item->pemilik . '-' . $item->no_anggota . '-' . $item->cabang;
         });
 
         $province = config('province.obj');
@@ -55,12 +66,12 @@ class BonsaiController extends Controller
         try {
             $data = $request->all();
 
-            if($request->has('cabang2')){
+            if ($request->has('cabang2')) {
                 $data['cabang'] = $data['cabang2'];
                 unset($data['cabang2']);
             }
-            
-            if($request->has('cabang-input')){
+
+            if ($request->has('cabang-input')) {
                 $data['cabang'] = $data['cabang-input'];
                 unset($data['cabang-input']);
             }
