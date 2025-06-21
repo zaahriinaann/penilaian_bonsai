@@ -11,8 +11,12 @@
 
 @section('content')
     @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
+        <div class="alert alert-success d-flex align-items-center justify-content-between d-none">
+            <span>
+                <i class="bi bi-check-square-fill text-success"></i>
+                {{ session('success') }}
+            </span>
+            <i class="bi bi-x-square-fill cursor-pointer text-danger" id="close-alert"></i>
         </div>
     @endif
 
@@ -237,14 +241,14 @@
                                         <label for="min_{{ $huruf }}" class="form-label">Min</label>
                                         <input type="number"
                                             class="form-control {{ $huruf == 'Baik Sekali' ? 'min_baik_sekali' : '' }}"
-                                            name="min_{{ $huruf }}" id="min_{{ $huruf }}" readonly
+                                            name="min_{{ $huruf }}" id="min_{{ $huruf }}"
                                             aria-describedby="min_{{ $huruf }}" min="0">
                                     </div>
                                     <div class="col mb-3">
                                         <label for="max_{{ $huruf }}" class="form-label">Max</label>
                                         <input type="number"
                                             class="form-control {{ $huruf == 'Baik Sekali' ? 'max_baik_sekali' : '' }}"
-                                            name="max_{{ $huruf }}" id="max_{{ $huruf }}" readonly
+                                            name="max_{{ $huruf }}" id="max_{{ $huruf }}"
                                             aria-describedby="max_{{ $huruf }}" min="0">
                                     </div>
                                 </div>
@@ -282,7 +286,7 @@
                                     <label for="kriteria" class="form-label">Kriteria</label>
                                     <input type="text" class="form-control" name="kriteria" id="kriteria"
                                         aria-describedby="kriteria" title="Kriteria" placeholder="Masukkan Kriteria"
-                                        value="{{ $namaKategori }}" readonly>
+                                        value="{{ $namaKategori }}">
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
@@ -359,14 +363,31 @@
 
             detailKriteria.forEach((item, index) => {
                 if (item === 'Baik Sekali') {
-                    $('.min_baik_sekali').val(detailMinKriteria[3]).attr('readonly', true);
-                    $('.max_baik_sekali').val(detailMaxKriteria[3]).attr('readonly', true);
+                    $('.min_baik_sekali').val(detailMinKriteria[3]).attr('readonly', false);
+                    $('.max_baik_sekali').val(detailMaxKriteria[3]).attr('readonly', false);
                 }
 
-                $('#min_' + item).val(detailMinKriteria[index]).attr('readonly', true);
-                $('#max_' + item).val(detailMaxKriteria[index]).attr('readonly', true);
+                $('#min_' + item).val(detailMinKriteria[index]).attr('readonly', false);
+                $('#max_' + item).val(detailMaxKriteria[index]).attr('readonly', false);
             })
         }
+
+        $(document).ready(function() {
+            // Tampilkan alert success dengan fade
+            const alertBox = $('.alert-success');
+            if (alertBox.length) {
+                alertBox.removeClass('d-none').hide().fadeIn('slow').delay(5000).fadeOut('slow', function() {
+                    $(this).addClass('d-none');
+                }); // setelah 4 detik;
+            }
+
+            // Tombol close
+            $('#close-alert').on('click', function() {
+                $(this).parent().fadeOut('slow', function() {
+                    $(this).addClass('d-none');
+                });
+            });
+        });
     </script>
 @endsection
 

@@ -24,6 +24,7 @@ class JuriSeeder extends Seeder
             'status' => '1',
             'role' => 'juri',
             'foto' => null,
+            'foto' => '123.jpg',
         ]);
     }
 }

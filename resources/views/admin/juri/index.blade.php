@@ -36,9 +36,6 @@
                 <tbody class="align-middle">
                     @forelse ($dataRender as $item)
                         <tr>
-                            <td hidden class="list-username">
-                                {{ $item->username }}
-                            </td>
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <img class="rounded"
@@ -57,7 +54,7 @@
                             </td>
                             <td>{{ $item->nama_juri }}</td>
                             <td>{{ $item->email }}</td>
-                            <td>{{ $item->username }}</td>
+                            <td class="list-username">{{ $item->username }}</td>
                             <td>{{ $item->no_telepon }}</td>
                             <td>
                                 <a class="btn btn-sm btn-primary" title="Lihat Sertifikat"

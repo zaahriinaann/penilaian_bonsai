@@ -38,12 +38,12 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
-                                <img class="rounded-circle"
-                                    src="{{ asset('images/peserta/' . $item->foto) ?? asset('assets/media/avatars/blank.png') }}"
+                                <img class="rounded"
+                                    src="{{ $item->foto ? asset('images/peserta/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
                                     alt="Foto Peserta" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>{{ $item->name ?? 'Belum Diisi' }}</td>
-                            <td>{{ $item->username ?? 'Belum Diisi' }}</td>
+                            <td class="list-username">{{ $item->username ?? 'Belum Diisi' }}</td>
                             <td>{{ $item->no_anggota ?? 'Belum Diisi' }}</td>
                             <td>{{ $item->cabang ?? 'Belum Diisi' }}</td>
                             <td>{{ $item->no_hp ?? 'Belum Diisi' }}</td>
@@ -115,8 +115,9 @@
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="cabang" class="form-label">Cabang</label>
-                                <input type="text" class="form-control" name="cabang" id="cabang"
-                                    aria-describedby="cabang" title="Cabang" placeholder="Masukkan Cabang" required>
+                                {{-- <input type="text" class="form-control" name="cabang" id="cabang"
+                                    aria-describedby="cabang" title="Cabang" placeholder="Masukkan Cabang" required> --}}
+                                <select id="cabang" name="cabang" class="cabang"></select>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="no_hp" class="form-label">Nomor Hp</label>
@@ -165,16 +166,18 @@
                                 <input type="text" class="form-control" name="nama" id="edit_nama"
                                     placeholder="Masukkan Nama Peserta">
                             </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="edit_username" class="form-label">Username</label>
-                                <input type="text" class="form-control" name="username" id="edit_username"
-                                    placeholder="Masukkan Username Peserta">
-                                <span class="edit_msg-slug"></span>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="edit_email" class="form-label">Email</label>
-                                <input type="email" class="form-control" name="email" id="edit_email"
-                                    placeholder="Masukkan Email Peserta">
+                            <div class="d-flex gap-2 col">
+                                <div class="w-100 mb-3">
+                                    <label for="edit_username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" name="username" id="edit_username"
+                                        placeholder="Masukkan Username Peserta">
+                                    <span class="edit_msg-slug"></span>
+                                </div>
+                                <div class="w-100 mb-3">
+                                    <label for="edit_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email" id="edit_email"
+                                        placeholder="Masukkan Email Peserta">
+                                </div>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="edit_no_anggota" class="form-label">No Anggota</label>
@@ -183,8 +186,9 @@
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="edit_cabang" class="form-label">Cabang</label>
-                                <input type="text" class="form-control" name="cabang" id="edit_cabang"
-                                    placeholder="Masukkan Cabang Peserta">
+                                {{-- <input type="text" class="form-control" name="cabang" id="edit_cabang"
+                                    placeholder="Masukkan Cabang Peserta"> --}}
+                                <select id="cabang" name="cabang" class="cabang"></select>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="edit_no_hp" class="form-label">Nomor Hp</label>
@@ -200,6 +204,23 @@
                                 <label for="edit_foto" class="form-label">Foto (Opsional)</label>
                                 <input type="file" class="form-control" name="foto" id="edit_foto">
                                 <input type="hidden" name="foto_lama" id="edit_foto_lama">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="" id="gantiPassword">
+                                    <label class="form-check-label" for="gantiPassword">
+                                        Ganti Password
+                                    </label>
+                                </div>
+                                <div class="input-group mb-3" id="form-password" style="display: none">
+                                    <input type="password" id="input-password" class="form-control"
+                                        placeholder="Masukkan Password" name="password" aria-label="Masukkan Password"
+                                        aria-describedby="basic-addon1">
+                                    <span class="input-group-text cursor-pointer" id="show-password">
+                                        <i class="bi bi-eye-slash-fill d-none" id="hide-eye"></i>
+                                        <i class="bi bi-eye-fill" id="show-eye"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -217,6 +238,8 @@
 @section('script')
     <script>
         $(document).ready(() => {
+            const province = @json($province);
+
             // Hide password change form on reset button click
             $('button[type="reset"]').on('click', () => {
                 $('#form-password').hide();
@@ -227,10 +250,23 @@
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
 
+            // Select Modal Add
+            $(".cabang").selectize({
+                allowEmptyOption: true,
+                placeholder: 'Pilih Cabang',
+                theme: 'bootstrap-5',
+                valueField: 'name',
+                labelField: 'name',
+                searchField: 'name',
+                maxItems: 1,
+                create: false,
+                options: province,
+            });
+
             // Populate the edit form with data when an edit button is clicked
             $('.btn-edit').on('click', function() {
                 const btn = $(this);
-                $('#form_edit_peserta').attr('action', '/master/peserta/' + btn.data('id'));
+                $('#form_edit_peserta').attr('action', '/kontes/peserta/' + btn.data('id'));
                 $('#edit_peserta_id').val(btn.data('id'));
                 $('#edit_nama').val(btn.data('nama'));
                 $('#edit_username').val(btn.data('username'));
@@ -241,11 +277,24 @@
                 $('#edit_no_hp').val(btn.data('no_hp'));
                 $('#edit_foto_lama').val(btn.data('foto'));
                 // Optionally, you can set the image preview if needed
+                $(".cabang").selectize({
+                    allowEmptyOption: true,
+                    placeholder: btn.data('cabang'),
+                    theme: 'bootstrap-5',
+                    valueField: 'name',
+                    labelField: 'name',
+                    searchField: 'name',
+                    maxItems: 1,
+                    create: false,
+                    options: province,
+                });
             });
+
 
             // Handle username field changes (for slug check)
             $('#username, #edit_username').on('input', function() {
                 const slug = generateSlug(this.value);
+                console.log(slug);
                 let slugExists = false;
                 $('.list-username').each(function() {
                     if ($(this).text().trim() === slug) {
@@ -281,6 +330,26 @@
                     .replace(/^-+|-+$/g, '');
             }
 
+            $('#gantiPassword').on('change', () => {
+                $('#form-password').toggle();
+            });
+
+            // Toggle password visibility (show/hide)
+            $('#show-password').on('click', () => {
+                const passwordField = $('#input-password');
+                const hideEye = $('#hide-eye');
+                const showEye = $('#show-eye');
+
+                if (hideEye.hasClass('d-none')) {
+                    passwordField.prop('type', 'text');
+                    hideEye.removeClass('d-none');
+                    showEye.addClass('d-none');
+                } else {
+                    passwordField.prop('type', 'password');
+                    hideEye.addClass('d-none');
+                    showEye.removeClass('d-none');
+                }
+            });
         });
     </script>
 @endsection

@@ -15,7 +15,9 @@ class PesertaController extends Controller
     public function index()
     {
         $dataRender = User::where('role', 'anggota')->get();
-        return view('admin.peserta.index', compact('dataRender'));
+        $province = config('province.obj');
+
+        return view('admin.peserta.index', compact('dataRender', 'province'));
     }
 
     /**
@@ -31,7 +33,6 @@ class PesertaController extends Controller
      */
     public function store(Request $request)
     {
-
         // Persiapan data
         $data = $request->all();
         $data['name'] = $data['nama'];
@@ -68,6 +69,7 @@ class PesertaController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         try {
             $peserta = User::findOrFail($id);
 
@@ -93,6 +95,12 @@ class PesertaController extends Controller
                 }
             } else {
                 $validated['foto'] = $peserta->foto;
+            }
+
+            if($request->has('password')) {
+                $validated['password'] = bcrypt($request->password);
+            }else{
+                unset($validated['password']);
             }
 
             $peserta->update($validated);
