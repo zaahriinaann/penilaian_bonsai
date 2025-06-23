@@ -43,9 +43,9 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
-                                <img class="rounded-circle"
-                                    src="{{ asset('images/bonsai/' . $item->foto) ?? asset('assets/media/avatars/blank.png') }}"
-                                    alt="Foto Juri" style="width: 75px; height: 75px; object-fit: cover;">
+                                <img class="rounded"
+                                    src="{{ $item->foto ? asset('images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
+                                    alt="Foto Bonsai" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>{{ $item->no_induk_pohon }}</td>
                             <td>
@@ -129,27 +129,36 @@
                                     <div class="d-flex gap-2">
                                         <div class="w-100">
                                             <label for="pemilik" class="form-label">Pemilik</label>
-                                            <input type="text" class="form-control" name="pemilik" id="pemilik"
-                                                aria-describedby="pemilik" title="Pemilik" placeholder="Masukkan Pemilik">
+                                            <input type="hidden" name="pemilik" id="pemilik">
+                                            <select id="pemilik" class="form-select form-control">
+                                                <option value="">Pilih Peserta Terdaftar</option>
+                                                @foreach ($pemilik as $p)
+                                                    <option value="{{ $p->pemilik }}"
+                                                        data-no_anggota="{{ $p->no_anggota }}"
+                                                        data-cabang="{{ $p->cabang }}">
+                                                        {{ $p->pemilik . ' - (' . $p->no_anggota . ') - ' . $p->cabang }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
-                                        <div class="w-100">
+                                        {{--  <div class="w-100">
                                             <label for="no_anggota" class="form-label">Nomor Anggota</label>
                                             <input type="text" class="form-control" name="no_anggota" id="no_anggota"
                                                 aria-describedby="no_anggota" title="Nomor Anggota"
                                                 placeholder="Masukkan Nomor Anggota">
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
-                                <div class="col-md-12 mb-3">
+                                {{--  <div class="col-md-12 mb-3">
                                     <label for="cabang" class="form-label">PPBI Cabang</label>
                                     <select type="text" id="cabang"></select>
-                                </div>
+                                </div> --}}
                                 <span class="msg-daftar"></span>
                             </div>
                             <div id="pemilikPernahDaftar" style="display: none;">
                                 <div class="col-md-12 mb-3">
                                     <label for="pemilik" class="form-label">Nama Pemilik</label>
-                                    <select id="pemilik_pernah_daftar" class="text-capitalize">
+                                    <select id="pemilik" class="form-select form-control">
                                         <option value="">Pilih Pemilik Pohon</option>
                                         @foreach ($pemilik as $p)
                                             <option value="{{ $p->pemilik }}" data-no_anggota="{{ $p->no_anggota }}"
@@ -477,7 +486,7 @@
                                     color: 'red',
                                     fontSize: '12px'
                                 });
-                                    console.log('Pemilik belum terdaftar');
+                                console.log('Pemilik belum terdaftar');
 
 
                                 btnProceedClicked = true;
