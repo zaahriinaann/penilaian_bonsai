@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AkunController;
 use App\Http\Controllers\BonsaiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
@@ -21,6 +22,7 @@ Auth::routes();
 
 Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('home', HomeController::class);
+    Route::resource('akun', AkunController::class);
     Route::prefix('master')->group(function () {
         Route::resource('kontes', KontesController::class)->parameters([
             'kontes' => 'slug'
