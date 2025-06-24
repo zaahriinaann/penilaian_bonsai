@@ -115,7 +115,7 @@
                         <input type="hidden" name="cabang" id="cabang-input">
                         <div class="row">
                             <div class="col-md-12 mb-3 d-flex justify-content-between align-items-center">
-                                <span class="fw-bold fs-5">Data Pemilik</span>
+                                <span class="fw-bold fs-5"><b> Data Pemilik </b></span>
                                 <div class="form-check form-check-reverse">
                                     <label class="form-check-label" for="pernahDaftar">
                                         Pernah Daftar
@@ -141,51 +141,11 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        {{--  <div class="w-100">
-                                            <label for="no_anggota" class="form-label">Nomor Anggota</label>
-                                            <input type="text" class="form-control" name="no_anggota" id="no_anggota"
-                                                aria-describedby="no_anggota" title="Nomor Anggota"
-                                                placeholder="Masukkan Nomor Anggota">
-                                        </div> --}}
                                     </div>
                                 </div>
-                                {{--  <div class="col-md-12 mb-3">
-                                    <label for="cabang" class="form-label">PPBI Cabang</label>
-                                    <select type="text" id="cabang"></select>
-                                </div> --}}
-                                <span class="msg-daftar"></span>
-                            </div>
-                            <div id="pemilikPernahDaftar" style="display: none;">
-                                <div class="col-md-12 mb-3">
-                                    <label for="pemilik" class="form-label">Nama Pemilik</label>
-                                    <select id="pemilik" class="form-select form-control">
-                                        <option value="">Pilih Pemilik Pohon</option>
-                                        @foreach ($pemilik as $p)
-                                            <option value="{{ $p->pemilik }}" data-no_anggota="{{ $p->no_anggota }}"
-                                                data-cabang="{{ $p->cabang }}">
-                                                {{ $p->pemilik . ' - ' . $p->no_anggota }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="data-list-pohon-pemilik" style="display: none;">
+
                                 <div class="col-md-12 mb-3" style="border-top: 1px dashed #ABABAB; padding-top: 10px;">
-                                    <span class="fw-bold fs-5">Data List Pohon Pemilik</span>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-hover table-borderless table-striped">
-                                        <tbody class="align-middle" id="table-data-list-pohon">
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="row">
-                                    <button type="button" class="btn btn-sm btn-primary" id="tambah-pohon-baru">Tambah
-                                        Pohon Baru</button>
-                                </div>
-                            </div>
-                            <div id="data-pohon" style="display: none;">
-                                <div class="col-md-12 mb-3" style="border-top: 1px dashed #ABABAB; padding-top: 10px;">
-                                    <span class="fw-bold fs-5">Data Pohon</span>
+                                    <span class="fw-bold fs-5"><b> Pohon </b></span>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="nama_pohon" class="form-label">Nama Pohon</label>
@@ -209,7 +169,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- <div class="col-md-12 mb-3">
+                                <div class="col-md-12 mb-3">
                                     <label for="tingkatan" class="form-label">Tingkatan</label>
                                     <select name="tingkatan" id="tingkatan" class="form-select form-control">
                                         <option selected disabled>Pilih Tingkatan</option>
@@ -217,7 +177,12 @@
                                         <option value="madya">Madya</option>
                                         <option value="utama">Utama</option>
                                     </select>
-                                </div> --}}
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="kelas" class="form-label">Kelas Pohon</label>
+                                    <input type="text" class="form-control" name="kelas" id="kelas"
+                                        aria-describedby="kelas" title="kelas" placeholder="Masukkan Kelas Pohon">
+                                </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="ukuran" class="form-label">Ukuran Pohon</label>
                                     <div class="input-group">
@@ -255,7 +220,43 @@
                                     <label for="foto" class="form-label">Foto Bonsai</label>
                                     <input type="file" class="form-control" name="foto" id="foto">
                                 </div>
+                                <span class="msg-daftar"></span>
                             </div>
+
+                            {{-- <div id="data-pohon" style="display: none;">
+
+                            </div> --}}
+
+                            <div id="pemilikPernahDaftar" style="display: none;">
+                                <div class="col-md-12 mb-3">
+                                    <label for="pemilik" class="form-label">Nama Pemilik</label>
+                                    <select id="pemilik" class="form-select form-control">
+                                        <option value="">Pilih Pemilik Pohon</option>
+                                        @foreach ($pemilik as $p)
+                                            <option value="{{ $p->pemilik }}" data-no_anggota="{{ $p->no_anggota }}"
+                                                data-cabang="{{ $p->cabang }}">
+                                                {{ $p->pemilik . ' - ' . $p->no_anggota }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="data-list-pohon-pemilik" style="display: none;">
+                                <div class="col-md-12 mb-3" style="border-top: 1px dashed #ABABAB; padding-top: 10px;">
+                                    <span class="fw-bold fs-5">Data List Pohon Pemilik</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-borderless table-striped">
+                                        <tbody class="align-middle" id="table-data-list-pohon">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row">
+                                    <button type="button" class="btn btn-sm btn-primary" id="tambah-pohon-baru">
+                                        Tambah Pohon Baru
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer">
