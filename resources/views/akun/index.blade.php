@@ -8,47 +8,60 @@
         {{-- Kartu Informasi Akun Utama --}}
         <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-body">
-                <div class="row align-items-center"> {{-- Menggunakan align-items-center untuk foto dan teks sejajar vertikal --}}
+                <div class="row align-items-center">
 
-                    {{-- Bagian Kiri: Foto Profil Lebih Besar dan Jelas --}}
-                    <div class="col-md-4 text-center mb-4 mb-md-0 me-md-12"> {{-- Tambahkan me-md-5 di sini --}}
+                    {{-- Bagian Kiri: Foto Profil --}}
+                    <div class="col-md-4 text-center mb-4 mb-md-0 me-md-12">
                         <img class="border border-secondary border-3" src="{{ asset('assets/media/avatars/blank.png') }}"
-                            alt="Foto Profil" style="width: 10cm; height: 10cm; object-fit: cover;"> {{-- Ukuran lebih besar dan border jelas --}}
-                        <h4 class="mt-3 text-primary">{{ Auth::user()->nama }}</h4> {{-- Nama di bawah foto, lebih menonjol --}}
+                            alt="Foto Profil" style="width: 10cm; height: 10cm; object-fit: cover;">
+                        <h4 class="mt-3 text-primary">{{ Auth::user()->nama }}</h4>
                     </div>
 
-                    {{-- Bagian Kanan: Informasi Akun dengan Teks Lebih Besar --}}
-                    <div class="col-md-7"> {{-- Sesuaikan col-md-8 menjadi col-md-7 --}}
+                    {{-- Bagian Kanan: Informasi Akun --}}
+                    <div class="col-md-7">
                         <h3 class="mb-3 text-secondary">Detail Akun Anda</h3> {{-- Judul lebih menonjol --}}
-                        <div class="row g-2"> {{-- g-2 untuk jarak antar item yang sedikit lebih lega --}}
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5"><strong>Username:</strong> {{ Auth::user()->username }}</p>
-                                {{-- fs-5 untuk ukuran font lebih besar --}}
-                            </div>
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5"><strong>No. Anggota:</strong> {{ Auth::user()->no_anggota }}</p>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5"><strong>Cabang:</strong> {{ Auth::user()->cabang }}</p>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5"><strong>No. HP:</strong> {{ Auth::user()->no_hp }}</p>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5"><strong>Alamat:</strong> {{ Auth::user()->alamat }}</p>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5"><strong>Email:</strong> {{ Auth::user()->email }}</p>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <p class="mb-0 fs-5">
-                                    <strong>Role:</strong>
-                                    <span class="badge bg-success fs-6 py-2 px-3">{{ Auth::user()->role }}</span>
-                                    {{-- Badge lebih besar dan warna menonjol --}}
-                                </p>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary btn-lg mt-4 w-100" id="toggle-password-form"> {{-- Tombol lebih besar dan lebar penuh --}}
+                        <table class="table table-borderless fs-5">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">Username</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>{{ Auth::user()->username }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">No. Anggota</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>{{ Auth::user()->no_anggota }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">Cabang</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>{{ Auth::user()->cabang }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">No. HP</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>{{ Auth::user()->no_hp }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">Alamat</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>{{ Auth::user()->alamat }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">Email</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>{{ Auth::user()->email }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-nowrap">Role</td>
+                                    <td class="text-nowrap">:</td>
+                                    <td>
+                                        <span class="badge bg-success fs-6 py-2 px-3">{{ Auth::user()->role }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-primary btn-lg mt-4 w-100" id="toggle-password-form">
                             🔒 Ubah Password
                         </button>
                     </div>
@@ -59,7 +72,7 @@
         {{-- Form Ubah Password --}}
         <div class="card shadow-sm rounded-4 d-none" id="password-form-card">
             <div class="card-body">
-                <h4 class="card-title mb-4 text-center">🔐 Form Ubah Password</h4> {{-- Judul di tengah --}}
+                <h4 class="card-title mb-4 text-center">🔐 Form Ubah Password</h4>
                 <form action="" method="POST">
                     @csrf
                     <div class="mb-3">
@@ -77,7 +90,7 @@
                         <input type="password" name="new_password_confirmation" class="form-control form-control-lg"
                             required>
                     </div>
-                    <div class="d-grid gap-2"> {{-- Menggunakan d-grid untuk tombol penuh lebar dan ada jarak --}}
+                    <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-success btn-lg">Simpan Perubahan</button>
                         <button type="button" class="btn btn-outline-danger btn-lg"
                             id="cancel-password-form">Batal</button>
