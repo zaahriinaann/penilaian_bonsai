@@ -7,7 +7,7 @@
         {{-- <div class="card-body">
             Hai, <b>{{ Auth::user()->name }}</b>! Selamat datang di aplikasi Penilaian Estetika Bonsai PPBI.
         </div> --}}
-        <div class="d-flex gap-2 px-5 mt-5">
+        <div class="d-flex gap-2 px-5 my-5">
             @foreach ($dataRender as $key => $item)
                 <div class="container-card noselect">
                     <div class="canvas">

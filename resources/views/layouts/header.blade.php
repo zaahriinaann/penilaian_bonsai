@@ -92,19 +92,18 @@
                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 mt-2 fs-6 w-275px"
                         data-kt-menu="true">
                         <div class="menu-item px-3">
-                            <div class="menu-content d-flex align-items-center px-3">
+                            <div class="menu-content d-flex align-items-center">
                                 <div class="symbol symbol-50px me-5 d-none">
                                     <img alt="Logo" src="{{ asset('assets/media/avatars/150-26.jpg') }}" />
                                 </div>
-                                <div class="d-flex flex-column">
+                                <div class="d-flex flex-column w-100">
                                     <div class="fw-bolder d-flex align-items-center fs-5 text-capitalize">
                                         {{ Auth::user()->name }}
                                     </div>
                                     <span
                                         class="fw-bold text-muted text-hover-primary fs-7">{{ Auth::user()->email }}</span>
-                                    <div class="separator my-2"></div>
                                     <span
-                                        class="fw-bold fs-7 badge bg-light-success text-success text-capitalize">{{ Auth::user()->role }}</span>
+                                        class="fw-bold fs-7 badge bg-light-success text-success text-capitalize mt-2">{{ Auth::user()->role }}</span>
                                 </div>
                             </div>
                         </div>
