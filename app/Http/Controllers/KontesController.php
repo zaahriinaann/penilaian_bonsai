@@ -197,4 +197,11 @@ class KontesController extends Controller
         $image->move($destinationPath, $imageName);
         return $imageName;
     }
+
+    public function Pendaftaran(Request $request)
+    {
+        dd($request);
+
+        return view('admin.kontes.Pendaftaran');
+    }
 }

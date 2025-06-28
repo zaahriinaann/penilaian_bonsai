@@ -35,8 +35,6 @@ Route::middleware(['auth', 'web'])->group(function () {
             'penilaian' => 'slug'
         ]);
         // Route::resource('peserta', PesertaController::class);
-    });
-    Route::prefix('kontes')->group(function () {
         Route::resource('bonsai', BonsaiController::class)->parameters([
             'bonsai' => 'slug'
         ]);
@@ -53,6 +51,11 @@ Route::middleware(['auth', 'web'])->group(function () {
             // defaultnya laravel itu pake id, jadi harusnya gausah di ubah gapapa
             // tapi kalau gak bisa ya di ubah aja manual seperti contoh lainnya
             'peserta' => 'id'
+        ]);
+    });
+    Route::prefix('kontes')->group(function () {
+        Route::resource('Pendaftaran', KontesController::class)->parameters([
+            'kontes' => 'slug'
         ]);
     });
 });

@@ -26,9 +26,9 @@ class DatabaseSeeder extends Seeder
         // Akun Admin
         $this->call([
             UserSeeder::class,
-            JuriSeeder::class,
-            KontesSeeder::class,
-            BonsaiSeeder::class,
+            // JuriSeeder::class,
+            // KontesSeeder::class,
+            // BonsaiSeeder::class,
             HelperKriteriaSeeder::class
         ]);
     }

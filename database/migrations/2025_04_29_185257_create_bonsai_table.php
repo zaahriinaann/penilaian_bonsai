@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('bonsai', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('user_id');
             $table->string('slug')->unique();
             $table->string('nama_pohon');
             $table->string('nama_lokal');
@@ -24,9 +25,6 @@ return new class extends Migration
             $table->string('no_induk_pohon')->unique();
             $table->string('masa_pemeliharaan');
             $table->string('format_masa');
-            $table->string('pemilik');
-            $table->string('no_anggota');
-            $table->string('cabang');
             $table->string('tingkatan')->nullable()->default('pratama');
             $table->string('foto')->nullable();
             $table->timestamps();

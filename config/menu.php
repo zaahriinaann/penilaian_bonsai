@@ -5,21 +5,34 @@ $dropdown = [
         'description' => 'Khusus Admin',
         'submenu' => [
             [
-                'judul' => 'Kontes',
+                'judul' => 'Kelola Kontes',
                 'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
                 'link' => '/master/kontes',
                 'role' => ['admin'],
             ],
             [
-                'judul' => 'Juri',
+                'judul' => 'Kelola Juri',
                 'description' => 'Anda dapat mengelola siapa saja juri yang akan menjadi juri pada kontes, serta menambahkan dan mengubah juri baru.',
                 'link' => '/master/juri',
                 'role' => ['admin'],
             ],
             [
-                'judul' => 'Kriteria Penilaian',
+                'judul' => 'Kelola Kriteria Penilaian',
                 'description' => 'Anda dapat mengelola penilaian bonsai milik peserta pada kontes, serta menambahkan dan mengubah penilaian baru.',
                 'link' => '/master/penilaian',
+                'role' => ['admin'],
+            ],
+            [
+                'judul' => 'Kelola Peserta',
+                'description' => null,
+                'link' => '/master/peserta',
+                'role' => ['admin'],
+            ],
+            [
+                'judul' => 'Kelola Bonsai',
+                // 'description' => 'Isi description disini',
+                'description' => null,
+                'link' => '/master/bonsai',
                 'role' => ['admin'],
             ],
         ],
@@ -31,18 +44,23 @@ $dropdown = [
         'description' => 'Khusus Admin',
         'submenu' => [
             [
-                'judul' => 'Bonsai',
-                // 'description' => 'Isi description disini',
-                'description' => null,
-                'link' => '/kontes/bonsai',
+                'judul' => 'Pendaftaran',
+                'description' => '',
+                'link' => '/kontes/pendaftaran',
                 'role' => ['admin'],
             ],
             [
-                'judul' => 'Peserta',
-                'description' => null,
-                'link' => '/kontes/peserta',
+                'judul' => 'Penilaian',
+                'description' => '',
+                'link' => '/kontes/penilaian',
                 'role' => ['admin'],
             ],
+            [
+                'judul' => 'Riwayat Penilaian',
+                'description' => '',
+                'link' => '/riwayat-penilaian',
+                'role' => ['admin'],
+            ]
         ],
         'link' => '#',
         'role' => ['admin'],

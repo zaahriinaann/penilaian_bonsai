@@ -6,7 +6,6 @@ use App\Models\Bonsai;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -22,32 +21,12 @@ class BonsaiController extends Controller
      */
     public function index(Bonsai $bonsai)
     {
-        $role = Auth::user()->role;
-
         $dataRender = $bonsai::all();
 
-        // get only pemilik
-        $pemilik = $bonsai::select('pemilik', 'no_anggota', 'cabang')->get();
-
-        if (isset($pemilik)) {
-            $user = User::where('role', 'anggota')->get();
-            $pemilik = $user->map(function ($item) {
-                return (object)[
-                    'pemilik' => $item->name,
-                    'no_anggota' => $item->no_anggota,
-                    'cabang' => $item->cabang,
-                ];
-            });
-        }
-
-        // get only pemilik unique
-        $pemilik = $pemilik->unique(function ($item) {
-            return $item->pemilik . '-' . $item->no_anggota . '-' . $item->cabang;
-        });
+        $user = User::where('role', 'anggota')->get();
 
         $province = config('province.obj');
-        // dd($province);
-        return view('admin.bonsai.index', compact('dataRender', 'pemilik', 'province'));
+        return view('admin.bonsai.index', compact('dataRender', 'province', 'user'));
     }
 
     /**
@@ -66,15 +45,7 @@ class BonsaiController extends Controller
         try {
             $data = $request->all();
 
-            if ($request->has('cabang2')) {
-                $data['cabang'] = $data['cabang2'];
-                unset($data['cabang2']);
-            }
-
-            if ($request->has('cabang-input')) {
-                $data['cabang'] = $data['cabang-input'];
-                unset($data['cabang-input']);
-            }
+            $user = User::where('id', $data['peserta'])->firstOrFail();
 
             // Gabungkan masa pemeliharaan
             $data['masa_pemeliharaan'] = "{$data['masa_pemeliharaan']} {$data['format_masa']}";
@@ -94,34 +65,31 @@ class BonsaiController extends Controller
             $data['no_induk_pohon'] = 'BONSAI' . date('Y') . random_int(1000, 9999);
 
             // Generate slug
-            $slugSource = "{$data['nama_pohon']}-{$data['pemilik']}-{$ukuranLabel}-ppbi-{$data['cabang']}";
+            $slugSource = "{$data['nama_pohon']}-{$user['username']}-{$ukuranLabel}-ppbi-{$user['cabang']}";
             $data['slug'] = Str::slug($slugSource, '-');
 
             // Ganti nilai null dengan '-'
             $data = Arr::map($data, fn($value) => $value ?? '-');
             $data['tingkatan'] = 'madya';
-            // Buat akun user jika belum pernah daftar
-            if ($request->has('pernahDaftar')) {
-                unset($data['pernahDaftar']);
-                try {
-                    $existingUser = User::where('no_anggota', $data['no_anggota'])->first();
-                    if (!$existingUser) {
-                        User::create([
-                            'name' => $data['pemilik'],
-                            'username' => $data['pemilik'],
-                            'password' => bcrypt($data['no_anggota']),
-                            'role' => 'anggota',
-                            'no_anggota' => $data['no_anggota'],
-                            'cabang' => $data['cabang'],
-                        ]);
-                    }
-                } catch (\Exception $e) {
-                    return back()->with('error', 'Gagal membuat akun pengguna: ' . $e->getMessage());
-                }
-            }
 
             $data['foto'] = $this->handleImageUpload($request, 'store');
-            // dd($data);
+            $data = [
+                'user_id' => $data['peserta'],
+                'slug' => $data['slug'],
+                'nama_pohon' => $data['nama_pohon'],
+                'nama_lokal' => $data['nama_lokal'],
+                'nama_latin' => $data['nama_latin'],
+                'ukuran' => $data['ukuran'],
+                'ukuran_1' => $data['ukuran_1'],
+                'ukuran_2' => $data['ukuran_2'],
+                'format_ukuran' => $data['format_ukuran'],
+                'no_induk_pohon' => $data['no_induk_pohon'],
+                'masa_pemeliharaan' => $data['masa_pemeliharaan'],
+                'format_masa' => $data['format_masa'],
+                'tingkatan' => $data['tingkatan'],
+                'foto' => $data['foto'],
+            ];
+
             // Simpan data bonsai
             $bonsai = Bonsai::create($data);
 

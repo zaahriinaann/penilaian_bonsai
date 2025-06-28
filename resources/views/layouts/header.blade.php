@@ -66,7 +66,7 @@
                                                         title="{{ $item['description'] }}" data-bs-toggle="tooltip"
                                                         data-bs-trigger="hover" data-bs-dismiss="click"
                                                         data-bs-placement="right">
-                                                        <span class="menu-title">Kelola {{ $item['judul'] }}</span>
+                                                        <span class="menu-title">{{ $item['judul'] }}</span>
                                                     </a>
                                                 </div>
                                             @endif
