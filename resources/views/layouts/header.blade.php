@@ -109,8 +109,8 @@
                             </div>
                         </div>
                         <div class="separator my-2"></div>
-                        <div class="menu-item px-5">
-                            <a href="../dist/account/overview.html" class="menu-link px-5">Akun</a>
+                        <div class="menu-item {{ request()->is('akun') ? 'here' : '' }} px-5">
+                            <a href="/akun" class="menu-link px-5">Akun</a>
                         </div>
                         <div class="menu-item px-5 my-1">
                             <a href="#" class="menu-link px-5">Pengaturan Akun</a>

@@ -21,7 +21,6 @@
             <table class="table table-hover table-borderless table-responsive table-data">
                 <thead class="align-middle">
                     <tr>
-                        <th hidden></th>
                         <th>#</th>
                         <th>Foto</th>
                         <th>No.Induk</th>

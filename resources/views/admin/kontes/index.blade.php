@@ -22,7 +22,6 @@
             <table class="table table-hover table-borderless table-responsive table-data">
                 <thead class="align-middle">
                     <tr>
-                        <th hidden></th>
                         <th>#</th>
                         <th>Poster</th>
                         <th>Nama Kontes</th>
@@ -40,9 +39,9 @@
                             <td class="list-slug" hidden>{{ $item->slug }}</td>
                             <td>{{ $loop->iteration }}</td>
                             <td>
-                                <img src="{{ asset('images/kontes/' . $item->poster_kontes) ?? 'https://st2.depositphotos.com/1561359/12101/v/950/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg' }}"
-                                    alt="Poster Kontes" class="rounded"
-                                    style="width: 75px; height: 75px; object-fit: cover;">
+                                <img class="rounded"
+                                    src="{{ $item->poster_kontes ? asset('images/kontes/' . $item->poster_kontes) : asset('assets/media/logos/logo-ppbi-bg.jpg') }}"
+                                    alt="Poster Kontes" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>
                                 <a class="text-dark fw-bold"
