@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Juri;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Container\Attributes\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -92,7 +93,7 @@ class JuriController extends Controller
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal menyimpan data, silahkan coba lagi.");
+            Session::flash('error', "Gagal menyimpan data, silahkan coba lagi." . $e->getMessage());
             return redirect()->back()->withInput();
         }
     }

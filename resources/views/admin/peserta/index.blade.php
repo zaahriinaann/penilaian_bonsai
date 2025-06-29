@@ -34,7 +34,7 @@
                     </tr>
                 </thead>
                 <tbody class="align-middle">
-                    @forelse ($dataRender as $item)
+                    @foreach ($dataRender as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
@@ -67,11 +67,7 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="10" class="text-center no-data">Data tidak tersedia</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>

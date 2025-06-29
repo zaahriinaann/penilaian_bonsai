@@ -39,7 +39,7 @@
                     </tr>
                 </thead>
                 <tbody class="align-middle">
-                    @forelse ($dataRender as $item)
+                    @foreach ($dataRender as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
@@ -63,9 +63,9 @@
                             <td class="text-capitalize">{{ $item->tingkatan }}</td>
                             <td class="text-nowrap">{{ $item->ukuran }}</td>
                             <td>{{ $item->masa_pemeliharaan }} {{ $item->format_masa }}</td>
-                            <td>{{ $item->user->name }}</td>
-                            <td>{{ $item->user->no_anggota }}</td>
-                            <td class="text-nowrap">{{ $item->user->cabang }}</td>
+                            <td>{{ $item->user?->name }}</td>
+                            <td>{{ $item->user?->no_anggota }}</td>
+                            <td class="text-nowrap">{{ $item->user?->cabang }}</td>
                             <td>
                                 <div class="d-flex gap-2 m-0 p-0">
                                     <button type="button" class="btn btn-sm btn-warning btn-edit" data-bs-toggle="modal"
@@ -79,11 +79,7 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="11" class="text-center no-data">Data tidak tersedia</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -202,7 +198,7 @@
                         <input type="hidden" name="slug" id="edit_slug">
 
                         <div class="modal-header">
-                            <h5 class="modal-title">Edit Data Bonsai {{ $item->user->name }} ({{ $item->nama_pohon }})
+                            <h5 class="modal-title">Edit Data Bonsai {{ $item->user?->name }} ({{ $item->nama_pohon }})
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Tutup"></button>

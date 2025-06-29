@@ -5,6 +5,7 @@ use App\Http\Controllers\BonsaiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
+use App\Http\Controllers\PendaftaranKontesController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\PesertaController;
 use Illuminate\Support\Facades\Auth;
@@ -56,8 +57,6 @@ Route::middleware(['auth', 'web'])->group(function () {
         ]);
     });
     Route::prefix('kontes')->group(function () {
-        Route::resource('Pendaftaran', KontesController::class)->parameters([
-            'kontes' => 'slug'
-        ]);
+        Route::resource('pendaftaran', PendaftaranKontesController::class);
     });
 });
