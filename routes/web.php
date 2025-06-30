@@ -57,6 +57,9 @@ Route::middleware(['auth', 'web'])->group(function () {
         ]);
     });
     Route::prefix('kontes')->group(function () {
-        Route::resource('pendaftaran', PendaftaranKontesController::class);
+        Route::resource('pendaftaran-peserta', PendaftaranKontesController::class);
+
+        // get bonsai peserta
+        Route::get('get-bonsai-peserta/{id}', [PendaftaranKontesController::class, 'getBonsaiPeserta']);
     });
 });

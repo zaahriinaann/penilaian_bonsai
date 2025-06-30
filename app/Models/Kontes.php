@@ -13,4 +13,9 @@ class Kontes extends Model
 
     protected $table = 'kontes';
     protected $guarded = [];
+
+    public function pendaftaran()
+    {
+        return $this->hasMany(PendaftaranKontes::class);
+    }
 }

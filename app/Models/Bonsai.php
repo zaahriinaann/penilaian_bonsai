@@ -18,4 +18,14 @@ class Bonsai extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function kontes()
+    {
+        return $this->belongsTo(Kontes::class, 'kontes_id');
+    }
+
+    public function pendaftaran()
+    {
+        return $this->belongsTo(PendaftaranKontes::class, 'pendaftaran_id');
+    }
 }

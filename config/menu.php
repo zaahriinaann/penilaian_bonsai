@@ -44,9 +44,9 @@ $dropdown = [
         'description' => 'Khusus Admin',
         'submenu' => [
             [
-                'judul' => 'Pendaftaran',
+                'judul' => 'Pendaftaran Peserta',
                 'description' => '',
-                'link' => '/kontes/pendaftaran',
+                'link' => '/kontes/pendaftaran-peserta',
                 'role' => ['admin'],
             ],
             [
