@@ -69,47 +69,49 @@ class PesertaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // dd($request->all());
+
         try {
-            $peserta = User::findOrFail($id);
+            //ambil data peserta yang akan diupdate
+            $user = User::find($id);
 
-            $validated = $request->validate([
-                'nama' => 'required|string|max:255',
-                'username' => 'required|string|max:255',
-                'email' => 'required|email',
-                'no_anggota' => 'nullable|string',
-                'cabang' => 'nullable|string',
-                'no_hp' => 'nullable|string',
-                'alamat' => 'nullable|string',
-                'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            ]);
+            // cek apakah user ditemukan
+            if (!$user) {
+                return response()->json([
+                    'message' => "Peserta tidak ditemukan."
+                ], 404);
+            }
 
-            if ($request->hasFile('foto')) {
-                $filename = time() . '.' . $request->foto->extension();
-                $request->foto->move(public_path('images/peserta'), $filename);
-                $validated['foto'] = $filename;
 
-                // Hapus foto lama kalau ada
-                if ($request->foto_lama && file_exists(public_path('images/peserta/' . $request->foto_lama))) {
-                    unlink(public_path('images/peserta/' . $request->foto_lama));
-                }
+            // update data peserta
+            $data = $request->all();
+
+            // Jika password kosong, biarkan password sebelumnya
+            if (empty($data['password'])) {
+                unset($data['password']);  // Jangan update password jika tidak diubah
             } else {
-                $validated['foto'] = $peserta->foto;
+                // Jika password ada, hash dan update
+                $data['password'] = bcrypt($data['password']);
             }
 
-            if($request->has('password')) {
-                $validated['password'] = bcrypt($request->password);
-            }else{
-                unset($validated['password']);
+            // Upload gambar jika ada
+            if ($request->hasFile('foto')) {
+                $data['foto'] = $this->handleImageUpload($request, 'update');
+                unset($data['foto_lama']);
+            } else {
+                unset($data['foto_lama']);
             }
 
-            $peserta->update($validated);
+
+            // update data ke database
+            $user->update($data);
+
+
             // Berikan pesan sukses setelah update
-            Session::flash('message', "peserta dengan Nomor Anggota: ({$peserta->no_anggota}) berhasil diperbarui.");
+            Session::flash('message', "Juri dengan Nomor Induk: ({$user->username}) berhasil diperbarui.");
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal memperbarui data: " . $e->getMessage());
+            Session::flash('error', "Gagal memperbarui data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
     }

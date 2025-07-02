@@ -262,7 +262,7 @@
             // Populate the edit form with data when an edit button is clicked
             $('.btn-edit').on('click', function() {
                 const btn = $(this);
-                $('#form_edit_peserta').attr('action', '/kontes/peserta/' + btn.data('id'));
+                $('#form_edit_peserta').attr('action', '/master/peserta/' + btn.data('id'));
                 $('#edit_peserta_id').val(btn.data('id'));
                 $('#edit_nama').val(btn.data('nama'));
                 $('#edit_username').val(btn.data('username'));

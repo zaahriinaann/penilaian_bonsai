@@ -40,8 +40,8 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 <img class="rounded"
-                                    src="{{ $item->poster_kontes ? asset('images/kontes/' . $item->poster_kontes) : asset('assets/media/logos/logo-ppbi-bg.jpg') }}"
-                                    alt="Poster Kontes" style="width: 75px; height: 75px; object-fit: cover;">
+                                    src="{{ $item->foto ? asset('images/kontes/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
+                                    alt="Foto Kontes" style="width: 75px; height: 75px; object-fit: cover;">
                             </td>
                             <td>
                                 <a class="text-dark fw-bold"

@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
             'password' => bcrypt('admin'),
             'role' => 'admin',
 
-            'no_anggota' => '0001',
+            'no_anggota' => 'admin1',
             'cabang' => 'Cabang Utama',
             'no_hp' => '081234567890',
             'alamat' => 'Jl. Raya No. 1',

@@ -70,7 +70,7 @@ class BonsaiController extends Controller
 
             // Ganti nilai null dengan '-'
             $data = Arr::map($data, fn($value) => $value ?? '-');
-            $data['tingkatan'] = 'madya';
+
 
             $data['foto'] = $this->handleImageUpload($request, 'store');
             $data = [
@@ -86,7 +86,7 @@ class BonsaiController extends Controller
                 'no_induk_pohon' => $data['no_induk_pohon'],
                 'masa_pemeliharaan' => $data['masa_pemeliharaan'],
                 'format_masa' => $data['format_masa'],
-                'tingkatan' => $data['tingkatan'],
+                'kelas' => $data['kelas'],
                 'foto' => $data['foto'],
             ];
 
@@ -141,11 +141,12 @@ class BonsaiController extends Controller
             $slugBaru = strtolower(str_replace(' ', '-', $data['nama_pohon'] . '-' . $bonsai->pemilik . '-' . $ukuranLabel . '-ppbi-' . $bonsai->cabang));
             $data['slug'] = preg_replace('/[^a-z0-9\-]/', '', $slugBaru);
 
+            /*
             // Tetapkan ulang data yang tidak boleh berubah
-            $data['pemilik'] = $bonsai->pemilik;
+            $data['peserta'] = $bonsai->pemilik;
             $data['cabang'] = $bonsai->cabang;
-            $data['no_anggota'] = $bonsai->no_anggota;
-            $data['tingkatan'] = 'madya';
+            $data['no_anggota'] = $bonsai->no_anggota; */
+
 
             $data['foto'] = $this->handleImageUpload($request, 'update');
             // dd($data);

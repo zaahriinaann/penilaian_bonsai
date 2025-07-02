@@ -3,11 +3,11 @@
 @section('title', 'Kelola Kriteria Penilaian')
 
 
-{{-- @section('button-toolbar')
+@section('button-toolbar')
     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
         Tambah Kriteria
     </button>
-@endsection --}}
+@endsection
 
 @section('content')
     @if (session('success'))
@@ -24,12 +24,6 @@
     <div class="card w-100 mb-5 card-kelola">
         <div class="card-header">
             <h1 class="card-title">Kelola Kriteria Penilaian</h1>
-            <div class="card-toolbar">
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                    data-bs-target="#kt_modal_create_kriteria">
-                    Tambah Kriteria
-                </button>
-            </div>
         </div>
         <div class="card-body text-capitalize">
             @if ($isEmpty)
@@ -75,6 +69,11 @@
                                     data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
                                         <table class="table table-borderless table-hover">
+                                            <tr>
+                                                <b>
+                                                    {{ $penilaiansItem['deskripsi'] ?? 'Tidak ada deskripsi' }}
+                                                </b>
+                                            </tr>
                                             <tr>
                                                 <th class="align-middle">Himpunan</th>
                                                 <th class="align-middle text-center">Min</th>
@@ -205,7 +204,7 @@
                             <div class="col-md-12 mb-3">
                                 <label for="kriteria" class="form-label">Kriteria</label>
                                 <select class="form-select" name="kriteria" id="kriteria" aria-describedby="kriteria"
-                                    title="Kriteria" onchange="changeKriteria()">
+                                    title="Kriteria" onchange="changeKriteria()" required>
                                     <option value="" disabled selected>Pilih Kriteria</option>
                                     @foreach ($kriteria as $itemKriteria)
                                         <option value="{{ $itemKriteria }}">{{ $itemKriteria }}
@@ -216,7 +215,12 @@
                             <div class="col-md-12 mb-3">
                                 <label for="sub_kriteria" class="form-label">Sub Kriteria</label>
                                 <input type="text" class="form-control" name="sub_kriteria" id="sub_kriteria"
-                                    aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Kriteria">
+                                    aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Kriteria"
+                                    required>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="deskripsi" class="form-label">Deskripsi</label>
+                                <textarea class="form-control" name="deskripsi" id="deskripsi" rows="3" placeholder="Masukkan Deskripsi"></textarea>
                             </div>
                             <?php
                             $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
