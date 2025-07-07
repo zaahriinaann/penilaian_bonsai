@@ -1,6 +1,7 @@
 <?php
 $dropdown = [
     [
+        // ====================ADMIN=========================
         'menu' => 'Master',
         'description' => 'Khusus Admin',
         'submenu' => [
@@ -65,13 +66,24 @@ $dropdown = [
         'link' => '#',
         'role' => ['admin'],
     ],
+
     [
-        'menu' => 'Kontes',
-        'description' => 'Khusus Juri',
-        'submenu' => [],
+        'menu' => 'Riwayat Penilaian',
+        'description' => 'Khusus Admin',
+        'submenu' => [
+            [
+                'judul' => 'Riwayat Penilaian',
+                'description' => '',
+                'link' => '/kontes/pendaftaran',
+                'role' => ['admin'],
+            ],
+        ],
         'link' => '#',
-        'role' => ['juri'],
+        'role' => ['admin'],
     ],
+
+
+    // ====================JURIIII=========================
     [
         'menu' => 'Penilaian',
         'description' => 'Khusus Juri',

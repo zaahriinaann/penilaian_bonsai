@@ -20,6 +20,7 @@ class PenilaianController extends Controller
             return [
                 'kriteria' => $item->kriteria,
                 'sub_kriteria' => $item->sub_kriteria,
+                'deskripsi' => $item->deskripsi,
                 'himpunan' => $item->himpunan,
                 'min' => $item->min,
                 'max' => $item->max,
@@ -100,6 +101,7 @@ class PenilaianController extends Controller
                 return [
                     'kriteria'     => $data['kriteria'],
                     'sub_kriteria' => $data['sub_kriteria'],
+                    'deskripsi'   => $item->deskripsi ?? '', // Assuming 'deskripsi' is optional
                     'himpunan'     => $item->himpunan,
                     'min'          => $item->min,
                     'max'          => $item->max,

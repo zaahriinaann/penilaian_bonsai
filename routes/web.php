@@ -42,17 +42,7 @@ Route::middleware(['auth', 'web'])->group(function () {
             'bonsai' => 'slug'
         ]);
         Route::resource('peserta', PesertaController::class)->parameters([
-            // kalau ini gak di ubah, id/slug ga keambil sesuai parameter yang kita mau
-            // contoh yang lain pake slug, disini aku pake id,
-            // jadi kalau mau pake slug, ganti id jadi slug
-            // kalau mau pake id, ganti slug jadi id
-            // kalau mau pake bawaan, cek nya pake command php artisan route:list
-            // liat parameternya bener atau gak, kalau gak bener tinggal ganti
-            // kayak contoh disini, atau di atasnya
-            // contoh bawaan pake slug master/kontes/{slug}
-            // jadi nanti yang di lempar parameternya adalah slug, kalau {id}, ya ganti aja jadi id
-            // defaultnya laravel itu pake id, jadi harusnya gausah di ubah gapapa
-            // tapi kalau gak bisa ya di ubah aja manual seperti contoh lainnya
+
             'peserta' => 'id'
         ]);
     });
