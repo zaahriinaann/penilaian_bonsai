@@ -205,7 +205,7 @@
     @foreach ($dataRender as $item)
         <div class="modal fade" id="kt_modal_edit_bonsai" tabindex="-1" aria-labelledby="kt_modal_edit_bonsai"
             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-md modal-dialog-centered">
                 <div class="modal-content">
                     <form id="form_edit_bonsai" method="POST" enctype="multipart/form-data">
                         @csrf
@@ -215,7 +215,7 @@
                             <div class="row">
                                 <div class="col-12 mb-3">
                                     <label for="peserta" class="form-label">Nama Peserta</label>
-                                    <select id="peserta" class="text-capitalize peserta" name="peserta">
+                                    <select id="peserta" class="text-capitalize peserta" name="user_id">
                                     </select>
                                 </div>
 
@@ -242,8 +242,9 @@
 
                                 <div class="col-md-12 mb-3">
                                     <label for="kelas" class="form-label">kelas</label>
-                                    <select name="kelas" id="edit_kelas" class="form-select form-control" required>
-                                        <option selected disabled>Pilih kelas</option>
+                                    <select name="kelas" id="edit_kelas"
+                                        class="form-select form-control text-capitalize" required>
+                                        <option value="{{ $item->kelas }}" selected>{{ $item->kelas }}</option>
                                         <option value="Bahan">Bahan</option>
                                         <option value="Pratama">Pratama</option>
                                         <option value="Madya">Madya</option>
@@ -276,7 +277,8 @@
                                     <label>Masa Pemeliharaan</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" name="masa_pemeliharaan"
-                                            id="edit_masa_pemeliharaan">
+                                            id="edit_masa_pemeliharaan" value="{{ $item->masa_pemeliharaan }}"
+                                            min="0">
                                         <select class="form-select" name="format_masa" id="edit_format_masa">
                                             <option value="hari">hari</option>
                                             <option value="bulan">bulan</option>
@@ -287,7 +289,13 @@
                                 <div class="col-md-12 mb-3">
                                     <label for="foto" class="form-label">Foto Bonsai</label>
                                     <input type="file" class="form-control" name="foto" id="foto">
-                                    <input type="hidden" name="foto_lama" id="foto_lama">
+                                    <input type="hidden" name="foto_lama" id="foto_lama" value="{{ $item->foto }}">
+
+                                    <div class="mt-2">
+                                        <label for="" class="form-label">Foto Lama</label>
+                                        <img src="{{ asset('images/bonsai/' . $item->foto) }}" alt="Foto Bonsai"
+                                            class="img-fluid">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -331,36 +339,6 @@
                     selectize.refreshOptions(false);
                 }
             });
-
-            // //buat selectize edit peserta bisa search
-            // $('.edit_peserta').selectize({
-            //     allowEmptyOption: true,
-            //     placeholder: $('.edit_peserta').data('placeholder'), // tampilkan di awal
-            //     theme: 'bootstrap-5',
-            //     valueField: 'id',
-            //     labelField: 'name',
-            //     searchField: 'name',
-            //     maxItems: 1,
-            //     options: @json($user),
-            //     onInitialize: function() {
-            //         const selectize = this;
-            //         selectize.clearOptions();
-            //         @foreach ($user as $userItem)
-            //             selectize.addOption({
-            //                 id: '{{ $userItem->id }}',
-            //                 name: '{{ $userItem->name }} / {{ $userItem->no_hp }} / {{ $userItem->no_anggota }}'
-            //             });
-            //         @endforeach
-            //         selectize.refreshOptions(false);
-
-            //         // Set value sebelumnya (jika ada)
-            //         if (selectedId) {
-            //             selectize.setValue(selectedId);
-            //         }
-            //     }
-            // });
-
-
 
             // ubah edit data dibawah dengan bonsai
             $('.btn-edit').on('click', function() {

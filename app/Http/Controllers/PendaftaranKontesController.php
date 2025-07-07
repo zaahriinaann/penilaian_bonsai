@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bonsai;
 use App\Models\Kontes;
 use App\Models\User;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 
 class PendaftaranKontesController extends Controller
@@ -14,13 +15,20 @@ class PendaftaranKontesController extends Controller
     /**
      * Display a listing of the resource.
      */
+    protected $kontes;
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->kontes = Kontes::where('status', 1)->first();
+    }
+
     public function index()
     {
-        $kontes = Kontes::all();
         $peserta = User::where('role', 'anggota')->get();
-
         $pendaftaran = PendaftaranKontes::all();
-        return view('admin.pendaftaran.index', compact('kontes', 'peserta', 'pendaftaran'));
+
+        return view('admin.pendaftaran.index', compact('peserta', 'pendaftaran'));
     }
 
     /**
@@ -38,35 +46,45 @@ class PendaftaranKontesController extends Controller
     {
         try {
             $request->validate([
-                'kontes_id' => 'required',
                 'user_id' => 'required',
                 'bonsai_id' => 'required',
                 'kelas' => 'required',
             ]);
 
+            if (!$this->kontes) {
+                return redirect()->back()->with('error', 'Tidak ada kontes yang sedang aktif.');
+            }
+
             $data = $request->all();
+            $data['kontes_id'] = $this->kontes->id;
 
-            $pendaftaran = PendaftaranKontes::where('kontes_id', $data['kontes_id'])->latest()->first();
+            // Cek duplikat pendaftaran
+            $exists = PendaftaranKontes::where('kontes_id', $this->kontes->id)
+                ->where('user_id', $data['user_id'])
+                ->where('bonsai_id', $data['bonsai_id'])
+                ->exists();
 
-            if ($pendaftaran) {
+            if ($exists) {
+                return redirect()->back()->with('error', 'Peserta dan bonsai ini sudah terdaftar pada kontes.');
+            }
 
-                $kelas = PendaftaranKontes::where('kontes_id', $data['kontes_id'])->where('kelas', $data['kelas'])->latest()->first();
+            // Tentukan nomor juri dan nomor pendaftaran
+            $lastPendaftaran = PendaftaranKontes::where('kontes_id', $this->kontes->id)->latest()->first();
+            $lastKelas = PendaftaranKontes::where('kontes_id', $this->kontes->id)
+                ->where('kelas', $data['kelas'])
+                ->latest()
+                ->first();
 
-                if ($kelas) {
-                    $data['nomor_juri'] = $kelas->nomor_juri + 1;
-                    $data['nomor_pendaftaran'] = $kelas->nomor_pendaftaran + 1;
-                } else {
-                    $data['nomor_juri'] = 1;
-                    $data['nomor_pendaftaran'] = $pendaftaran->nomor_pendaftaran + 1;
-                }
+            if ($lastPendaftaran) {
+                $data['nomor_pendaftaran'] = $lastKelas ? $lastKelas->nomor_pendaftaran + 1 : $lastPendaftaran->nomor_pendaftaran + 1;
+                $data['nomor_juri'] = $lastKelas ? $lastKelas->nomor_juri + 1 : 1;
             } else {
                 $data['nomor_pendaftaran'] = 1;
                 $data['nomor_juri'] = 1;
             }
 
-            // dd($data);
             PendaftaranKontes::create($data);
-            return redirect()->back();
+            return redirect()->back()->with('message', 'Pendaftaran peserta berhasil!');
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', $th->getMessage());
         }
@@ -102,9 +120,8 @@ class PendaftaranKontesController extends Controller
     public function destroy($id)
     {
         try {
-            $pendaftaran = PendaftaranKontes::where('id', $id)->firstOrFail();
-
-            $pendaftaran->update(['deleted_at' => now()]);
+            $pendaftaran = PendaftaranKontes::findOrFail($id);
+            $pendaftaran->delete(); // Soft delete\
 
             return response()->json([
                 'message' => "Kontes {$pendaftaran->nama_kontes} berhasil dihapus."
@@ -121,6 +138,6 @@ class PendaftaranKontesController extends Controller
         $bonsai = Bonsai::where('user_id', $id)->get();
 
         // dd($bonsai);
-        return $bonsai;
+        return response()->json($bonsai);
     }
 }

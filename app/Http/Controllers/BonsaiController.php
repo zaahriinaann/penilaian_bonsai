@@ -47,9 +47,6 @@ class BonsaiController extends Controller
 
             $user = User::where('id', $data['peserta'])->firstOrFail();
 
-            // Gabungkan masa pemeliharaan
-            $data['masa_pemeliharaan'] = "{$data['masa_pemeliharaan']} {$data['format_masa']}";
-
             // Mapping ukuran_1 ke label
             $ukuranMap = [
                 1 => 'Small',
@@ -125,9 +122,7 @@ class BonsaiController extends Controller
             $bonsai = Bonsai::where('slug', $slug)->firstOrFail();
             $data = $request->all();
 
-            // Gabungkan masa pemeliharaan
-            $data['masa_pemeliharaan'] = $data['masa_pemeliharaan'] . ' ' . $data['format_masa'];
-
+            // dd($request->all());
             // Mapping ukuran
             $ukuranMap = [
                 1 => 'Small',
@@ -140,18 +135,23 @@ class BonsaiController extends Controller
             // Slug baru (dibersihkan)
             $slugBaru = strtolower(str_replace(' ', '-', $data['nama_pohon'] . '-' . $bonsai->pemilik . '-' . $ukuranLabel . '-ppbi-' . $bonsai->cabang));
             $data['slug'] = preg_replace('/[^a-z0-9\-]/', '', $slugBaru);
-
-            /*
-            // Tetapkan ulang data yang tidak boleh berubah
-            $data['peserta'] = $bonsai->pemilik;
-            $data['cabang'] = $bonsai->cabang;
-            $data['no_anggota'] = $bonsai->no_anggota; */
-
-
             $data['foto'] = $this->handleImageUpload($request, 'update');
+            $data = [
+                'slug' => $data['slug'],
+                'nama_pohon' => $data['nama_pohon'],
+                'nama_lokal' => $data['nama_lokal'],
+                'nama_latin' => $data['nama_latin'],
+                'ukuran' => $data['ukuran'],
+                'ukuran_1' => $data['ukuran_1'],
+                'ukuran_2' => $data['ukuran_2'],
+                'format_ukuran' => $data['format_ukuran'],
+                'masa_pemeliharaan' => $data['masa_pemeliharaan'],
+                'format_masa' => $data['format_masa'],
+                'kelas' => $data['kelas'],
+                'foto' => $data['foto'],
+            ];
+
             // dd($data);
-            unset($data['foto_lama']);
-            // Update
             $bonsai->update($data);
 
             Session::flash('message', "Bonsai {$bonsai->nama_pohon} berhasil diperbarui.");
