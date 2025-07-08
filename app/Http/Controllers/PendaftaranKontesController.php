@@ -93,9 +93,11 @@ class PendaftaranKontesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PendaftaranKontes $pendaftaranKontes)
+    public function show($id)
     {
-        dd($pendaftaranKontes);
+        $data = PendaftaranKontes::where('id', $id)->first();
+
+        return view('admin.pendaftaran.show', compact('data'));
     }
 
     /**

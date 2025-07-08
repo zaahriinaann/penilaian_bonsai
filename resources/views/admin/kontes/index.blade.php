@@ -20,7 +20,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover table-borderless table-data text-nowrap">
+                <table class="table table-hover table-data text-nowrap">
                     <thead class="align-middle">
                         <tr>
                             <th>#</th>
@@ -65,7 +65,7 @@
                                     <form action="{{ route('kontes.update', $item->slug) }}" method="POST">
                                         @csrf
                                         @method('PUT')
-                                        <button class="btn btn-sm btn-primary" type="submit" name="setActive">
+                                        <button class="btn btn-sm btn-primary w-100" type="submit" name="setActive">
                                             {{ $item->status == 1 ? 'Aktif' : 'Tidak Aktif' }}
                                         </button>
                                     </form>
