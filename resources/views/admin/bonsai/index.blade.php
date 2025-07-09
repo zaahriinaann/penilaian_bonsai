@@ -18,82 +18,84 @@
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Cari data">
                 </div>
             </div>
-            <table class="table table-hover table-borderless table-responsive table-data">
-                <thead class="align-middle">
-                    <tr>
-                        <th>#</th>
-                        <th>Foto</th>
-                        <th class="text-nowrap">No.Induk Pohon</th>
-                        <th>
-                            Nama Pohon
-                            <br>
-                            <b>(Nama Lokal/Nama Latin)</b>
-                        </th>
-                        <th>Kelas</th>
-                        <th>Ukuran</th>
-                        <th class="text-nowrap">Masa Pemeliharaan</th>
-                        <th>Pemilik</th>
-                        <th>No Hp</th>
-                        <th>Cabang</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody class="align-middle">
-                    @foreach ($dataRender as $item)
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless table-responsive table-data">
+                    <thead class="align-middle">
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <img class="rounded"
-                                    src="{{ $item->foto ? asset('images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
-                                    alt="Foto Bonsai" style="width: 75px; height: 75px; object-fit: cover;">
-                            </td>
-                            <td>{{ $item->no_induk_pohon }}</td>
-                            <td>
-                                <div class="d-grid" style="width: 250px">
-                                    <span>
-                                        {{ $item->nama_pohon }}
-                                    </span>
-                                    <small>
-                                        <b>
-                                            ({{ $item->nama_lokal . '/' . $item->nama_latin }})
-                                        </b>
-                                    </small>
-                                </div>
-                            </td>
-                            <td class="text-capitalize">{{ $item->kelas }}</td>
-                            <td class="text-nowrap">{{ $item->ukuran }}</td>
-                            <td>{{ $item->masa_pemeliharaan }} {{ $item->format_masa }}</td>
-                            <td>{{ $item->user?->name }}</td>
-                            <td>{{ $item->user?->no_hp }}</td>
-                            <td class="text-nowrap">{{ $item->user?->cabang }}</td>
-                            <td>
-                                <div class="d-flex gap-2 m-0 p-0">
-
-                                    <button type="button" class="btn btn-sm btn-warning btn-edit"
-                                        data-id="{{ $item->id }}" data-slug="{{ $item->slug }}"
-                                        data-peserta="{{ $item->user_id }}" data-nama_pohon="{{ $item->nama_pohon }}"
-                                        data-nama_lokal="{{ $item->nama_lokal }}"
-                                        data-nama_latin="{{ $item->nama_latin }}" data-ukuran="{{ $item->ukuran }}"
-                                        data-ukuran_1="{{ $item->ukuran_1 }}" data-ukuran_2="{{ $item->ukuran_2 }}"
-                                        data-format_ukuran="{{ $item->format_ukuran }}"
-                                        data-nomor_induk_pohon="{{ $item->nomor_induk_pohon }}"
-                                        data-masa_pemeliharaan="{{ $item->masa_pemeliharaan }}"
-                                        data-format_masa="{{ $item->format_masa }}" data-kelas="{{ $item->kelas }}"
-                                        data-foto="{{ $item->foto }}" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_bonsai" title="Edit data">
-                                        <i class="bi bi-pencil-square m-0 p-0"></i>
-                                    </button>
-
-                                    <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
-                                        data-id="{{ $item->id }}"
-                                        data-route="{{ route('bonsai.destroy', $item->slug) }}">
-                                        <i class="bi bi-trash-fill m-0 p-0"></i></button>
-                                </div>
-                            </td>
+                            <th>#</th>
+                            <th>Foto</th>
+                            <th class="text-nowrap">No.Induk Pohon</th>
+                            <th>
+                                Nama Pohon
+                                <br>
+                                <b>(Nama Lokal/Nama Latin)</b>
+                            </th>
+                            <th>Kelas</th>
+                            <th>Ukuran</th>
+                            <th class="text-nowrap">Masa Pemeliharaan</th>
+                            <th>Pemilik</th>
+                            <th>No Hp</th>
+                            <th>Cabang</th>
+                            <th>Action</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="align-middle">
+                        @foreach ($dataRender as $item)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <img class="rounded"
+                                        src="{{ $item->foto ? asset('images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
+                                        alt="Foto Bonsai" style="width: 75px; height: 75px; object-fit: cover;">
+                                </td>
+                                <td>{{ $item->no_induk_pohon }}</td>
+                                <td>
+                                    <div class="d-grid" style="width: 250px">
+                                        <span>
+                                            {{ $item->nama_pohon }}
+                                        </span>
+                                        <small>
+                                            <b>
+                                                ({{ $item->nama_lokal . '/' . $item->nama_latin }})
+                                            </b>
+                                        </small>
+                                    </div>
+                                </td>
+                                <td class="text-capitalize">{{ $item->kelas }}</td>
+                                <td class="text-nowrap">{{ $item->ukuran }}</td>
+                                <td>{{ $item->masa_pemeliharaan }} {{ $item->format_masa }}</td>
+                                <td>{{ $item->user?->name }}</td>
+                                <td>{{ $item->user?->no_hp }}</td>
+                                <td class="text-nowrap">{{ $item->user?->cabang }}</td>
+                                <td>
+                                    <div class="d-flex gap-2 m-0 p-0">
+
+                                        <button type="button" class="btn btn-sm btn-warning btn-edit"
+                                            data-id="{{ $item->id }}" data-slug="{{ $item->slug }}"
+                                            data-peserta="{{ $item->user_id }}" data-nama_pohon="{{ $item->nama_pohon }}"
+                                            data-nama_lokal="{{ $item->nama_lokal }}"
+                                            data-nama_latin="{{ $item->nama_latin }}" data-ukuran="{{ $item->ukuran }}"
+                                            data-ukuran_1="{{ $item->ukuran_1 }}" data-ukuran_2="{{ $item->ukuran_2 }}"
+                                            data-format_ukuran="{{ $item->format_ukuran }}"
+                                            data-nomor_induk_pohon="{{ $item->nomor_induk_pohon }}"
+                                            data-masa_pemeliharaan="{{ $item->masa_pemeliharaan }}"
+                                            data-format_masa="{{ $item->format_masa }}" data-kelas="{{ $item->kelas }}"
+                                            data-foto="{{ $item->foto }}" data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_edit_bonsai" title="Edit data">
+                                            <i class="bi bi-pencil-square m-0 p-0"></i>
+                                        </button>
+
+                                        <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
+                                            data-id="{{ $item->id }}"
+                                            data-route="{{ route('bonsai.destroy', $item->slug) }}">
+                                            <i class="bi bi-trash-fill m-0 p-0"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

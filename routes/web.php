@@ -5,9 +5,11 @@ use App\Http\Controllers\BonsaiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
+use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\PendaftaranKontesController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\PesertaController;
+use App\Http\Controllers\RiwayatController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +26,8 @@ Auth::routes();
 Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('home', HomeController::class);
     Route::resource('akun', AkunController::class);
+
+    // ====================ADMIN=========================
     Route::prefix('master')->group(function () {
         Route::resource('kontes', KontesController::class)->parameters([
             'kontes' => 'slug'
@@ -42,7 +46,6 @@ Route::middleware(['auth', 'web'])->group(function () {
             'bonsai' => 'slug'
         ]);
         Route::resource('peserta', PesertaController::class)->parameters([
-
             'peserta' => 'id'
         ]);
     });
@@ -52,4 +55,13 @@ Route::middleware(['auth', 'web'])->group(function () {
         // get bonsai peserta
         Route::get('get-bonsai-peserta/{id}', [PendaftaranKontesController::class, 'getBonsaiPeserta']);
     });
+
+
+    //====================JURI=========================
+    Route::resource('nilai', NilaiController::class)->parameters([
+        'nilai' => 'id'
+    ]);
+    Route::resource('riwayat', RiwayatController::class)->parameters([
+        'riwayat' => 'id'
+    ]);
 });

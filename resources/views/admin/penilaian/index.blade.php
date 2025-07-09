@@ -70,11 +70,6 @@
                                     <div class="accordion-body">
                                         <table class="table table-borderless table-hover">
                                             <tr>
-                                                <b>
-                                                    {{ $penilaiansItem['deskripsi'] ?? 'Tidak ada deskripsi' }}
-                                                </b>
-                                            </tr>
-                                            <tr>
                                                 <th class="align-middle">Himpunan</th>
                                                 <th class="align-middle text-center">Min</th>
                                                 <th class="align-middle text-center">Max</th>
@@ -217,10 +212,6 @@
                                 <input type="text" class="form-control" name="sub_kriteria" id="sub_kriteria"
                                     aria-describedby="sub_kriteria" title="Kriteria" placeholder="Masukkan Kriteria"
                                     required>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="deskripsi" class="form-label">Deskripsi</label>
-                                <textarea class="form-control" name="deskripsi" id="deskripsi" rows="3" placeholder="Masukkan Deskripsi"></textarea>
                             </div>
                             <?php
                             $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];

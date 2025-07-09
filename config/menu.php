@@ -56,12 +56,6 @@ $dropdown = [
                 'link' => '/kontes/penilaian',
                 'role' => ['admin'],
             ],
-            [
-                'judul' => 'Riwayat Penilaian',
-                'description' => '',
-                'link' => '/riwayat-penilaian',
-                'role' => ['admin'],
-            ]
         ],
         'link' => '#',
         'role' => ['admin'],
@@ -88,21 +82,14 @@ $dropdown = [
         'menu' => 'Penilaian',
         'description' => 'Khusus Juri',
         'submenu' => [],
-        'link' => '#',
+        'link' => '/nilai',
         'role' => ['juri'],
     ],
     [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Khusus Juri',
-        'submenu' => [
-            [
-                'judul' => 'Kontes',
-                'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
-                'link' => '/master/kontes',
-                'role' => ['admin'],
-            ],
-        ],
-        'link' => '/riwayat-penilaian',
+        'submenu' => [],
+        'link' => '/riwayat',
         'role' => ['juri'],
     ],
 ];
