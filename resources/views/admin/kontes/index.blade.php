@@ -19,72 +19,84 @@
                 </div>
             </div>
 
-            <table class="table table-hover table-borderless table-responsive table-data">
-                <thead class="align-middle">
-                    <tr>
-                        <th>#</th>
-                        <th>Poster</th>
-                        <th>Nama Kontes</th>
-                        <th>Tingkat</th>
-                        <th>Tempat/Lokasi Kontes</th>
-                        <th>Tanggal</th>
-                        <th>Jumlah Peserta/Bonsai</th>
-                        <th>Harga</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody class="align-middle">
-                    @foreach ($dataRender as $item)
+            <div class="table-responsive">
+                <table class="table table-hover table-data text-nowrap">
+                    <thead class="align-middle">
                         <tr>
-                            <td class="list-slug" hidden>{{ $item->slug }}</td>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <img class="rounded"
-                                    src="{{ $item->poster_kontes ? asset('images/kontes/' . $item->poster_kontes) : asset('assets/media/logos/logo-ppbi-bg.jpg') }}"
-                                    alt="Poster Kontes" style="width: 75px; height: 75px; object-fit: cover;">
-                            </td>
-                            <td>
-                                <a class="text-dark fw-bold"
-                                    href="{{ route('kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
-                            </td>
-                            <td class="text-capitalize">{{ $item->tingkat_kontes }}</td>
-                            <td class="text-capitalize">{{ $item->tempat_kontes }}
-                                @if ($item->link_gmaps)
-                                    <a href="{{ $item->link_gmaps }}" target="_blank" title="Lihat di google maps">
-                                        <i class="bi bi-geo-alt-fill"></i>
-                                    </a>
-                                @endif
-                            </td>
-                            <td>{{ \Carbon\Carbon::parse($item->tanggal_mulai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') . ' - ' . \Carbon\Carbon::parse($item->tanggal_selesai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}
-                            </td>
-                            <td>{{ $item->jumlah_peserta }} Peserta/Bonsai</td>
-                            <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td>
-                            <td>
-                                <div class="d-flex gap-1">
-                                    <button type="button" class="btn btn-sm btn-warning btn-edit"
-                                        data-id="{{ $item->id }}" data-nama="{{ $item->nama_kontes }}"
-                                        data-tempat="{{ $item->tempat_kontes }}" data-link="{{ $item->link_gmaps }}"
-                                        data-tanggal-mulai="{{ $item->tanggal_mulai_kontes }}"
-                                        data-tanggal-selesai="{{ $item->tanggal_selesai_kontes }}"
-                                        data-tingkat="{{ $item->tingkat_kontes }}"
-                                        data-peserta="{{ $item->jumlah_peserta }}"
-                                        data-harga="{{ $item->harga_tiket_kontes }}" data-slug="{{ $item->slug }}"
-                                        data-poster="{{ $item->poster_kontes }}" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_kontes" title="Edit data">
-                                        <i class="bi bi-pencil-square m-0 p-0"></i>
-                                    </button>
-
-                                    {{-- <form action="{{ route('kontes'. $item->id) }}" method="D"></form> --}}
-                                    <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
-                                        data-id="{{ $item->id }}"
-                                        data-route="{{ route('kontes.destroy', $item->slug) }}">
-                                        <i class="bi bi-trash-fill m-0 p-0"></i></button>
-                                </div>
-                            </td>
+                            <th>#</th>
+                            <th>Poster</th>
+                            <th>Nama Kontes</th>
+                            <th>Tingkat</th>
+                            <th>Tempat/Lokasi Kontes</th>
+                            <th>Tanggal</th>
+                            <th>Jumlah Peserta/Bonsai</th>
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="align-middle">
+                        @foreach ($dataRender as $item)
+                            <tr>
+                                <td class="list-slug" hidden>{{ $item->slug }}</td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <img class="rounded"
+                                        src="{{ $item->foto ? asset('images/kontes/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
+                                        alt="Foto Kontes" style="width: 75px; height: 75px; object-fit: cover;">
+                                </td>
+                                <td>
+                                    <a class="text-dark fw-bold"
+                                        href="{{ route('kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
+                                </td>
+                                <td class="text-capitalize">{{ $item->tingkat_kontes }}</td>
+                                <td class="text-capitalize">{{ $item->tempat_kontes }}
+                                    @if ($item->link_gmaps)
+                                        <a href="{{ $item->link_gmaps }}" target="_blank" title="Lihat di google maps">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                        </a>
+                                    @endif
+                                </td>
+                                <td>{{ \Carbon\Carbon::parse($item->tanggal_mulai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') . ' - ' . \Carbon\Carbon::parse($item->tanggal_selesai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}
+                                </td>
+                                <td>{{ $item->jumlah_peserta }} Peserta/Bonsai</td>
+                                <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td>
+                                <td>
+                                    <form action="{{ route('kontes.update', $item->slug) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <button class="btn btn-sm btn-primary w-100" type="submit" name="setActive">
+                                            {{ $item->status == 1 ? 'Aktif' : 'Tidak Aktif' }}
+                                        </button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-warning btn-edit"
+                                            data-id="{{ $item->id }}" data-nama="{{ $item->nama_kontes }}"
+                                            data-tempat="{{ $item->tempat_kontes }}" data-link="{{ $item->link_gmaps }}"
+                                            data-tanggal-mulai="{{ $item->tanggal_mulai_kontes }}"
+                                            data-tanggal-selesai="{{ $item->tanggal_selesai_kontes }}"
+                                            data-tingkat="{{ $item->tingkat_kontes }}"
+                                            data-peserta="{{ $item->jumlah_peserta }}"
+                                            data-harga="{{ $item->harga_tiket_kontes }}" data-slug="{{ $item->slug }}"
+                                            data-poster="{{ $item->poster_kontes }}" data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_edit_kontes" title="Edit data">
+                                            <i class="bi bi-pencil-square m-0 p-0"></i>
+                                        </button>
+
+                                        {{-- <form action="{{ route('kontes'. $item->id) }}" method="D"></form> --}}
+                                        <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
+                                            data-id="{{ $item->id }}"
+                                            data-route="{{ route('kontes.destroy', $item->slug) }}">
+                                            <i class="bi bi-trash-fill m-0 p-0"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

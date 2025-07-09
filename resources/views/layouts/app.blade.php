@@ -86,30 +86,40 @@
 
     <script>
         $(document).ready(function() {
-            $('.table-data').DataTable();
+            $('.table-data').each(function() {
+                $(this).DataTable({
+                    "order": [
+                        [0, "desc"]
+                    ],
+                    "pageLength": 10,
+                    "searching": true,
+                    "dom": 'blfrtip'
+                    
+                });
+            });
 
             setTimeout(() => {
                 $('.custom-left-alert').fadeOut();
             }, 4000);
 
-            $('#search-input').on('keyup', function() {
-                const val = this.value.toLowerCase();
-                let hasVisibleRows = false;
+            // $('#search-input').on('keyup', function() {
+            //     const val = this.value.toLowerCase();
+            //     let hasVisibleRows = false;
 
-                $('.table-data tbody tr').not('.no-data').each(function() {
-                    const isVisible = $(this).text().toLowerCase().includes(val);
-                    $(this).toggle(isVisible);
-                    if (isVisible) hasVisibleRows = true;
-                });
+            //     $('.table-data tbody tr').not('.no-data').each(function() {
+            //         const isVisible = $(this).text().toLowerCase().includes(val);
+            //         $(this).toggle(isVisible);
+            //         if (isVisible) hasVisibleRows = true;
+            //     });
 
-                $('.table-data tbody .no-data').remove();
+            //     $('.table-data tbody .no-data').remove();
 
-                if (!hasVisibleRows) {
-                    $('.table-data tbody').append(
-                        '<tr class="no-data"><td colspan="7" class="text-center">Data tidak ada</td></tr>'
-                    );
-                }
-            });
+            //     if (!hasVisibleRows) {
+            //         $('.table-data tbody').append(
+            //             '<tr class="no-data"><td colspan="7" class="text-center">Data tidak ada</td></tr>'
+            //         );
+            //     }
+            // });
         });
 
         // Initialize SweetAlert

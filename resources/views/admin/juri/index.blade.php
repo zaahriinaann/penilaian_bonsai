@@ -103,25 +103,26 @@
                             <div class="col-md-12 mb-3">
                                 <label for="nama_juri" class="form-label">Nama Juri</label>
                                 <input type="text" class="form-control" name="nama_juri" id="nama_juri"
-                                    aria-describedby="nama_juri" title="Nama Juri" placeholder="Masukkan Nama Juri">
+                                    aria-describedby="nama_juri" title="Nama Juri" placeholder="Masukkan Nama Juri"
+                                    required>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="text" class="form-control" name="email" id="email"
-                                    aria-describedby="email" title="Email Juri" placeholder="Masukkan Email Juri">
+                                    aria-describedby="email" title="Email Juri" placeholder="Masukkan Email Juri" required>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="username" class="form-control" name="username" id="username"
-                                    aria-describedby="username" title="Username Juri"
-                                    placeholder="Masukkan Username Juri">
+                                    aria-describedby="username" title="Username Juri" placeholder="Masukkan Username Juri"
+                                    required>
                                 <span class="msg-slug"></span>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="no_telepon" class="form-label">No Telepon</label>
                                 <input type="text" class="form-control" name="no_telepon" id="no_telepon"
                                     aria-describedby="no_telepon" title="No Telepon Juri"
-                                    placeholder="Masukkan No Telepon Juri">
+                                    placeholder="Masukkan No Telepon Juri" required>
                             </div>
                             <div class="col d-flex gap-2">
                                 <div class="mb-3">
@@ -130,7 +131,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="sertifikat" class="form-label">Sertifikat</label>
-                                    <input type="file" class="form-control" name="sertifikat" id="sertifikat">
+                                    <input type="file" class="form-control" name="sertifikat" id="sertifikat"
+                                        required>
                                 </div>
                             </div>
                         </div>

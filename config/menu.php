@@ -1,6 +1,7 @@
 <?php
 $dropdown = [
     [
+        // ====================ADMIN=========================
         'menu' => 'Master',
         'description' => 'Khusus Admin',
         'submenu' => [
@@ -44,9 +45,9 @@ $dropdown = [
         'description' => 'Khusus Admin',
         'submenu' => [
             [
-                'judul' => 'Pendaftaran',
+                'judul' => 'Pendaftaran Peserta',
                 'description' => '',
-                'link' => '/kontes/pendaftaran',
+                'link' => '/kontes/pendaftaran-peserta',
                 'role' => ['admin'],
             ],
             [
@@ -55,42 +56,40 @@ $dropdown = [
                 'link' => '/kontes/penilaian',
                 'role' => ['admin'],
             ],
-            [
-                'judul' => 'Riwayat Penilaian',
-                'description' => '',
-                'link' => '/riwayat-penilaian',
-                'role' => ['admin'],
-            ]
         ],
         'link' => '#',
         'role' => ['admin'],
     ],
+
     [
-        'menu' => 'Kontes',
-        'description' => 'Khusus Juri',
-        'submenu' => [],
+        'menu' => 'Riwayat Penilaian',
+        'description' => 'Khusus Admin',
+        'submenu' => [
+            [
+                'judul' => 'Riwayat Penilaian',
+                'description' => '',
+                'link' => '/kontes/pendaftaran',
+                'role' => ['admin'],
+            ],
+        ],
         'link' => '#',
-        'role' => ['juri'],
+        'role' => ['admin'],
     ],
+
+
+    // ====================JURIIII=========================
     [
         'menu' => 'Penilaian',
         'description' => 'Khusus Juri',
         'submenu' => [],
-        'link' => '#',
+        'link' => '/nilai',
         'role' => ['juri'],
     ],
     [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Khusus Juri',
-        'submenu' => [
-            [
-                'judul' => 'Kontes',
-                'description' => 'Anda dapat mengelola kontes yang akan diadakan atau telah diadakan, serta menambahkan kontes baru.',
-                'link' => '/master/kontes',
-                'role' => ['admin'],
-            ],
-        ],
-        'link' => '/riwayat-penilaian',
+        'submenu' => [],
+        'link' => '/riwayat',
         'role' => ['juri'],
     ],
 ];

@@ -105,6 +105,13 @@ class KontesController extends Controller
     {
         $kontes = Kontes::where('slug', $slug)->firstOrFail();
 
+        if ($request->has('setActive')) {
+            Kontes::where('slug', $slug)->update(['status' => 1]);
+            Kontes::where('slug', '!=', $slug)->update(['status' => 0]);
+            Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diaktifkan.");
+            return redirect()->back();
+        }
+
         try {
             $data = $request->all();
 
