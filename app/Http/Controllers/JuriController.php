@@ -9,6 +9,7 @@ use Illuminate\Container\Attributes\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class JuriController extends Controller
 {
@@ -36,66 +37,80 @@ class JuriController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
-            $data = $request->all();
+            $data = $request->except(['foto', 'sertifikat']);
 
-            // Nomor Induk Juri
-            $tahun = date('Y');
-            $data['no_induk_juri'] = "JURI{$tahun}" . substr(preg_replace('/\D/', '', $data['no_telepon']), -4);
-            // Buat slug dasar dari nama juri
-            $slug = strtolower(trim($data['nama_juri']));
-            $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);  // Hapus karakter yang tidak diinginkan
-            $slug = preg_replace('/[\s\-]+/', '-', $slug);      // Ganti spasi dan tanda - lebih dari satu dengan -
-            $slug = trim($slug, '-');                            // Hapus - di awal atau akhir
+            $data['no_induk_juri'] = $this->generateNoIndukJuri($request->no_telepon);
+            $data['slug'] = Str::slug($request->nama_juri) . '-juri-' . strtolower($data['no_induk_juri']);
+            $password = bcrypt($request->username);
+            $data['password'] = $password;
 
-            // Gabungkan dengan 'juri' dan nomor induk juri
-            $slug .= '-juri-' . strtolower($data['no_induk_juri']);
-            // Assign slug yang telah dibuat ke data
-            $data['slug'] = $slug;
+            $imageUpload = $this->handleImageUpload($request, 'create');
 
-            // Password default = no induk
-            $data['password'] = bcrypt($data['username']);
-
-            // Tangani upload foto & sertifikat sekaligus
-            $uploadedFiles = $this->handleImageUpload($request, 'store');
-
-            if ($uploadedFiles) {
-                if (isset($uploadedFiles['foto'])) {
-                    $data['foto'] = $uploadedFiles['foto'];
-                    unset($data['foto_lama']);
-                }
-                if (isset($uploadedFiles['sertifikat'])) {
-                    $data['sertifikat'] = $uploadedFiles['sertifikat'];
-                    unset($data['sertifikat_lama']);
-                }
+            if ($request->hasFile('foto')) {
+                $data['foto'] = $imageUpload;
             }
 
-            // Simpan ke DB
+            $data['sertifikat'] = $request->file('sertifikat')->store('sertifikat');
+
+            $sertifikat = $this->handleFileSertifikat($request);
+
+            if ($sertifikat) {
+                $data['sertifikat'] = $sertifikat;
+            } else {
+                $data['sertifikat'] = null; // Atau bisa diisi dengan default value jika tidak ada file
+            }
+
             $juri = Juri::create($data);
 
-            // simpan ke db user
-            $user = User::create([
-                'name' => $data['nama_juri'],
-                'username' => $data['username'],
+            User::create([
+                'name'       => $data['nama_juri'],
+                'username'   => $data['username'],
+                'email'      => $data['email'],
                 'no_anggota' => $data['no_induk_juri'],
-                'email' => $data['email'],
-                'password' => $data['username'],
-                'role' => 'juri',
+                'password'   => $password,
+                'role'       => 'juri',
             ]);
 
-            // Berikan pesan sukses setelah menyimpan data
             Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
-            // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal menyimpan data, silahkan coba lagi." . $e->getMessage());
+            // Log::error('Error saving Juri: ' . $e->getMessage());
+            Session::flash('error', "Gagal menyimpan data. Silakan coba lagi." . $e->getMessage());
             return redirect()->back()->withInput();
         }
+    }
+
+    private function handleFileSertifikat(Request $request)
+    {
+        // validasi file sertifikat dengan ekstensi pdf
+        if ($request->hasFile('sertifikat') && $request->file('sertifikat')->isValid()) {
+            $sertifikat = $request->file('sertifikat');
+            $sertifikatExtension = $sertifikat->getClientOriginalExtension();
+            if ($sertifikatExtension !== 'pdf') {
+                Session::flash('error', 'File sertifikat harus berupa PDF.');
+                return redirect()->back()->withInput();
+            }
+        }
+
+        if ($request->hasFile('sertifikat')) {
+            $sertifikat = $request->file('sertifikat');
+            $sertifikatName = $sertifikat->getClientOriginalName();
+            $sertifikat->move(public_path('sertifikat'), $sertifikatName);
+            return $sertifikatName;
+        }
+
+        return null;
+    }
+
+    private function generateNoIndukJuri($no_telepon)
+    {
+        $tahun = date('Y');
+        $lastDigits = substr(preg_replace('/\D/', '', $no_telepon), -4);
+        $random = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        return "JURI{$tahun}{$lastDigits}{$random}";
     }
 
     /**
@@ -138,10 +153,6 @@ class JuriController extends Controller
             // Assign slug yang telah dibuat ke data
             $data['slug'] = $slug;
 
-            // Update Nomor Induk Juri
-            // $tahun = date('Y');
-            // $data['no_induk_juri'] = "JURI{$tahun}" . substr(preg_replace('/\D/', '', $data['no_telepon']), -4);
-
             // Jika password kosong, biarkan password sebelumnya
             if (empty($data['password'])) {
                 unset($data['password']);  // Jangan update password jika tidak diubah
@@ -150,14 +161,21 @@ class JuriController extends Controller
                 $data['password'] = bcrypt($data['password']);
             }
 
-            // Upload gambar jika ada
-            if ($request->hasFile('foto')) {
-                $data['foto'] = $this->handleImageUpload($request, 'update');
-                unset($data['foto_lama']);
-                unset($data['sertifikat_lama']);
-            } else {
-                unset($data['foto_lama']);
-                unset($data['sertifikat_lama']);
+            $uploadedImage = $this->handleImageUpload($request, 'update');
+
+            if ($uploadedImage) {
+                if (isset($uploadedImage['foto'])) {
+                    $data['foto'] = $uploadedImage['foto'];
+                    unset($data['foto_lama']);
+                }
+            }
+
+            if ($request->has('sertifikat')) {
+                // handle file pdf
+                $sertifikat = $request->file('sertifikat');
+                $sertifikatName = $sertifikat->getClientOriginalName();
+                $sertifikat->move(public_path('sertifikat'), $sertifikatName);
+                $data['sertifikat'] = $sertifikatName;
             }
 
             // Update data juri di database
@@ -216,40 +234,27 @@ class JuriController extends Controller
     protected function handleImageUpload($request, $typeInput)
     {
         // Jika tidak ada salah satu file, jangan lanjut
-        if ((!$request->hasFile('foto') && !$request->hasFile('sertifikat')) || !$typeInput) {
+        if (!$request->hasFile('foto') || !$typeInput) {
             return null;
         }
 
         $imageName = null;
-        $imageNameSertifikat = null;
 
         $destinationPath = public_path('images/juri');
-        $destinationPathSertifikat = public_path('images/sertifikat');
 
         // Buat folder jika belum ada
         if (!file_exists($destinationPath)) {
             mkdir($destinationPath, 0755, true);
         }
 
-        if (!file_exists($destinationPathSertifikat)) {
-            mkdir($destinationPathSertifikat, 0755, true);
-        }
 
         if ($typeInput === 'update') {
             $fotoLama = $request->input('foto_lama');
-            $sertifikatLama = $request->input('sertifikat_lama');
 
             if (!empty($fotoLama)) {
                 $oldImagePath = $destinationPath . '/' . $fotoLama;
                 if (file_exists($oldImagePath) && is_file($oldImagePath)) {
                     unlink($oldImagePath);
-                }
-            }
-
-            if (!empty($sertifikatLama)) {
-                $oldImagePathSertifikat = $destinationPathSertifikat . '/' . $sertifikatLama;
-                if (file_exists($oldImagePathSertifikat) && is_file($oldImagePathSertifikat)) {
-                    unlink($oldImagePathSertifikat);
                 }
             }
         }
@@ -260,15 +265,7 @@ class JuriController extends Controller
             $image->move($destinationPath, $imageName);
         }
 
-        if ($request->hasFile('sertifikat')) {
-            $imageSertifikat = $request->file('sertifikat');
-            $imageNameSertifikat = time() . '_sertifikat.' . $imageSertifikat->getClientOriginalExtension();
-            $imageSertifikat->move($destinationPathSertifikat, $imageNameSertifikat);
-        }
 
-        return [
-            'foto' => $imageName,
-            'sertifikat' => $imageNameSertifikat,
-        ];
+        return $imageName;
     }
 }

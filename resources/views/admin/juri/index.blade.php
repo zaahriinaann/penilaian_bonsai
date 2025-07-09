@@ -57,7 +57,7 @@
                             <td>{{ $item->no_telepon }}</td>
                             <td>
                                 <a class="btn btn-sm btn-primary" title="Lihat Sertifikat"
-                                    href="{{ asset('images/sertifikat/' . $item->sertifikat) }}" target="_blank">
+                                    href="{{ asset('sertifikat/' . $item->sertifikat) }}" target="_blank">
                                     <i class="bi bi-file-earmark-text-fill m-0 p-0"></i> Lihat Sertifikat
                                 </a>
                             </td>

@@ -179,7 +179,6 @@
             </div>
         </div>
     </div>
-    </div>
 
 
     <div class="modal fade" id="kt_modal_create_kriteria" tabindex="-1" aria-labelledby="kt_modal_create_kriteria"
