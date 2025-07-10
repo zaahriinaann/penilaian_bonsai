@@ -29,7 +29,8 @@ class DatabaseSeeder extends Seeder
             // JuriSeeder::class,
             // KontesSeeder::class,
             // BonsaiSeeder::class,
-            HelperKriteriaSeeder::class
+            HelperKriteriaSeeder::class,
+            PenilaianSeeder::class,
         ]);
     }
 }
