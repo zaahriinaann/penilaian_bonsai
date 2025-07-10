@@ -51,9 +51,9 @@ class KontesController extends Controller
             $slug = preg_replace('/[^a-z0-9\-]/', '', $slug); // hanya huruf, angka, dan tanda -
             $data['slug'] = $slug;
 
-            // Bersihkan dan konversi harga tiket
-            $price = str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
-            $data['harga_tiket_kontes'] = (int) $price;
+            // // Bersihkan dan konversi harga tiket
+            // $price = str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
+            // $data['harga_tiket_kontes'] = (int) $price;
 
             // Alihkan jumlah_peserta ke limit_peserta (jika memang ada kolom ini)
             $data['limit_peserta'] = (int) $data['jumlah_peserta'];
@@ -119,8 +119,8 @@ class KontesController extends Controller
             $slugBaru = strtolower(preg_replace('/[^a-z0-9\-]/', '', str_replace(' ', '-', $data['nama_kontes'])));
             $data['slug'] = $slugBaru;
 
-            // Konversi harga tiket
-            $data['harga_tiket_kontes'] = (int) str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
+            // // Konversi harga tiket
+            // $data['harga_tiket_kontes'] = (int) str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
 
             // Validasi dan normalkan link GMaps
             if (

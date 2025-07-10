@@ -29,10 +29,8 @@ class HomeController extends Controller
     {
         $totalKontes = Kontes::count();
         $totalJuri = Juri::count();
-        $totalPeserta = User::where('role', 'peserta')->count();
+        $totalPeserta = User::where('role', 'anggota')->count();
         $totalBonsai = Bonsai::count();
-
-        $totalPeserta = 5145670;
 
         $dataRender = [
             'Kontes' => [$totalKontes, '328E6E'],

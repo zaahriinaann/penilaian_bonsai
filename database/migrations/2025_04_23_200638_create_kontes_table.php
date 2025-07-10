@@ -22,7 +22,7 @@ return new class extends Migration
             $table->datetime('tanggal_selesai_kontes');
             $table->bigInteger('jumlah_peserta');
             $table->bigInteger('limit_peserta');
-            $table->bigInteger('harga_tiket_kontes');
+            $table->bigInteger('harga_tiket_kontes')->nullable();
             $table->string('status')->default(1);
             $table->string('poster_kontes')->nullable();
             $table->timestamps();

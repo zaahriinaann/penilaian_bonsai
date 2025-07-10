@@ -12,41 +12,38 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>No Juri</th>
-                            <th>No Daftar</th>
-                            <th>Nama Peserta</th>
-                            <th>Pohon Bonsai</th>
-                            <th>Status</th>
+                            <th class="text-nowrap">No Juri</th>
+                            <th class="text-nowrap">No Daftar</th>
+                            <th class="text-nowrap">Nama Peserta</th>
+                            <th class="text-nowrap">Pohon Bonsai</th>
+                            <th class="text-nowrap">Status Penilaian</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- @foreach ($pesertas as $index => $peserta)
+
+                        @foreach ($dataRender as $item)
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $peserta->nama }}</td>
-                                <td>{{ $peserta->kontes->nama }}</td>
+                                <td class="text-center">{{ $item->nomor_juri ?? 'Belum Diisi' }}</td>
+                                <td class="text-center">{{ $item->nomor_pendaftaran ?? 'Belum Diisi' }}</td>
+                                <td>{{ $item->user->name ?? 'Belum Diisi' }}</td>
+                                <td>{{ $item->bonsai->nama_pohon ?? 'Belum Diisi' }}</td>
                                 <td>
-                                    <a href="{{ route('nilai.show', $peserta->id) }}"
-                                        class="btn btn-primary btn-sm">Penilaian</a>
+                                    //buat kondisi untuk status penilaian, kalo sudah dinilai tampilkan "Sudah Dinilai"
+                                    dengan melihat kondisi data defuzzifikasi sudah ada data atau belum
+                                    @if ($item)
+                                        <span class="badge bg-success">Sudah Dinilai</span>
+                                    @else
+                                        <span class="badge bg-warning">Belum Dinilai</span>
+                                    @endif
                                 </td>
+                                <td class="text-nowrap">
+                                    <a href="{{ route('nilai.show', $item->id) }}" class="btn btn-primary btn-sm">Nilai</a>
+                                    <a href=" " class="btn btn-danger btn-sm">Hapus</a>
+                                </td>
+
                             </tr>
-                        @endforeach --}}
-                        <tr>
-                            <td>#1</td>
-                            <td>111</td>
-                            <td>Nama Peserta</td>
-                            <td>Nama Pohon/ukuran/kelas</td>
-                            <td>
-                                <a href=" " class="btn btn-success btn-sm">Sudah</a>
-                                <a href=" " class="btn btn-danger btn-sm">Belum</a>
-                            </td>
-                            <td>
-                                <a href=" " class="btn btn-primary btn-sm">Lihat</a>
-                                <a href=" " class="btn btn-warning btn-sm">Edit</a>
-                                <a href=" " class="btn btn-danger btn-sm">Hapus</a>
-                            </td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

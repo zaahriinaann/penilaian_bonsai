@@ -30,7 +30,7 @@
                             <th>Tempat/Lokasi Kontes</th>
                             <th>Tanggal</th>
                             <th>Jumlah Peserta/Bonsai</th>
-                            <th>Harga</th>
+                            {{-- <th>Harga</th> --}}
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -60,7 +60,7 @@
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_mulai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') . ' - ' . \Carbon\Carbon::parse($item->tanggal_selesai_kontes)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}
                                 </td>
                                 <td>{{ $item->jumlah_peserta }} Peserta/Bonsai</td>
-                                <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td>
+                                {{-- <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td> --}}
                                 <td>
                                     <form action="{{ route('kontes.update', $item->slug) }}" method="POST">
                                         @csrf
@@ -172,12 +172,12 @@
                                 <input type="number" class="form-control" name="jumlah_peserta" id="jumlah_peserta"
                                     aria-describedby="jumlah_peserta" title="Jumlah Peserta/Bonsai" placeholder="100">
                             </div>
-                            <div class="col-md-12 mb-3" id="form_tiket_kontes">
+                            {{-- <div class="col-md-12 mb-3" id="form_tiket_kontes">
                                 <label for="harga_tiket_kontes" class="form-label">Harga Tiket Kontes</label>
                                 <input type="text" class="form-control" name="harga_tiket_kontes"
                                     id="harga_tiket_kontes" aria-describedby="harga_tiket_kontes"
                                     title="Harga Tiket Kontes" placeholder="Rp0">
-                            </div>
+                            </div> --}}
                             <div class="col-md-12 mb-3">
                                 <label for="poster_kontes" class="form-label">Poster Kontes</label>
                                 <input type="file" class="form-control" name="poster_kontes" id="poster_kontes">
@@ -262,11 +262,11 @@
                                 <input type="number" class="form-control" name="jumlah_peserta"
                                     id="edit_jumlah_peserta">
                             </div>
-                            <div class="col-md-12 mb-3">
+                            {{-- <div class="col-md-12 mb-3">
                                 <label for="edit_harga_tiket_kontes" class="form-label">Harga Tiket Kontes</label>
                                 <input type="text" class="form-control" name="harga_tiket_kontes"
                                     id="edit_harga_tiket_kontes">
-                            </div>
+                            </div> --}}
                             <div class="col-md-12 mb-3">
                                 <label for="edit_poster_kontes" class="form-label">Poster Kontes (Opsional)</label>
                                 <input type="file" class="form-control" name="poster_kontes" id="edit_poster_kontes">

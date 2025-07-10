@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kontes;
 use App\Models\Nilai;
+use App\Models\PendaftaranKontes;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NilaiController extends Controller
@@ -12,15 +15,21 @@ class NilaiController extends Controller
      */
     public function index()
     {
-        //sesuaikan dengan index.blade.php dari juri/nilai/index.blade.php
-        //jika ingin menampilkan data, bisa menggunakan model Nilai
-        $nilais = Nilai::all();
-        return view('juri.nilai.index', compact('nilais'));
-        // Jika tidak ada data yang ingin ditampilkan, cukup kembalikan view
-        // dengan view juri.nilai.index
-        // Pastikan view tersebut sudah ada di resources/views/juri/nilai/index.blade.php
-        return view('juri.nilai.index');
+        // Ambil data nilai lengkap dengan relasi-relasi
+        // $dataRender = Nilai::with([
+        //     'kontes',
+        //     'peserta',
+        //     'juri',
+        //     'bonsai',
+        //     'kriteriaPenilaian',
+        //     'pendaftaran'
+        // ])->get();
+
+        $dataRender = PendaftaranKontes::with(['user', 'bonsai'])->get();
+
+        return view('juri.nilai.index', compact('dataRender'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -41,9 +50,11 @@ class NilaiController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Nilai $nilai)
+    public function show($id)
     {
-        //
+        $data = PendaftaranKontes::where('id', $id)->first();
+
+        return view('juri.nilai.show', compact('data'));
     }
 
     /**
