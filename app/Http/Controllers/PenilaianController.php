@@ -156,7 +156,29 @@ class PenilaianController extends Controller
      */
     public function update(Request $request, Penilaian $penilaian)
     {
-        //
+
+        $allInput = $request->all();
+
+        $subKriteria = $allInput['sub_kriteria'] ?? [];
+        $kriteria = $allInput['kategori'] ?? [];
+        $slug = $allInput['slug'] ?? '';
+
+        $penilaian = Penilaian::where('kriteria', $kriteria)
+            ->where('sub_kriteria', $subKriteria)
+            ->get();
+
+
+        if ($penilaian) {
+
+            foreach ($penilaian as $item) {
+                // dd($penilaian, $allInput[$slug], $item);
+                $item->update([
+                    'min' => $allInput[$slug][$item->himpunan]['min'],
+                    'max' => $allInput[$slug][$item->himpunan]['max'],
+                ]);
+            }
+            return redirect()->back()->with('success', 'Data penilaian berhasil diperbarui!');
+        }
     }
 
     /**
