@@ -8,36 +8,57 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Nilai extends Model
 {
-    protected $table = 'nilais';
-    protected $guarded = [];
+    protected $fillable = [
+        'id_kontes',
+        'id_pendaftaran',
+        'id_peserta',
+        'id_juri',
+        'id_bonsai',
+        'id_kriteria_penilaian',
+        'd_keanggotaan',
+        'defuzzifikasi',
+    ];
 
-    public function kontes(): BelongsTo
+    // Relasi ke kontes
+    public function kontes()
     {
         return $this->belongsTo(Kontes::class, 'id_kontes');
     }
 
-    public function peserta(): BelongsTo
+    // Relasi ke PendaftaranKontes
+    public function pendaftaranKontes()
+    {
+        return $this->belongsTo(PendaftaranKontes::class, 'id_pendaftaran');
+    }
+
+    // Relasi ke peserta (user)
+    public function peserta()
     {
         return $this->belongsTo(User::class, 'id_peserta');
     }
 
-    public function juri(): BelongsTo
+    // Relasi ke juri
+    public function juri()
     {
         return $this->belongsTo(Juri::class, 'id_juri');
     }
 
-    public function bonsai(): BelongsTo
+    // Relasi ke bonsai
+    public function bonsai()
     {
         return $this->belongsTo(Bonsai::class, 'id_bonsai');
     }
 
-    public function kriteriaPenilaian(): BelongsTo
+    // Relasi ke kriteria dan sub-kriteria
+    public function penilaian()
     {
         return $this->belongsTo(Penilaian::class, 'id_kriteria_penilaian');
     }
 
-    public function pendaftaran(): BelongsTo
+    public static function sudahDinilai($bonsaiId, $juriId)
     {
-        return $this->belongsTo(PendaftaranKontes::class, 'id_pendaftaran');
+        return self::where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juriId)
+            ->exists();
     }
 }
