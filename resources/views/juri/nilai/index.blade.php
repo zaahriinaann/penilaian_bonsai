@@ -4,10 +4,30 @@
 
 @section('content')
     <div class="container">
-        <div class="card">
+        <div class="card shadow-sm border-0 mb-4">
+
+
             <div class="card-body">
-                <h3 class="card-title">Daftar Peserta Kontes: {{ $kontes->nama_kontes }}</h3>
-                <p class="card-text">Silakan pilih peserta untuk melakukan penilaian.</p>
+
+                @if ($kontes)
+                    <div class="alert alert-success shadow-sm rounded-3">
+                        <h4 class="mb-1"><i class="bi bi-award-fill me-2"></i>Kontes Aktif: {{ $kontes->nama_kontes }}
+                        </h4>
+                        <p class="mb-0">
+                            <strong>Tanggal:</strong>
+                            {{ \Carbon\Carbon::parse($kontes->tanggal_mulai_kontes)->format('d M Y') ?? '-' }} s/d
+                            {{ \Carbon\Carbon::parse($kontes->tanggal_selesai_kontes)->format('d M Y') ?? '-' }} <br>
+                            {{-- <strong>Lokasi:</strong> {{ $kontes->lokasi ?? '-' }} --}}
+                        </p>
+                        <p></p>
+                        <p class="card-text">Silakan pilih peserta untuk melakukan penilaian.</p>
+                    </div>
+                @else
+                    <div class="alert alert-warning shadow-sm rounded-3">
+                        <h5><i class="bi bi-exclamation-triangle me-2"></i>Tidak ada kontes aktif saat ini.</h5>
+                        <p>Silakan hubungi admin jika ini adalah kesalahan sistem.</p>
+                    </div>
+                @endif
 
                 <table class="table table-bordered table-striped text-nowrap table-data">
                     <thead>

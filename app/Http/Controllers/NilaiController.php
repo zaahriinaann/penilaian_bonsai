@@ -23,15 +23,20 @@ class NilaiController extends Controller
     // Langkah 1: Menampilkan daftar bonsai dari kontes yang sedang berlangsung
     public function index()
     {
-        $kontes = Kontes::where('status', 1)->firstOrFail();
-        $pendaftarans = PendaftaranKontes::with(['user', 'bonsai'])
-            ->where('kontes_id', $kontes->id)
-            ->get();
-        $juriId = Juri::where('user_id', Auth::id())->firstOrFail()->id;
+        $kontes = Kontes::where('status', 1)->first(); // Jangan pakai ->firstOrFail()
+        $pendaftarans = [];
 
-        // dd($pendaftarans, $kontes, $juriId);
+        if ($kontes) {
+            $pendaftarans = PendaftaranKontes::with(['user', 'bonsai'])
+                ->where('kontes_id', $kontes->id)
+                ->get();
+        }
+
+        $juriId = optional(Juri::where('user_id', Auth::id())->first())->id;
+
         return view('juri.nilai.index', compact('pendaftarans', 'kontes'));
     }
+
 
 
     /**

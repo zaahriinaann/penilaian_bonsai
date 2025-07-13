@@ -10,12 +10,16 @@ class RiwayatController extends Controller
 {
     public function index()
     {
-        $kontes = Kontes::where('status', 1)->firstOrFail();
+        $kontes = Kontes::where('status', 1)->first();
 
-        $ranking = RekapNilai::with('bonsai.user')
-            ->where('id_kontes', $kontes->id)
-            ->orderByDesc('skor_akhir')
-            ->get();
+        $ranking = [];
+
+        if ($kontes) {
+            $ranking = RekapNilai::with(['pendaftaran.user', 'pendaftaran.bonsai'])
+                ->where('kontes_id', $kontes->id)
+                ->orderBy('total_nilai', 'desc')
+                ->get();
+        }
 
         // dd($ranking);
 

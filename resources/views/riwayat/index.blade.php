@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Riwayat Penilaian Bonsai')
+
 @section('content')
     <div class="card">
         <div class="card-body">
