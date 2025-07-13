@@ -21,46 +21,11 @@
             @endforeach
         </div>
 
-
-        {{-- Statistik dan Aktivitas --}}
-        <div class="row px-4 pb-4">
-            {{-- Kartu 1: Statistik Penilaian --}}
-            <div class="col-md-6 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-primary text-white align-items-center">
-                        Statistik Penilaian
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Jumlah Bonsai Dinilai: <strong>80</strong></li>
-                            <li class="list-group-item">Jumlah Bonsai Belum Dinilai: <strong>20</strong></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Kartu 2: Status Pendaftaran Kontes --}}
-            <div class="col-md-6 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-success text-white align-items-center">
-                        Status Pendaftaran Kontes
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Pendaftaran Dibuka: <strong>Ya</strong></li>
-                            <li class="list-group-item">Total Slot: <strong>100</strong></li>
-                            <li class="list-group-item">Sisa Slot: <strong>12</strong></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- Kartu 3: Kontes Aktif Saat Ini --}}
         <div class="row px-4 pb-4">
             <div class="col-12">
                 <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-info text-white align-items-center">
+                    <div class="card-header bg-success text-white align-items-center">
                         Kontes Aktif Saat Ini
                     </div>
                     <div class="card-body">
@@ -86,12 +51,49 @@
             </div>
         </div>
 
+
+        {{-- Statistik dan Aktivitas --}}
+        <div class="row px-4 pb-4">
+            {{-- Kartu 1: Statistik Penilaian --}}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-dark text-white align-items-center">
+                        Statistik Penilaian
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Jumlah Bonsai Dinilai: <strong>80</strong></li>
+                            <li class="list-group-item">Jumlah Bonsai Belum Dinilai: <strong>20</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Kartu 2: Status Pendaftaran Kontes --}}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-dark text-white align-items-center">
+                        Status Pendaftaran Kontes
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Pendaftaran Dibuka: <strong>Ya</strong></li>
+                            <li class="list-group-item">Total Slot: <strong>100</strong></li>
+                            <li class="list-group-item">Sisa Slot: <strong>12</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
         {{-- Top 3 Bonsai --}}
         <div class="row px-4 pb-5">
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-warning align-items-center">
-                        <h5 class="mb-0">Top 3 Bonsai Sementara</h5>
+                    <div class="card-header bg-dark text-white align-items-center">
+                        Top 3 Bonsai Terbaik
                     </div>
                     <div class="card-body">
                         <table class="table table-striped align-middle mb-0">
@@ -134,11 +136,28 @@
             </div>
         </div>
 
-        {{-- Grafik Kontes 5 Tahun Terakhir --}}
+        {{-- Prediksi Slot Kontes Tahun Depan --}}
         <div class="row px-4 pb-4">
             <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-whit align-items-center">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-dark text-white align-items-center">
+                        Prediksi Slot Kontes Tahun Depan
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="mb-2">Perkiraan berdasarkan tren 25% kenaikan dari tahun ini</p>
+                        <h3 class="text-primary mb-0">150 Slot</h3>
+                        <small class="text-muted">*Data bersifat estimasi</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Grafik 5 Tahun Terakhir - 2 Kolom --}}
+        <div class="row px-4 pb-4">
+            {{-- Grafik Kontes --}}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white align-items-center">
                         <h5 class="mb-0">Jumlah Kontes 5 Tahun Terakhir</h5>
                     </div>
                     <div class="card-body">
@@ -146,13 +165,11 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Grafik Peserta 5 Tahun Terakhir --}}
-        <div class="row px-4 pb-4">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-success text-white align-items-center">
+            {{-- Grafik Peserta --}}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white align-items-center">
                         <h5 class="mb-0">Jumlah Peserta 5 Tahun Terakhir</h5>
                     </div>
                     <div class="card-body">
@@ -160,13 +177,11 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Grafik Bonsai 5 Tahun Terakhir --}}
-        <div class="row px-4 pb-5">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-warning align-items-center">
+            {{-- Grafik Bonsai --}}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary align-items-center">
                         <h5 class="mb-0">Jumlah Bonsai 5 Tahun Terakhir</h5>
                     </div>
                     <div class="card-body">
@@ -174,8 +189,19 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+            {{-- Grafik Bonsai vs Juri --}}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary align-items-center">
+                        <h5 class="mb-0">Perbandingan Jumlah Bonsai vs Juri per Tahun</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartBonsaiJuri"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 @endsection
@@ -244,6 +270,37 @@
                     borderColor: 'rgba(255, 193, 7, 1)',
                     borderWidth: 1
                 }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Chart Bonsai vs Juri
+        new Chart(document.getElementById('chartBonsaiJuri'), {
+            type: 'bar',
+            data: {
+                labels: tahun,
+                datasets: [{
+                        label: 'Jumlah Bonsai',
+                        data: [30, 50, 60, 80, 120],
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Jumlah Juri',
+                        data: [3, 4, 4, 5, 6],
+                        backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }
+                ]
             },
             options: {
                 responsive: true,
