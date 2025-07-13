@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('penilaian', function (Blueprint $table) {
+        Schema::create('rekap_nilai', function (Blueprint $table) {
             $table->id();
-            $table->string('kriteria');      // contoh: keseimbangan_optik
-            $table->string('sub_kriteria');
-            $table->string('himpunan');      // A, B, C, atau D
-            $table->unsignedTinyInteger('min'); // nilai minimum
-            $table->unsignedTinyInteger('max'); // nilai maksimum
+            $table->foreignId('id_kontes')->constrained('kontes');
+            $table->foreignId('id_bonsai')->constrained('bonsai');
+            $table->foreignId('id_juri')->constrained('users');
+            $table->float('skor_akhir')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('penilaian');
+        Schema::dropIfExists('rekap_nilai');
     }
 };

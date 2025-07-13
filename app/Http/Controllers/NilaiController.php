@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bonsai;
+use App\Models\HelperDomain;
+use App\Models\HelperSubKriteria;
+use App\Models\Juri;
 use App\Models\Kontes;
 use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
 use App\Models\Penilaian;
+use App\Models\RekapNilai;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +27,9 @@ class NilaiController extends Controller
         $pendaftarans = PendaftaranKontes::with(['user', 'bonsai'])
             ->where('kontes_id', $kontes->id)
             ->get();
+        $juriId = Juri::where('user_id', Auth::id())->firstOrFail()->id;
 
+        // dd($pendaftarans, $kontes, $juriId);
         return view('juri.nilai.index', compact('pendaftarans', 'kontes'));
     }
 
@@ -43,48 +49,54 @@ class NilaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'bonsai_id' => 'required|exists:bonsai,id',
-            'nilai'     => 'required|array',
+            'bonsai_id' => 'required',
+            'nilai'     => 'required',
         ]);
 
-        /** 1. Ambil data Bonsai + pemilik (peserta) */
         $bonsai   = Bonsai::with('user')->findOrFail($request->bonsai_id);
         $pesertaId = $bonsai->user->id;
-
-        /** 2. Kontes aktif  */
         $kontes = Kontes::where('status', 1)->firstOrFail();
-
-        /** 3. Cek pendaf­taran bonsai di kontes aktif */
         $pendaftaran = PendaftaranKontes::where('kontes_id', $kontes->id)
             ->where('bonsai_id', $bonsai->id)
-            ->firstOrFail();          // error 404 kalau belum terdaftar
+            ->firstOrFail();
+        $juriId = Auth::id();
 
-        /** 4. ID juri yang login */
-        $juriId = Auth::id();                     // ✔️ tidak error
+        // dd($request->all());
+        foreach ($request->nilai as $idSubKriteria => $angka) {
+            $kriteria = HelperDomain::where('id_sub_kriteria', $idSubKriteria)->firstOrFail();
 
-        /** 5. Simpan tiap nilai sub‑kriteria */
-        foreach ($request->nilai as $idKriteriaPenilaian => $angka) {
+            [$nilaiAwal, $derajat] = Nilai::hitungFuzzy($angka, $kriteria);
+
             Nilai::create([
                 'id_kontes'             => $kontes->id,
                 'id_pendaftaran'        => $pendaftaran->id,
                 'id_peserta'            => $pesertaId,
                 'id_juri'               => $juriId,
                 'id_bonsai'             => $bonsai->id,
-                'id_kriteria_penilaian' => $idKriteriaPenilaian,
-                'd_keanggotaan'         => $angka,
-                'defuzzifikasi'         => 0,      // dihitung nanti
+                'id_kriteria_penilaian' => $idSubKriteria,
+                'nilai_awal'            => $nilaiAwal,
+                'derajat_anggota'       => $derajat,
             ]);
         }
 
-        /** 6. Tandai bonsai “Sudah Dinilai” */
-        $pendaftaran->update(['status' => '1']);
+        $skorAkhir = Nilai::defuzzifikasi($bonsai->id, $juriId, $kontes->id);
+
+        RekapNilai::updateOrCreate(
+            [
+                'id_kontes' => $kontes->id,
+                'id_bonsai' => $bonsai->id,
+                'id_juri'   => $juriId,
+            ],
+            [
+                'skor_akhir' => $skorAkhir,
+            ]
+        );
+
 
         return redirect()
             ->route('nilai.index')
             ->with('success', 'Nilai berhasil disimpan.');
     }
-
-
 
     /**
      * Display the specified resource.
@@ -92,19 +104,15 @@ class NilaiController extends Controller
     // Langkah 2: Tampilkan form nilai (edit kalau sudah pernah dinilai)
     public function show($bonsaiId)
     {
-        $penilaians = Penilaian::all()
-            ->groupBy(['kriteria', 'sub_kriteria']);
-
         $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
 
-        $nilaiTersimpan = Nilai::where('id_bonsai', $bonsaiId)
-            ->where('id_juri', Auth::id())
+        // Ambil semua domain dan relasi ke sub_kriteria & kriteria
+        $domains = HelperDomain::with('subKriteria') // pastikan ada relasi di model
             ->get()
-            ->keyBy('id_kriteria_penilaian');
+            ->groupBy('subKriteria.id_kriteria');
 
-        return view('juri.nilai.show', compact('bonsai', 'penilaians', 'nilaiTersimpan'));
+        return view('juri.nilai.show', compact('bonsai', 'domains'));
     }
-
 
 
     /**
@@ -133,7 +141,7 @@ class NilaiController extends Controller
 
             if ($nilai) {
                 $nilai->update([
-                    'd_keanggotaan' => $angka,
+                    'nilai_awal' => $angka,
                     'defuzzifikasi' => 0,
                 ]);
             }

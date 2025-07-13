@@ -28,4 +28,9 @@ class Bonsai extends Model
     {
         return $this->belongsTo(PendaftaranKontes::class, 'pendaftaran_id');
     }
+
+    public function nilai()
+    {
+        return $this->hasMany(Nilai::class, 'id_bonsai');
+    }
 }

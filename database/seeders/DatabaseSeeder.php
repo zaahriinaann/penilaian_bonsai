@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             // KontesSeeder::class,
             // BonsaiSeeder::class,
             HelperKriteriaSeeder::class,
-            PenilaianSeeder::class,
+            // PenilaianSeeder::class,
         ]);
     }
 }

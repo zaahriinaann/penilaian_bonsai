@@ -6,5 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class RekapNilai extends Model
 {
-    //
+    protected $table = 'rekap_nilai';
+
+    protected $fillable = [
+        'id_kontes',
+        'id_bonsai',
+        'id_juri',
+        'skor_akhir',
+    ];
+
+    public function bonsai()
+    {
+        return $this->belongsTo(Bonsai::class, 'id_bonsai');
+    }
 }

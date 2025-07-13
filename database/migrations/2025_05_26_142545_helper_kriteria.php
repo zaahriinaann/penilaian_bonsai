@@ -14,9 +14,6 @@ return new class extends Migration
         Schema::create('helper_kriteria', function (Blueprint $table) {
             $table->id();
             $table->string('kriteria');
-            $table->string('himpunan');
-            $table->integer('min');
-            $table->integer('max');
             $table->timestamps();
         });
     }

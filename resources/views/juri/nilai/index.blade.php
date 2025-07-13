@@ -6,18 +6,18 @@
     <div class="container">
         <div class="card">
             <div class="card-body">
-                <h3 class="card-title">Daftar Peserta Kontes: {{ $kontes->nama }}</h3>
+                <h3 class="card-title">Daftar Peserta Kontes: {{ $kontes->nama_kontes }}</h3>
                 <p class="card-text">Silakan pilih peserta untuk melakukan penilaian.</p>
 
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped text-nowrap table-data">
                     <thead>
                         <tr>
-                            <th class="text-nowrap">No Juri</th>
-                            <th class="text-nowrap">No Daftar</th>
-                            <th class="text-nowrap">Nama Peserta</th>
-                            <th class="text-nowrap">Pohon Bonsai</th>
-                            <th class="text-nowrap">Status Penilaian</th>
-                            <th class="text-nowrap">Aksi</th>
+                            <th>No Juri</th>
+                            <th>No Daftar</th>
+                            <th>Nama Peserta</th>
+                            <th>Pohon Bonsai</th>
+                            <th>Status Penilaian</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>

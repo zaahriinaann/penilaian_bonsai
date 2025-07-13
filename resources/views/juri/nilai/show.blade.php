@@ -18,56 +18,63 @@
                         <th>Nama Bonsai</th>
                         <td>{{ $bonsai->nama_pohon }}</td>
                     </tr>
-                    <tr>
+                    {{-- <tr>
                         <th>Jenis</th>
                         <td>{{ $bonsai->jenis }}</td>
                     </tr>
                     <tr>
                         <th>Asal</th>
                         <td>{{ $bonsai->asal }}</td>
-                    </tr>
+                    </tr> --}}
                 </table>
             </div>
         </div>
 
-        <form action="{{ $nilaiTersimpan->isNotEmpty() ? route('nilai.update', $bonsai->id) : route('nilai.store') }}"
-            method="POST">
-            @csrf
-            @if ($nilaiTersimpan->isNotEmpty())
-                @method('PUT')
-            @endif
+        @if ($domains->isEmpty())
+            <div class="alert alert-warning">
+                Tidak ada data penilaian yang tersedia untuk bonsai ini.
+            </div>
+        @else
+            <form action="{{ route('nilai.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
 
-            <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
+                @foreach ($domains as $idKriteria => $groupedSubKriteria)
+                    @php
+                        $namaKriteria = $groupedSubKriteria->first()?->subKriteria->kriteria ?? null;
+                        $groupedBySub = $groupedSubKriteria->groupBy('id_sub_kriteria');
+                    @endphp
 
-            @foreach ($penilaians as $kriteria => $subGroups)
-                <div class="card mb-4 border-0 shadow rounded-4">
-                    <div class="card-header bg-primary text-white fw-bold">
-                        {{ $kriteria }}
-                    </div>
-                    <div class="card-body">
-                        @foreach ($subGroups as $subKriteria => $himpunans)
-                            @php
-                                $item = $himpunans->first(); // ambil satu entri saja (karena hanya beda himpunan)
-                                $nilai = $nilaiTersimpan[$item->id]->d_keanggotaan ?? '';
-                            @endphp
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <strong>{{ $subKriteria }}</strong>
-                                </label>
-                                <input type="number" name="nilai[{{ $item->id }}]" class="form-control" step="0.01"
-                                    value="{{ $nilai }}" required>
+                    @if ($namaKriteria && $groupedBySub->isNotEmpty())
+                        <div class="card mb-4 border-0 shadow rounded-4">
+                            <div class="card-body">
+                                <span class="fw-bold fs-4">{{ $namaKriteria }}</span>
+                                <hr>
+
+                                @foreach ($groupedBySub as $idSubKriteria => $domainsPerSub)
+                                    @php
+                                        $subNama = $domainsPerSub->first()?->subKriteria?->sub_kriteria ?? null;
+                                    @endphp
+
+                                    @if ($subNama)
+                                        <div class="mb-3">
+                                            <label class="form-label">Nilai untuk
+                                                <strong>{{ $subNama }}</strong></label>
+                                            <input type="number" name="nilai[{{ $idSubKriteria }}]" class="form-control"
+                                                step="0.01" required>
+                                        </div>
+                                    @endif
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endforeach
+                        </div>
+                    @endif
+                @endforeach
+
+                {{-- Tombol hanya tampil jika domain tidak kosong --}}
+                <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">Simpan Nilai</button>
+            </form>
+        @endif
 
 
-
-
-            <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">
-                {{ $nilaiTersimpan->isNotEmpty() ? '💾 Perbarui Nilai' : '💾 Simpan Nilai' }}
-            </button>
-        </form>
     </div>
 @endsection
