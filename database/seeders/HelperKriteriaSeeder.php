@@ -17,51 +17,49 @@ class HelperKriteriaSeeder extends Seeder
         $data = [
             [
                 'kriteria' => 'Penampilan',
-                'himpunan' => [
-                    ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
-                    ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
-                    ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
-                    ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
-                ]
+                // 'himpunan' => [
+                //     ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
+                //     ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
+                //     ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
+                //     ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
+                // ]
             ],
             [
                 'kriteria' => 'Gerak Dasar',
-                'himpunan' => [
-                    ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
-                    ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
-                    ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
-                    ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
-                ]
+                // 'himpunan' => [
+                //     ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
+                //     ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
+                //     ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
+                //     ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
+                // ]
             ],
             [
                 'kriteria' => 'Keserasian',
-                'himpunan' => [
-                    ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
-                    ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
-                    ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
-                    ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
-                ]
+                // 'himpunan' => [
+                //     ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
+                //     ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
+                //     ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
+                //     ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
+                // ]
             ],
             [
                 'kriteria' => 'Kematangan',
-                'himpunan' => [
-                    ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
-                    ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
-                    ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
-                    ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
-                ]
+                // 'himpunan' => [
+                //     ['himpunan' => 'Kurang', 'min' => 10, 'max' => 40],
+                //     ['himpunan' => 'Cukup', 'min' => 30, 'max' => 60],
+                //     ['himpunan' => 'Baik', 'min' => 50, 'max' => 80],
+                //     ['himpunan' => 'Baik Sekali', 'min' => 70, 'max' => 90],
+                // ]
             ],
         ];
 
         foreach ($data as $item) {
-            foreach ($item['himpunan'] as $himpunan) {
-                HelperKriteria::create([
-                    'kriteria' => $item['kriteria'],
-                    'himpunan' => $himpunan['himpunan'],
-                    'min' => $himpunan['min'],
-                    'max' => $himpunan['max'],
-                ]);
-            }
+            HelperKriteria::create([
+                'kriteria' => $item['kriteria'],
+                // 'himpunan' => $himpunan['himpunan'],
+                // 'min' => $himpunan['min'],
+                // 'max' => $himpunan['max'],
+            ]);
         }
     }
 }

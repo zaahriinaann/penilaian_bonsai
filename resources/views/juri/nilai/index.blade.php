@@ -6,7 +6,7 @@
     <div class="container">
         <div class="card">
             <div class="card-body">
-                <h3 class="card-title">Daftar Peserta Kontes: {{ $kontes->nama }}</h3>
+                <h3 class="card-title">Daftar Peserta Kontes: {{ $kontes->nama_kontes }}</h3>
                 <p class="card-text">Silakan pilih peserta untuk melakukan penilaian.</p>
 
                 <table class="table table-bordered table-striped">

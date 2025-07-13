@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bonsai;
+use App\Models\Juri;
 use App\Models\Kontes;
 use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
@@ -23,7 +24,9 @@ class NilaiController extends Controller
         $pendaftarans = PendaftaranKontes::with(['user', 'bonsai'])
             ->where('kontes_id', $kontes->id)
             ->get();
+        $juriId = Juri::where('user_id', Auth::id())->firstOrFail()->id;
 
+        // dd($pendaftarans, $kontes, $juriId);
         return view('juri.nilai.index', compact('pendaftarans', 'kontes'));
     }
 
@@ -43,27 +46,27 @@ class NilaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'bonsai_id' => 'required|exists:bonsai,id',
-            'nilai'     => 'required|array',
+            'bonsai_id' => 'required',
+            'nilai'     => 'required',
         ]);
 
-        /** 1. Ambil data Bonsai + pemilik (peserta) */
+
         $bonsai   = Bonsai::with('user')->findOrFail($request->bonsai_id);
         $pesertaId = $bonsai->user->id;
-
-        /** 2. Kontes aktif  */
         $kontes = Kontes::where('status', 1)->firstOrFail();
-
-        /** 3. Cek pendaf­taran bonsai di kontes aktif */
         $pendaftaran = PendaftaranKontes::where('kontes_id', $kontes->id)
             ->where('bonsai_id', $bonsai->id)
-            ->firstOrFail();          // error 404 kalau belum terdaftar
+            ->firstOrFail();
+        $juriId = Auth::id();
 
-        /** 4. ID juri yang login */
-        $juriId = Auth::id();                     // ✔️ tidak error
-
-        /** 5. Simpan tiap nilai sub‑kriteria */
+        // dd($pendaftaran, $kontes, $bonsai, $pesertaId, $juriId);
         foreach ($request->nilai as $idKriteriaPenilaian => $angka) {
+            $kriteria = Penilaian::findOrFail($idKriteriaPenilaian);
+
+            // hitung defuzzifikasi di sini
+            $nilai = Nilai::hitungFuzzy($angka, $kriteria);
+
+            dd($nilai);
             Nilai::create([
                 'id_kontes'             => $kontes->id,
                 'id_pendaftaran'        => $pendaftaran->id,
@@ -71,20 +74,15 @@ class NilaiController extends Controller
                 'id_juri'               => $juriId,
                 'id_bonsai'             => $bonsai->id,
                 'id_kriteria_penilaian' => $idKriteriaPenilaian,
-                'd_keanggotaan'         => $angka,
-                'defuzzifikasi'         => 0,      // dihitung nanti
+                'nilai_awal'            => $angka,
+                'derajat_anggota'       => $nilai,      // dihitung nanti
             ]);
         }
-
-        /** 6. Tandai bonsai “Sudah Dinilai” */
-        $pendaftaran->update(['status' => '1']);
 
         return redirect()
             ->route('nilai.index')
             ->with('success', 'Nilai berhasil disimpan.');
     }
-
-
 
     /**
      * Display the specified resource.
@@ -97,15 +95,8 @@ class NilaiController extends Controller
 
         $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
 
-        $nilaiTersimpan = Nilai::where('id_bonsai', $bonsaiId)
-            ->where('id_juri', Auth::id())
-            ->get()
-            ->keyBy('id_kriteria_penilaian');
-
-        return view('juri.nilai.show', compact('bonsai', 'penilaians', 'nilaiTersimpan'));
+        return view('juri.nilai.show', compact('bonsai', 'penilaians'));
     }
-
-
 
     /**
      * Show the form for editing the specified resource.
@@ -133,7 +124,7 @@ class NilaiController extends Controller
 
             if ($nilai) {
                 $nilai->update([
-                    'd_keanggotaan' => $angka,
+                    'nilai_awal' => $angka,
                     'defuzzifikasi' => 0,
                 ]);
             }

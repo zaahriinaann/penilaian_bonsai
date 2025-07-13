@@ -21,7 +21,7 @@
     @endif
 
     {{-- Kelola Kriteria Penilaian --}}
-    <div class="card w-100 mb-5 card-kelola">
+    <div class="card w-100 mb-5 card-kelola" style="z-index: 1">
         <div class="card-header sticky-top bg-white">
             <h1 class="card-title">Kelola Kriteria Penilaian</h1>
         </div>
@@ -202,7 +202,7 @@
                                     title="Kriteria" onchange="changeKriteria()" required>
                                     <option value="" disabled selected>Pilih Kriteria</option>
                                     @foreach ($kriteria as $itemKriteria)
-                                        <option value="{{ $itemKriteria }}">{{ $itemKriteria }}
+                                        <option value="{{ $itemKriteria['id'] }}">{{ $itemKriteria['kriteria'] }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -216,8 +216,8 @@
                             <?php
                             $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
                             ?>
-                            @foreach ($himpunan as $huruf)
-                                <input type="hidden" name="himpunan_{{ $huruf }}" value="{{ $huruf }}"
+                            @foreach ($himpunan as $index => $huruf)
+                                <input type="hidden" name="himpunan[]" value="{{ $huruf }}"
                                     id="">
                                 <div class="col-12 row align-items-center himpunan-set" style="display: none"
                                     id="himpunan-{{ $huruf }}">
@@ -232,14 +232,14 @@
                                         <label for="min_{{ $huruf }}" class="form-label">Min</label>
                                         <input type="number"
                                             class="form-control {{ $huruf == 'Baik Sekali' ? 'min_baik_sekali' : '' }}"
-                                            name="min_{{ $huruf }}" id="min_{{ $huruf }}"
+                                            name="min[]" id="min_{{ $huruf }}"
                                             aria-describedby="min_{{ $huruf }}" min="0">
                                     </div>
                                     <div class="col mb-3">
                                         <label for="max_{{ $huruf }}" class="form-label">Max</label>
                                         <input type="number"
                                             class="form-control {{ $huruf == 'Baik Sekali' ? 'max_baik_sekali' : '' }}"
-                                            name="max_{{ $huruf }}" id="max_{{ $huruf }}"
+                                            name="max[]" id="max_{{ $huruf }}"
                                             aria-describedby="max_{{ $huruf }}" min="0">
                                     </div>
                                 </div>
@@ -342,7 +342,7 @@
         function changeKriteria() {
             $('.himpunan-set').show();
             let kriteria = $('#kriteria').val();
-            const data = @json($helperKriteria);
+            const data = @json($kriteria);
 
             let detailKriteria = data.filter(item => item.kriteria == kriteria).map(item => item.himpunan).join(',');
             let detailMinKriteria = data.filter(item => item.kriteria == kriteria).map(item => item.min).join(',');

@@ -15,8 +15,8 @@ class Nilai extends Model
         'id_juri',
         'id_bonsai',
         'id_kriteria_penilaian',
-        'd_keanggotaan',
-        'defuzzifikasi',
+        'nilai_awal',
+        'derajat_anggota',
     ];
 
     // Relasi ke kontes
@@ -61,4 +61,39 @@ class Nilai extends Model
             ->where('id_juri', $juriId)
             ->exists();
     }
-}
+
+    public static function hitungFuzzy($nilai = null, $kriteria)
+    {
+        // Definisi domain fuzzy untuk setiap himpunan
+        $domain = [
+            'Kurang'       => [10, 40],
+            'Cukup'        => [30, 60],
+            'Baik'         => [50, 80],
+            'Baik Sekali'  => [70, 90],
+        ];
+
+        $himpunan = $kriteria->himpunan; // Nama himpunan, misal: "Baik"
+
+        // Validasi jika himpunan tidak dikenali
+        if (!isset($domain[$himpunan])) {
+            return [null, 0]; // atau bisa lempar exception jika perlu
+        }
+
+        [$min, $max] = $domain[$himpunan];
+        $mid = ($min + $max) / 2;
+
+        // Nilai di luar domain → derajat keanggotaan = 0
+        if ($nilai < $min || $nilai > $max) {
+            return [$nilai, 0.0];
+        }
+
+        // Hitung derajat keanggotaan (μ)
+        if ($nilai >= $min && $nilai <= $mid) {
+            $mu = ($nilai - $min) / ($mid - $min); // Naik
+        } else {
+            $mu = ($max - $nilai) / ($max - $mid); // Turun
+        }
+
+        return [$nilai, round($mu, 2)];
+    }
+    }

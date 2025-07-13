@@ -18,56 +18,43 @@
                         <th>Nama Bonsai</th>
                         <td>{{ $bonsai->nama_pohon }}</td>
                     </tr>
-                    <tr>
+                    {{-- <tr>
                         <th>Jenis</th>
                         <td>{{ $bonsai->jenis }}</td>
                     </tr>
                     <tr>
                         <th>Asal</th>
                         <td>{{ $bonsai->asal }}</td>
-                    </tr>
+                    </tr> --}}
                 </table>
             </div>
         </div>
 
-        <form action="{{ $nilaiTersimpan->isNotEmpty() ? route('nilai.update', $bonsai->id) : route('nilai.store') }}"
-            method="POST">
+        <form action="{{ route('nilai.store') }}" method="POST">
             @csrf
-            @if ($nilaiTersimpan->isNotEmpty())
-                @method('PUT')
-            @endif
-
-            <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
+            @method('POST')
+            <input type="text" readonly name="id_juri" value="{{ Auth::user()->slug }}">
+            <input type="text" readonly name="bonsai_id" value="{{ $bonsai->id }}">
 
             @foreach ($penilaians as $kriteria => $subGroups)
                 <div class="card mb-4 border-0 shadow rounded-4">
-                    <div class="card-header bg-primary text-white fw-bold">
-                        {{ $kriteria }}
-                    </div>
                     <div class="card-body">
+                        <span class="fw-bold fs-4">{{ $kriteria }}</span>
+                        <hr>
                         @foreach ($subGroups as $subKriteria => $himpunans)
-                            @php
-                                $item = $himpunans->first(); // ambil satu entri saja (karena hanya beda himpunan)
-                                $nilai = $nilaiTersimpan[$item->id]->d_keanggotaan ?? '';
-                            @endphp
                             <div class="mb-3">
                                 <label class="form-label">
                                     <strong>{{ $subKriteria }}</strong>
                                 </label>
-                                <input type="number" name="nilai[{{ $item->id }}]" class="form-control" step="0.01"
-                                    value="{{ $nilai }}" required>
+                                <input type="number" name="nilai[{{ $subKriteria }}]" class="form-control" step="0.01"
+                                    value="" required>
                             </div>
                         @endforeach
                     </div>
                 </div>
             @endforeach
 
-
-
-
-            <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">
-                {{ $nilaiTersimpan->isNotEmpty() ? '💾 Perbarui Nilai' : '💾 Simpan Nilai' }}
-            </button>
+            <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">Simpan Nilai</button>
         </form>
     </div>
 @endsection
