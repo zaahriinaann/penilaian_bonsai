@@ -43,43 +43,40 @@ class KontesController extends Controller
         try {
             $data = $request->all();
 
-            $tingkatLabel = $data['tingkat_kontes'] ?? 'Unknown';
-            $data['tingkat_kontes'] = $tingkatLabel;
+            // --- STATUS AKTIF OTOMATIS -----------------------------
+            // 1. Non‑aktifkan semua kontes lama
+            Kontes::query()->update(['status' => 0]);
+
+            // 2. Status kontes baru = aktif
+            $data['status'] = 1;
+            // --------------------------------------------------------
 
             // Buat slug manual
-            $slug = strtolower(str_replace(' ', '-', $data['nama_kontes']));
-            $slug = preg_replace('/[^a-z0-9\-]/', '', $slug); // hanya huruf, angka, dan tanda -
+            $slug = strtolower(preg_replace('/[^a-z0-9\-]/', '', str_replace(' ', '-', $data['nama_kontes'])));
             $data['slug'] = $slug;
 
-            // // Bersihkan dan konversi harga tiket
-            // $price = str_replace(['Rp', '.', ','], '', $data['harga_tiket_kontes']);
-            // $data['harga_tiket_kontes'] = (int) $price;
+            // Alihkan jumlah_peserta ke limit_peserta
+            $data['limit_peserta'] = (int) ($data['jumlah_peserta'] ?? 0);
 
-            // Alihkan jumlah_peserta ke limit_peserta (jika memang ada kolom ini)
-            $data['limit_peserta'] = (int) $data['jumlah_peserta'];
-
-            // Tambahkan https jika tidak ada
-            if (
-                !empty($data['link_gmaps']) &&
-                strpos($data['link_gmaps'], 'http://') !== 0 &&
-                strpos($data['link_gmaps'], 'https://') !== 0
-            ) {
+            // Tambahkan https jika perlu
+            if (!empty($data['link_gmaps']) && !preg_match('/^https?:\/\//', $data['link_gmaps'])) {
                 $data['link_gmaps'] = 'https://' . $data['link_gmaps'];
             }
 
-            // Handle image dengan function handleImageUpload
+            // Upload poster, jika ada
             $data['poster_kontes'] = $this->handleImageUpload($request, 'store');
 
             // Simpan data
             $kontes = Kontes::create($data);
 
-            Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan.");
+            Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil disimpan & di‑aktifkan.");
             return redirect()->back();
         } catch (\Exception $e) {
             Session::flash('error', "Terdapat kesalahan pada saat menyimpan data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
     }
+
 
     /**
      * Display the specified resource.
