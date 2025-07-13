@@ -90,7 +90,7 @@ $dropdown = [
             [
                 'judul' => 'Rekap Nilai',
                 'description' => 'Juri dapat melihat rekap nilai dari bonsai milik peserta yang telah dinilai pada kontes yang sedang berlangsung.',
-                'link' => '/kontes/rekap-nilai',
+                'link' => '/rekap-nilai',
                 'role' => ['juri'],
             ],
         ],

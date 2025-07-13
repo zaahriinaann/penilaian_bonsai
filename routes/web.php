@@ -9,6 +9,7 @@ use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\PendaftaranKontesController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\PesertaController;
+use App\Http\Controllers\RekapNilaiController;
 use App\Http\Controllers\RiwayatController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,8 @@ Route::middleware(['auth', 'web'])->group(function () {
 
         // get bonsai peserta`
         Route::get('get-bonsai-peserta/{id}', [PendaftaranKontesController::class, 'getBonsaiPeserta']);
+
+        Route::resource('rekap-nilai', RekapNilaiController::class);
     });
 
 
@@ -64,4 +67,5 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('riwayat', RiwayatController::class)->parameters([
         'riwayat' => 'id'
     ]);
+    Route::resource('rekap-nilai', RekapNilaiController::class);
 });
