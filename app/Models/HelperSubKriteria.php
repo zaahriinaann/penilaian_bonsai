@@ -13,6 +13,11 @@ class HelperSubKriteria extends Model
 
     protected $guarded = [];
 
+    public function kriteria()
+    {
+        return $this->belongsTo(HelperKriteria::class, 'id_kriteria');
+    }
+
     public static function ValidateSubKriteria($data)
     {
         $existing = self::where('id_kriteria', $data['id'])

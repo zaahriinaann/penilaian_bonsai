@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bonsai;
+use App\Models\HelperDomain;
+use App\Models\HelperSubKriteria;
 use App\Models\Juri;
 use App\Models\Kontes;
 use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
 use App\Models\Penilaian;
+use App\Models\RekapNilai;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,7 +53,6 @@ class NilaiController extends Controller
             'nilai'     => 'required',
         ]);
 
-
         $bonsai   = Bonsai::with('user')->findOrFail($request->bonsai_id);
         $pesertaId = $bonsai->user->id;
         $kontes = Kontes::where('status', 1)->firstOrFail();
@@ -59,25 +61,37 @@ class NilaiController extends Controller
             ->firstOrFail();
         $juriId = Auth::id();
 
-        // dd($pendaftaran, $kontes, $bonsai, $pesertaId, $juriId);
-        foreach ($request->nilai as $idKriteriaPenilaian => $angka) {
-            $kriteria = Penilaian::findOrFail($idKriteriaPenilaian);
+        // dd($request->all());
+        foreach ($request->nilai as $idSubKriteria => $angka) {
+            $kriteria = HelperDomain::where('id_sub_kriteria', $idSubKriteria)->firstOrFail();
 
-            // hitung defuzzifikasi di sini
-            $nilai = Nilai::hitungFuzzy($angka, $kriteria);
+            [$nilaiAwal, $derajat] = Nilai::hitungFuzzy($angka, $kriteria);
 
-            dd($nilai);
             Nilai::create([
                 'id_kontes'             => $kontes->id,
                 'id_pendaftaran'        => $pendaftaran->id,
                 'id_peserta'            => $pesertaId,
                 'id_juri'               => $juriId,
                 'id_bonsai'             => $bonsai->id,
-                'id_kriteria_penilaian' => $idKriteriaPenilaian,
-                'nilai_awal'            => $angka,
-                'derajat_anggota'       => $nilai,      // dihitung nanti
+                'id_kriteria_penilaian' => $idSubKriteria,
+                'nilai_awal'            => $nilaiAwal,
+                'derajat_anggota'       => $derajat,
             ]);
         }
+
+        $skorAkhir = Nilai::defuzzifikasi($bonsai->id, $juriId, $kontes->id);
+
+        RekapNilai::updateOrCreate(
+            [
+                'id_kontes' => $kontes->id,
+                'id_bonsai' => $bonsai->id,
+                'id_juri'   => $juriId,
+            ],
+            [
+                'skor_akhir' => $skorAkhir,
+            ]
+        );
+
 
         return redirect()
             ->route('nilai.index')
@@ -90,13 +104,16 @@ class NilaiController extends Controller
     // Langkah 2: Tampilkan form nilai (edit kalau sudah pernah dinilai)
     public function show($bonsaiId)
     {
-        $penilaians = Penilaian::all()
-            ->groupBy(['kriteria', 'sub_kriteria']);
-
         $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
 
-        return view('juri.nilai.show', compact('bonsai', 'penilaians'));
+        // Ambil semua domain dan relasi ke sub_kriteria & kriteria
+        $domains = HelperDomain::with('subKriteria') // pastikan ada relasi di model
+            ->get()
+            ->groupBy('subKriteria.id_kriteria');
+
+        return view('juri.nilai.show', compact('bonsai', 'domains'));
     }
+
 
     /**
      * Show the form for editing the specified resource.

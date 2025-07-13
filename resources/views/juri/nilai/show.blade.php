@@ -30,31 +30,51 @@
             </div>
         </div>
 
-        <form action="{{ route('nilai.store') }}" method="POST">
-            @csrf
-            @method('POST')
-            <input type="text" readonly name="id_juri" value="{{ Auth::user()->slug }}">
-            <input type="text" readonly name="bonsai_id" value="{{ $bonsai->id }}">
+        @if ($domains->isEmpty())
+            <div class="alert alert-warning">
+                Tidak ada data penilaian yang tersedia untuk bonsai ini.
+            </div>
+        @else
+            <form action="{{ route('nilai.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
 
-            @foreach ($penilaians as $kriteria => $subGroups)
-                <div class="card mb-4 border-0 shadow rounded-4">
-                    <div class="card-body">
-                        <span class="fw-bold fs-4">{{ $kriteria }}</span>
-                        <hr>
-                        @foreach ($subGroups as $subKriteria => $himpunans)
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <strong>{{ $subKriteria }}</strong>
-                                </label>
-                                <input type="number" name="nilai[{{ $subKriteria }}]" class="form-control" step="0.01"
-                                    value="" required>
+                @foreach ($domains as $idKriteria => $groupedSubKriteria)
+                    @php
+                        $namaKriteria = $groupedSubKriteria->first()?->subKriteria->kriteria ?? null;
+                        $groupedBySub = $groupedSubKriteria->groupBy('id_sub_kriteria');
+                    @endphp
+
+                    @if ($namaKriteria && $groupedBySub->isNotEmpty())
+                        <div class="card mb-4 border-0 shadow rounded-4">
+                            <div class="card-body">
+                                <span class="fw-bold fs-4">{{ $namaKriteria }}</span>
+                                <hr>
+
+                                @foreach ($groupedBySub as $idSubKriteria => $domainsPerSub)
+                                    @php
+                                        $subNama = $domainsPerSub->first()?->subKriteria?->sub_kriteria ?? null;
+                                    @endphp
+
+                                    @if ($subNama)
+                                        <div class="mb-3">
+                                            <label class="form-label">Nilai untuk
+                                                <strong>{{ $subNama }}</strong></label>
+                                            <input type="number" name="nilai[{{ $idSubKriteria }}]" class="form-control"
+                                                step="0.01" required>
+                                        </div>
+                                    @endif
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endforeach
+                        </div>
+                    @endif
+                @endforeach
 
-            <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">Simpan Nilai</button>
-        </form>
+                {{-- Tombol hanya tampil jika domain tidak kosong --}}
+                <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">Simpan Nilai</button>
+            </form>
+        @endif
+
+
     </div>
 @endsection

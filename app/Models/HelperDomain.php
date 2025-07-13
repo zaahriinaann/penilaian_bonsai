@@ -12,6 +12,11 @@ class HelperDomain extends Model
 
     protected $guarded = [];
 
+    public function subKriteria()
+    {
+        return $this->belongsTo(HelperSubKriteria::class, 'id_sub_kriteria', 'id_sub_kriteria');
+    }
+
     // public static function ValidateDomain($dataList, $minList, $maxList)
     // {
     //     $first = $dataList[0] ?? null;
@@ -118,5 +123,26 @@ class HelperDomain extends Model
             'message' => 'Domain berhasil disimpan.',
             'data' => $created,
         ];
+    }
+
+    public static function getCentroidAndMu($nilai, $idSubKriteria, $himpunan)
+    {
+        $domain = self::where('id_sub_kriteria', $idSubKriteria)
+            ->where('himpunan', $himpunan)
+            ->first();
+
+        if (!$domain) return [0, 0];
+
+        $min = $domain->domain_min;
+        $max = $domain->domain_max;
+        $mid = ($min + $max) / 2;
+
+        if ($nilai < $min || $nilai > $max) return [0, $mid]; // nilai di luar range
+
+        $mu = $nilai <= $mid
+            ? ($nilai - $min) / ($mid - $min)
+            : ($max - $nilai) / ($max - $mid);
+
+        return [round($mu, 4), round($mid, 2)];
     }
 }
