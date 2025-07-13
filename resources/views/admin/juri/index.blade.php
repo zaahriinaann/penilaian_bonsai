@@ -58,8 +58,9 @@
                             <td>
                                 <a class="btn btn-sm btn-primary" title="Lihat Sertifikat"
                                     href="{{ asset('sertifikat/' . $item->sertifikat) }}" target="_blank">
-                                    <i class="bi bi-file-earmark-text-fill m-0 p-0"></i> Lihat Sertifikat
+                                    <i class="bi bi-eye-fill"></i> Lihat Sertifikat
                                 </a>
+
                             </td>
                             <td>
                                 <div class="d-flex gap-2 m-0 p-0">
@@ -86,7 +87,7 @@
         </div>
     </div>
 
-    {{-- Modal --}}
+    {{-- Modal Create Juri --}}
     <div class="modal fade" id="kt_modal_create_juri" tabindex="-1" aria-labelledby="kt_modal_create_juri"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -147,6 +148,7 @@
         </div>
     </div>
 
+    {{-- Modal Edit Juri --}}
     <div class="modal fade" id="kt_modal_edit_juri" tabindex="-1" aria-labelledby="kt_modal_edit_juri"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

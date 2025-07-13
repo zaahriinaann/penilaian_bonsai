@@ -135,56 +135,66 @@ class JuriController extends Controller
     public function update(Request $request, $slug)
     {
         try {
-            // Ambil data juri yang akan diupdate
             $juri = Juri::where('slug', $slug)->firstOrFail();
-
-            // Ambil data dari form
             $data = $request->all();
 
-            // Buat slug dasar dari nama juri
-            $slug = strtolower(trim($data['nama_juri']));
-            $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);  // Hapus karakter yang tidak diinginkan
-            $slug = preg_replace('/[\s\-]+/', '-', $slug);      // Ganti spasi dan tanda - lebih dari satu dengan -
-            $slug = trim($slug, '-');                            // Hapus - di awal atau akhir
+            // Slug baru
+            $slugBaru = Str::slug($data['nama_juri']) . '-juri-' . strtolower(str_replace('JURI', '', $juri->no_induk_juri));
+            $data['slug'] = $slugBaru;
 
-            // Gabungkan dengan 'juri' dan nomor induk juri
-            $slug .= '-juri-' . strtolower(str_replace('JURI', '', $juri['no_induk_juri']));
-
-            // Assign slug yang telah dibuat ke data
-            $data['slug'] = $slug;
-
-            // Jika password kosong, biarkan password sebelumnya
+            // Handle password
             if (empty($data['password'])) {
-                unset($data['password']);  // Jangan update password jika tidak diubah
+                unset($data['password']);
             } else {
-                // Jika password ada, hash dan update
                 $data['password'] = bcrypt($data['password']);
             }
 
-            $uploadedImage = $this->handleImageUpload($request, 'update');
-
-            if ($uploadedImage) {
-                if (isset($uploadedImage['foto'])) {
-                    $data['foto'] = $uploadedImage['foto'];
-                    unset($data['foto_lama']);
+            // Handle Foto (jika upload baru)
+            if ($request->hasFile('foto')) {
+                $fotoLama = $request->input('foto_lama');
+                if (!empty($fotoLama)) {
+                    $oldPath = public_path('images/juri/' . $fotoLama);
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
                 }
+
+                $foto = $request->file('foto');
+                $fotoName = time() . '_foto.' . $foto->getClientOriginalExtension();
+                $foto->move(public_path('images/juri'), $fotoName);
+                $data['foto'] = $fotoName;
+            } else {
+                $data['foto'] = $request->input('foto_lama'); // penting ini
             }
 
-            if ($request->has('sertifikat')) {
-                // handle file pdf
+            // Handle Sertifikat (jika upload baru)
+            if ($request->hasFile('sertifikat')) {
+                $sertifikatLama = $request->input('sertifikat_lama');
+                if (!empty($sertifikatLama)) {
+                    $oldSertifikatPath = public_path('sertifikat/' . $sertifikatLama);
+                    if (file_exists($oldSertifikatPath)) {
+                        unlink($oldSertifikatPath);
+                    }
+                }
+
                 $sertifikat = $request->file('sertifikat');
-                $sertifikatName = $sertifikat->getClientOriginalName();
+                $sertifikatName = time() . '_sertifikat.' . $sertifikat->getClientOriginalExtension();
                 $sertifikat->move(public_path('sertifikat'), $sertifikatName);
                 $data['sertifikat'] = $sertifikatName;
+            } else {
+                $data['sertifikat'] = $request->input('sertifikat_lama'); // inilah kuncinya
             }
 
-            // Update data juri di database
+            // Hapus input bantuan yang tidak ada di kolom DB
+            unset($data['foto_lama'], $data['sertifikat_lama']);
+
+            // Update juri
             $juri->update($data);
 
-            // Find user
-            $user = User::where('username', $juri['username'])->first();
+
+            // Update User
+            $user = User::where('username', $juri->username)->first();
             if ($user) {
-                // dd($user);
                 $user->update([
                     'name' => $data['nama_juri'],
                     'username' => $data['username'],
@@ -193,15 +203,14 @@ class JuriController extends Controller
                 ]);
             }
 
-            // Berikan pesan sukses setelah update
             Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil diperbarui.");
             return redirect()->back();
         } catch (\Exception $e) {
-            // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal memperbarui data, silakan hubungi admin atau coba lagi.");
+            Session::flash('error', "Gagal memperbarui data: " . $e->getMessage());
             return redirect()->back()->withInput();
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
