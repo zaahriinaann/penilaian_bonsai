@@ -71,13 +71,13 @@
                         </tbody>
                     </table>
                     <!-- Tombol Modal Edit Akun -->
-                    <button class="btn btn-outline-secondary w-100 mb-2" data-bs-toggle="modal"
-                        data-bs-target="#modalEditAkun">
+                    <button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#modalEditAkun">
                         Edit Data Akun
                     </button>
 
                     <!-- Tombol Modal Ubah Password -->
-                    <button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#modalUbahPassword">
+                    <button class="btn btn-outline-secondary w-100 mb-2" data-bs-toggle="modal"
+                        data-bs-target="#modalUbahPassword">
                         Ubah Password
                     </button>
 
