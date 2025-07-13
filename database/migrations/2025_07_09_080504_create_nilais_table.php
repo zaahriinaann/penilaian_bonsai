@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('nilais', function (Blueprint $table) {
             $table->id();
-            $table->integerIncrements('id_kontes')->unsigned()->index();
-            $table->integerIncrements('id_peserta')->unsigned()->index();
-            $table->integerIncrements('id_juri')->unsigned()->index();
-            $table->integerIncrements('id_bonsai')->unsigned()->index();
-            $table->integerIncrements('id_kriteria_penilaian')->unsigned()->index();
+            $table->bigInteger('id_kontes')->unsigned()->index();
+            $table->bigInteger('id_peserta')->unsigned()->index();
+            $table->bigInteger('id_juri')->unsigned()->index();
+            $table->bigInteger('id_bonsai')->unsigned()->index();
+            $table->bigInteger('id_kriteria_penilaian')->unsigned()->index();
             $table->double('d_keanggotaan', 8, 2)->default(0);
             $table->double('defuzzifikasi', 8, 2)->default(0);
             $table->timestamps();

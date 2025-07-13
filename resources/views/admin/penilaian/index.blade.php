@@ -22,7 +22,7 @@
 
     {{-- Kelola Kriteria Penilaian --}}
     <div class="card w-100 mb-5 card-kelola">
-        <div class="card-header">
+        <div class="card-header sticky-top bg-white">
             <h1 class="card-title">Kelola Kriteria Penilaian</h1>
         </div>
         <div class="card-body text-capitalize">
@@ -31,43 +31,48 @@
                     <span>Belum ada kriteria penilaian</span>
                 </div>
             @endif
-            <form method="POST" action="{{ route('penilaian.store') }}">
-                @csrf
 
-                <div class="accordion text-capitalize" id="accordionExample">
-                    @php $index = 0; @endphp
 
-                    @foreach ($kategori as $namaKategori => $subkriteria)
-                        <div class="d-flex justify-content-between align-items-center">
+            <div class="accordion text-capitalize" id="accordionExample">
+                @php $index = 0; @endphp
 
-                            <h4>{{ $namaKategori }}</h4>
+                @foreach ($kategori as $namaKategori => $subkriteria)
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4>{{ $namaKategori }}</h4>
+                        <button class="btn btn-sm btn-primary d-none" data-bs-toggle="modal"
+                            data-bs-target="#modal_sub_{{ $namaKategori }}" type="button">
+                            Tambah Data {{ $namaKategori }}
+                        </button>
+                    </div>
+                    <input type="text" hidden name="kriteria" value="{{ $namaKategori }}" class="form-control">
 
-                            <button class="btn btn-sm btn-primary d-none" data-bs-toggle="modal"
-                                data-bs-target="#modal_sub_{{ $namaKategori }}" type="button">
-                                Tambah Data {{ $namaKategori }}
-                            </button>
-                        </div>
-                        <input type="text" hidden name="kriteria" value="{{ $namaKategori }}" class="form-control">
+                    @foreach ($subkriteria as $item)
+                        @php
+                            $collapseId = 'collapse' . $index++;
+                            $slug = Str::slug($item, '_');
+                            $penilaiansItem = $penilaians[$slug] ?? [];
+                        @endphp
 
-                        @foreach ($subkriteria as $item)
-                            @php
-                                $collapseId = 'collapse' . $index++;
-                                $slug = Str::slug($item, '_');
-                                $penilaiansItem = $penilaians[$slug] ?? [];
-                            @endphp
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed text-capitalize" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}" aria-expanded="false"
+                                    aria-controls="{{ $collapseId }}">
+                                    {{ $item }}
+                                </button>
+                            </h2>
 
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed text-capitalize" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
-                                        aria-expanded="false" aria-controls="{{ $collapseId }}">
-                                        {{ $item }}
-                                    </button>
-                                </h2>
-
-                                <div id="{{ $collapseId }}" class="accordion-collapse collapse text-capitalize"
-                                    data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
+                            <div id="{{ $collapseId }}" class="accordion-collapse collapse text-capitalize"
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    <form method="POST" action="{{ route('penilaian.update', $slug) }}"
+                                        id="form-{{ $collapseId }}">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="sub_kriteria" value="{{ $item }}">
+                                        <input type="hidden" name="kategori" value="{{ $namaKategori }}">
+                                        <input type="hidden" name="slug" value="{{ $slug }}">
+                                        <input type="hidden" name="himpunan" value="{{ json_encode($penilaiansItem) }}">
                                         <table class="table table-borderless table-hover">
                                             <tr>
                                                 <th class="align-middle">Himpunan</th>
@@ -77,7 +82,7 @@
                                                     <button type="button" onclick="deleteAll('{{ $item }}')"
                                                         class="btn btn-sm btn-danger w-100 ">
                                                         <i class="fa fa-trash mx-0 px-0"></i>
-                                                        {{-- Hapus Data --}}
+                                                        Hapus Data
                                                         {{-- {{ $item }} --}}
                                                     </button>
                                                 </th>
@@ -93,13 +98,13 @@
 
                                                     <td class="align-middle">
                                                         <input type="number"
-                                                            class="form-control form-control-sm text-center w-50 mx-auto"
+                                                            class="form-control form-control-sm text-center w-50 mx-auto min-input"
                                                             name="{{ $slug }}[{{ $huruf }}][min]"
                                                             value="{{ $range['min'] }}" placeholder="Min">
                                                     </td>
                                                     <td class="align-middle">
                                                         <input type="number"
-                                                            class="form-control form-control-sm text-center w-50 mx-auto"
+                                                            class="form-control form-control-sm text-center w-50 mx-auto max-input"
                                                             name="{{ $slug }}[{{ $huruf }}][max]"
                                                             value="{{ $range['max'] }}" placeholder="Max">
                                                     </td>
@@ -114,31 +119,28 @@
                                                 </tr>
                                             @endforeach
                                         </table>
-                                    </div>
+                                        <div
+                                            class="mt-4 btn-simpan-nilai {{ count($penilaians) < 1 ? 'd-none' : 'd-none' }}">
+                                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-                        @endforeach
-
-                        <br>
+                        </div>
                     @endforeach
-                </div>
-
-                <div class="mt-4 {{ count($penilaians) < 1 ? 'd-none' : '' }}">
-                    <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
-                </div>
-            </form>
+                @endforeach
+            </div>
         </div>
     </div>
 
     {{-- Data Kriteria Penilaian --}}
     <div class="card w-100 mb-5 card-kriteria">
-        <div class="card-header">
+        <div class="card-header sticky-top bg-white">
             <h1 class="card-title">Data Kriteria Penilaian</h1>
-
         </div>
         <div class="card-body">
             <div class="accordion" id="accordionExample">
-                <table class="table table-hover table-bordered table-data align-middle">
+                <table class="table table-hover table-bordered align-middle">
                     <thead class="table-light">
                         <tr class="fw-bold">
                             <th class="text-center" style="width: 5%;">#</th>
@@ -179,8 +181,6 @@
             </div>
         </div>
     </div>
-    </div>
-
 
     <div class="modal fade" id="kt_modal_create_kriteria" tabindex="-1" aria-labelledby="kt_modal_create_kriteria"
         aria-hidden="true">
@@ -377,6 +377,10 @@
                 $(this).parent().fadeOut('slow', function() {
                     $(this).addClass('d-none');
                 });
+            });
+
+            $('.min-input, .max-input').on('change', function() {
+                $('.btn-simpan-nilai').removeClass('d-none');
             });
         });
     </script>

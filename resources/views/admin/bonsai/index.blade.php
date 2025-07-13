@@ -35,7 +35,6 @@
                             <th class="text-nowrap">Masa Pemeliharaan</th>
                             <th>Pemilik</th>
                             <th>No Hp</th>
-                            <th>Cabang</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -66,7 +65,6 @@
                                 <td>{{ $item->masa_pemeliharaan }} {{ $item->format_masa }}</td>
                                 <td>{{ $item->user?->name }}</td>
                                 <td>{{ $item->user?->no_hp }}</td>
-                                <td class="text-nowrap">{{ $item->user?->cabang }}</td>
                                 <td>
                                     <div class="d-flex gap-2 m-0 p-0">
 

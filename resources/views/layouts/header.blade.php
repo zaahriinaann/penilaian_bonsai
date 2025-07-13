@@ -86,8 +86,18 @@
                 <div class="d-flex align-items-center ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
                     <div class="cursor-pointer symbol symbol-30px symbol-md-40px" data-kt-menu-trigger="click"
                         data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
-                        <img alt="Pic" src="{{ asset('assets\media\avatars\blank.png') }}"
-                            class="rounded-circle" />
+                        @php
+                            $user = Auth::user();
+                            $folder = in_array($user->role, ['admin', 'anggota']) ? 'peserta' : 'juri';
+                            $fotoSrc = $user->foto
+                                ? asset("images/{$folder}/" . $user->foto)
+                                : asset('assets/media/avatars/blank.png');
+                        @endphp
+
+
+                        <img alt="Foto Profil" src="{{ $fotoSrc }}" class="rounded-circle"
+                            style="object-fit: cover;" />
+
                     </div>
                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 mt-2 fs-6 w-275px"
                         data-kt-menu="true">
@@ -109,10 +119,7 @@
                         </div>
                         <div class="separator my-2"></div>
                         <div class="menu-item {{ request()->is('akun') ? 'here' : '' }} px-5">
-                            <a href="/akun" class="menu-link px-5">Akun</a>
-                        </div>
-                        <div class="menu-item px-5 my-1">
-                            <a href="#" class="menu-link px-5">Pengaturan Akun</a>
+                            <a href="/akun" class="menu-link px-5">Akun Saya</a>
                         </div>
                         <div class="menu-item px-5">
                             <form action="{{ route('logout') }}" method="POST">

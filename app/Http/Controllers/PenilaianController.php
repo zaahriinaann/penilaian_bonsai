@@ -74,8 +74,6 @@ class PenilaianController extends Controller
         ]);
     }
 
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -87,26 +85,26 @@ class PenilaianController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, HelperKriteria $helperKriteria)
+    public function store(Request $request)
     {
         if ($request->has('add_kriteria')) {
             // Proses tambah data dari tombol Tambah Data
             $data = $request->only(['kriteria', 'sub_kriteria']);
 
-            $helperData = $helperKriteria->where('kriteria', $data['kriteria'])
+            $helperData = HelperKriteria::where('kriteria', $data['kriteria'])
                 ->get(['himpunan', 'min', 'max']);
 
             $penilaianData = $helperData->map(function ($item) use ($data) {
                 return [
-                    'kriteria'     => $data['kriteria'],
+                    'kriteria' => $data['kriteria'],
                     'sub_kriteria' => $data['sub_kriteria'],
-                    'himpunan'     => $item->himpunan,
-                    'min'          => $item->min,
-                    'max'          => $item->max,
+                    'himpunan' => $item->himpunan,
+                    'min' => $item->min,
+                    'max' => $item->max,
                 ];
-            })->toArray();
+            });
 
-            Penilaian::insert($penilaianData);
+            Penilaian::insert($penilaianData->toArray());
         } else {
             $allInput = $request->all();
 
@@ -116,7 +114,7 @@ class PenilaianController extends Controller
                 $subKriteria = $key;
                 $subKriteria = str_replace('_', ' ', $subKriteria);
                 $subKriteria = ucfirst($subKriteria);
-                // dd($kriteria, $subKriteria, $allInput);
+                dd($kriteria, $subKriteria, $allInput);
                 foreach ($himpunanSet as $himpunan => $range) {
                     Penilaian::updateOrCreate(
                         [
@@ -158,7 +156,29 @@ class PenilaianController extends Controller
      */
     public function update(Request $request, Penilaian $penilaian)
     {
-        //
+
+        $allInput = $request->all();
+
+        $subKriteria = $allInput['sub_kriteria'] ?? [];
+        $kriteria = $allInput['kategori'] ?? [];
+        $slug = $allInput['slug'] ?? '';
+
+        $penilaian = Penilaian::where('kriteria', $kriteria)
+            ->where('sub_kriteria', $subKriteria)
+            ->get();
+
+
+        if ($penilaian) {
+
+            foreach ($penilaian as $item) {
+                // dd($penilaian, $allInput[$slug], $item);
+                $item->update([
+                    'min' => $allInput[$slug][$item->himpunan]['min'],
+                    'max' => $allInput[$slug][$item->himpunan]['max'],
+                ]);
+            }
+            return redirect()->back()->with('success', 'Data penilaian berhasil diperbarui!');
+        }
     }
 
     /**

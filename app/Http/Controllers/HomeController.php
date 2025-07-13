@@ -27,19 +27,32 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $totalKontes = Kontes::count();
-        $totalJuri = Juri::count();
-        $totalPeserta = User::where('role', 'peserta')->count();
-        $totalBonsai = Bonsai::count();
+        $tahunSekarang = now()->year;
+        $tahunRange = range($tahunSekarang - 4, $tahunSekarang);
 
-        $totalPeserta = 5145670;
+        $kontesPerTahun = [];
+        $pesertaPerTahun = [];
+        $bonsaiPerTahun = [];
+
+        foreach ($tahunRange as $tahun) {
+            $kontesPerTahun[] = \App\Models\Kontes::whereYear('created_at', $tahun)->count();
+            $pesertaPerTahun[] = \App\Models\User::where('role', 'anggota')->whereYear('created_at', $tahun)->count();
+            $bonsaiPerTahun[] = \App\Models\Bonsai::whereYear('created_at', $tahun)->count();
+        }
 
         $dataRender = [
-            'Kontes' => [$totalKontes, '328E6E'],
-            'Juri' => [$totalJuri, '67AE6E'],
-            'Peserta' => [$totalPeserta, '90C67C'],
-            'Bonsai' => [$totalBonsai, '347433']
+            'Kontes' => [\App\Models\Kontes::count(), '00b894'],
+            'Juri' => [\App\Models\User::where('role', 'juri')->count(), '0984e3'],
+            'Peserta' => [\App\Models\User::where('role', 'anggota')->count(), 'fdcb6e'],
+            'Bonsai' => [\App\Models\Bonsai::count(), 'd63031'],
         ];
-        return view('dashboard.index', compact('dataRender'));
+
+        return view('dashboard.index', [
+            'dataRender' => $dataRender,
+            'tahun' => $tahunRange,
+            'data_kontes' => $kontesPerTahun,
+            'data_peserta' => $pesertaPerTahun,
+            'data_bonsai' => $bonsaiPerTahun
+        ]);
     }
 }
