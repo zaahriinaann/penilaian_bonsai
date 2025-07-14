@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
             'cabang' => 'Cabang Utama',
             'no_hp' => '081234567890',
             'alamat' => 'Jl. Raya No. 1',
-            'foto' => 'default.png',
+            'foto' => null,
         ]);
     }
 }
