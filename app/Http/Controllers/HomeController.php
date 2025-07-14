@@ -7,64 +7,80 @@ use App\Models\User;
 use App\Models\Bonsai;
 use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
-use App\Models\Penilaian;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        /* ========= 1. DATA KARTU TOTAL ========= */
+        // 1. KARTU TOTAL
         $dataRender = [
-            'Kontes'  => [Kontes::count(),               '00b894'],
-            'Juri'    => [User::where('role', 'juri')->count(),     '0984e3'],
-            'Peserta' => [User::where('role', 'anggota')->count(),  'fdcb6e'],
-            'Bonsai'  => [Bonsai::count(),               'd63031'],
+            'Kontes'  => [Kontes::count(), '00b894'],
+            'Juri'    => [User::where('role', 'juri')->count(), '0984e3'],
+            'Peserta' => [User::where('role', 'anggota')->count(), 'fdcb6e'],
+            'Bonsai'  => [Bonsai::count(), 'd63031'],
         ];
 
-        /* ========= 2. DATA GRAFIK 5 TAHUN TERAKHIR ========= */
+        // 2. GRAFIK PER TAHUN
         $tahunSekarang = now()->year;
-        $tahunRange    = range($tahunSekarang - 4, $tahunSekarang);
+        $tahunRange = range($tahunSekarang - 4, $tahunSekarang);
 
-        $kontesPerTahun   = [];
-        $pesertaPerTahun  = [];
-        $bonsaiPerTahun   = [];
+        $kontesPerTahun  = [];
+        $pesertaPerTahun = [];
+        $bonsaiPerTahun  = [];
+        $juriPerTahun    = [];
+        $bonsaiDataPrediksi = [];
 
         foreach ($tahunRange as $tahun) {
-            $kontesPerTahun[]  = Kontes::whereYear('created_at',  $tahun)->count();
-            $pesertaPerTahun[] = User::where('role', 'anggota')
-                ->whereYear('created_at', $tahun)->count();
-            $bonsaiPerTahun[]  = Bonsai::whereYear('created_at',  $tahun)->count();
+            $kontesPerTahun[]  = Kontes::whereYear('created_at', $tahun)->count();
+            $pesertaPerTahun[] = User::where('role', 'anggota')->whereYear('created_at', $tahun)->count();
+            $bonsaiTahun = PendaftaranKontes::whereYear('created_at', $tahun)->count();
+            $bonsaiPerTahun[]  = $bonsaiTahun;
+            $bonsaiDataPrediksi[$tahun] = $bonsaiTahun;
+            $juriPerTahun[]    = User::where('role', 'juri')->whereYear('created_at', $tahun)->count();
         }
 
-        /* ========= 3. DATA KONTES AKTIF & STATISTIK PENILAIAN ========= */
-        $kontesAktif = Kontes::where('status', 1)->first();
-
-        // Nilai default jika belum ada kontes aktif
+        // 3. KONTES AKTIF
+        $kontesAktif     = Kontes::where('status', 1)->first();
         $bonsaiTotal     = 0;
         $bonsaiDinilai   = 0;
         $bonsaiBelum     = 0;
-        $statusDaftar    = 'Tidak';
         $slotTotal       = 0;
+        $slotTerpakai    = 0;
         $slotSisa        = 0;
 
         if ($kontesAktif) {
-            $bonsaiTotal   = PendaftaranKontes::where('kontes_id', $kontesAktif->id)->count();
-
-            $bonsaiDinilai = Nilai::where('id_kontes', $kontesAktif->id)
-                ->distinct('id_bonsai')
-                ->count('id_bonsai');
-
+            $slotTotal     = $kontesAktif->limit_peserta;
+            $slotTerpakai  = PendaftaranKontes::where('kontes_id', $kontesAktif->id)->count();
+            $slotSisa      = $slotTotal - $slotTerpakai;
+            $bonsaiTotal   = $slotTerpakai;
+            $bonsaiDinilai = Nilai::where('id_kontes', $kontesAktif->id)->distinct('id_bonsai')->count('id_bonsai');
             $bonsaiBelum   = $bonsaiTotal - $bonsaiDinilai;
-
-            $statusDaftar  = $kontesAktif->pendaftaran_dibuka ? 'Ya' : 'Tidak';
-            $slotTotal     = $kontesAktif->slot_total;
-            $slotSisa      = $slotTotal - $bonsaiTotal;
         }
 
-        /* ========= 4. KIRIM KE VIEW ========= */
+        // 4. PREDIKSI TREN DINAMIS BONSAI & MEJA
+        $tahunKeys = array_keys($bonsaiDataPrediksi);
+        $jumlahKenaikan = 0;
+        $jumlahTahun = 0;
+
+        for ($i = 1; $i < count($tahunKeys); $i++) {
+            $prev = $bonsaiDataPrediksi[$tahunKeys[$i - 1]];
+            $curr = $bonsaiDataPrediksi[$tahunKeys[$i]];
+
+            if ($prev > 0) {
+                $kenaikan = (($curr - $prev) / $prev) * 100;
+                $jumlahKenaikan += $kenaikan;
+                $jumlahTahun++;
+            }
+        }
+
+        $rataKenaikan = $jumlahTahun > 0 ? $jumlahKenaikan / $jumlahTahun : 0;
+        $bonsaiTerakhir = end($bonsaiDataPrediksi);
+        $prediksiBonsai = ceil($bonsaiTerakhir * (1 + ($rataKenaikan / 100)));
+        $prediksiMeja   = ceil($prediksiBonsai / 5);
+
+        // 5. KIRIM KE VIEW
         return view('dashboard.index', [
-            // kartu total
             'dataRender'     => $dataRender,
 
             // grafik
@@ -72,6 +88,7 @@ class HomeController extends Controller
             'data_kontes'    => $kontesPerTahun,
             'data_peserta'   => $pesertaPerTahun,
             'data_bonsai'    => $bonsaiPerTahun,
+            'data_juri'      => $juriPerTahun,
 
             // kontes & penilaian
             'kontesAktif'    => $kontesAktif,
@@ -79,10 +96,15 @@ class HomeController extends Controller
             'bonsaiDinilai'  => $bonsaiDinilai,
             'bonsaiBelum'    => $bonsaiBelum,
 
-            // status pendaftaran
-            'statusDaftar'   => $statusDaftar,
+            // slot
             'slotTotal'      => $slotTotal,
+            'slotTerpakai'   => $slotTerpakai,
             'slotSisa'       => $slotSisa,
+
+            // prediksi
+            'prediksiBonsai' => $prediksiBonsai,
+            'prediksiMeja'   => $prediksiMeja,
+            'rataKenaikan'   => round($rataKenaikan, 2),
         ]);
     }
 }

@@ -62,24 +62,25 @@
                     </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Jumlah Bonsai Dinilai: <strong>80</strong></li>
-                            <li class="list-group-item">Jumlah Bonsai Belum Dinilai: <strong>20</strong></li>
+                            <li class="list-group-item">Jumlah Bonsai Dinilai: <strong>{{ $bonsaiDinilai }}</strong></li>
+                            <li class="list-group-item">Jumlah Bonsai Belum Dinilai: <strong>{{ $bonsaiBelum }}</strong>
+                            </li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            {{-- Kartu 2: Status Pendaftaran Kontes --}}
+            {{-- Kartu 2: Statistik Slot Kontes --}}
             <div class="col-md-6 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-header bg-dark text-white align-items-center">
-                        Status Pendaftaran Kontes
+                        Statistik Slot Kontes
                     </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Pendaftaran Dibuka: <strong>Ya</strong></li>
-                            <li class="list-group-item">Total Slot: <strong>100</strong></li>
-                            <li class="list-group-item">Sisa Slot: <strong>12</strong></li>
+                            <li class="list-group-item">Total Slot Tersedia: <strong>{{ $slotTotal }}</strong></li>
+                            <li class="list-group-item">Slot Terpakai: <strong>{{ $slotTotal - $slotSisa }}</strong></li>
+                            <li class="list-group-item">Sisa Slot Kosong: <strong>{{ $slotSisa }}</strong></li>
                         </ul>
                     </div>
                 </div>
@@ -136,17 +137,69 @@
             </div>
         </div>
 
+        {{-- Prediksi Slot Kontes Tahun Depan
+        @if ($prediksiSlot > 0)
+            <div class="row px-4 pb-4">
+                <div class="col-12">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-dark text-white align-items-center">
+                            Prediksi Slot Kontes Tahun Depan
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="mb-2">
+                                Perkiraan berdasarkan tren 25% kenaikan dari tahun ini
+                            </p>
+                            <h3 class="text-primary mb-0">
+                                {{ $prediksiSlot }} Slot
+                            </h3>
+                            <small class="text-muted">*Data bersifat estimasi</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif --}}
+
+        {{-- Prediksi Kebutuhan Meja Tahun Depan
+        @if ($prediksiJumlahMeja > 0)
+            <div class="row px-4 pb-4">
+                <div class="col-12">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-dark text-white align-items-center">
+                            Prediksi Kebutuhan Meja Tahun Depan
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="mb-2">
+                                Estimasi rata‑rata bonsai per kontes (5 th) + tren naik 25 %
+                            </p>
+                            <h5 class="text-muted mb-1">
+                                Perkiraan Bonsai: <strong>{{ $prediksiBonsai }}</strong> pohon
+                            </h5>
+                            <h3 class="text-primary mb-1">
+                                {{ $prediksiJumlahMeja }} Meja
+                            </h3>
+                            <small class="text-muted">
+                                *1 meja menampung maksimal {{ $kapasitasMeja }} bonsai
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif --}}
+
         {{-- Prediksi Slot Kontes Tahun Depan --}}
         <div class="row px-4 pb-4">
             <div class="col-12">
                 <div class="card h-100 shadow-sm">
                     <div class="card-header bg-dark text-white align-items-center">
-                        Prediksi Slot Kontes Tahun Depan
+                        Prediksi Slot & Meja Tahun Depan
                     </div>
                     <div class="card-body text-center">
-                        <p class="mb-2">Perkiraan berdasarkan tren 25% kenaikan dari tahun ini</p>
-                        <h3 class="text-primary mb-0">150 Slot</h3>
-                        <small class="text-muted">*Data bersifat estimasi</small>
+                        <p class="mb-2">
+                            Berdasarkan tren kenaikan rata-rata <strong>{{ $rataKenaikan }}%</strong> dari 5 tahun terakhir
+                        </p>
+                        <h4 class="text-primary mb-2">Prediksi Bonsai: {{ $prediksiBonsai }} pohon</h4>
+                        <h4 class="text-success mb-0">Kebutuhan Meja: {{ $prediksiMeja }} meja</h4>
+                        <small class="text-muted d-block mt-2">*1 meja dapat menampung 5 pohon bonsai</small>
                     </div>
                 </div>
             </div>
@@ -209,7 +262,12 @@
 @section('script')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const tahun = ['2021', '2022', '2023', '2024', '2025'];
+        const tahun = {!! json_encode($tahun) !!};
+        const dataKontes = {!! json_encode($data_kontes) !!};
+        const dataPeserta = {!! json_encode($data_peserta) !!};
+        const dataBonsai = {!! json_encode($data_bonsai) !!};
+        const dataJuri = {!! json_encode($data_juri) !!};
+
 
         // Chart Kontes
         new Chart(document.getElementById('chartKontes'), {
@@ -218,7 +276,7 @@
                 labels: tahun,
                 datasets: [{
                     label: 'Jumlah Kontes',
-                    data: [2, 4, 5, 3, 10],
+                    data: dataKontes,
                     backgroundColor: 'rgba(54, 162, 235, 0.6)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
@@ -242,7 +300,7 @@
                 labels: tahun,
                 datasets: [{
                     label: 'Jumlah Peserta',
-                    data: [20, 35, 40, 50, 75],
+                    data: dataPeserta,
                     backgroundColor: 'rgba(40, 167, 69, 0.6)',
                     borderColor: 'rgba(40, 167, 69, 1)',
                     borderWidth: 1
@@ -265,7 +323,7 @@
                 labels: tahun,
                 datasets: [{
                     label: 'Jumlah Bonsai',
-                    data: [30, 50, 60, 80, 120],
+                    data: dataBonsai,
                     backgroundColor: 'rgba(255, 193, 7, 0.6)',
                     borderColor: 'rgba(255, 193, 7, 1)',
                     borderWidth: 1
@@ -288,14 +346,14 @@
                 labels: tahun,
                 datasets: [{
                         label: 'Jumlah Bonsai',
-                        data: [30, 50, 60, 80, 120],
+                        data: dataBonsai,
                         backgroundColor: 'rgba(255, 193, 7, 0.6)',
                         borderColor: 'rgba(255, 193, 7, 1)',
                         borderWidth: 1
                     },
                     {
                         label: 'Jumlah Juri',
-                        data: [3, 4, 4, 5, 6],
+                        data: dataJuri,
                         backgroundColor: 'rgba(0, 123, 255, 0.6)',
                         borderColor: 'rgba(0, 123, 255, 1)',
                         borderWidth: 1

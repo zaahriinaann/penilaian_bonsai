@@ -16,8 +16,8 @@ class RiwayatController extends Controller
 
         if ($kontes) {
             $ranking = RekapNilai::with(['pendaftaran.user', 'pendaftaran.bonsai'])
-                ->where('kontes_id', $kontes->id)
-                ->orderBy('total_nilai', 'desc')
+                ->where('id_kontes', $kontes->id)
+                ->orderBy('skor_akhir', 'desc')
                 ->get();
         }
 

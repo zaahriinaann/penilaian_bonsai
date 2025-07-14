@@ -3,32 +3,54 @@
 namespace Database\Seeders;
 
 use App\Models\Bonsai;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class BonsaiSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        Bonsai::create([
-            'slug' => 'anting-putri-bonsai20250002',
-            'nama_pohon' => 'Anting Putri',
-            'nama_lokal' => 'Anting Putri',
-            'nama_latin' => 'Wrightia religiosa',
-            'ukuran' => 'Small 5 cm',
-            'ukuran_1' => 'Small',
-            'ukuran_2' => '5',
-            'format_ukuran' => 'cm',
-            'no_induk_pohon' => 'BONSAI20250002',
-            'masa_pemeliharaan' => '2 Tahun',
-            'format_masa' => 'tahun',
-            'pemilik' => 'Slamet Widodo',
-            'no_anggota' => 'ANG20250002',
-            'cabang' => 'Yogyakarta',
-            'foto' => null,
-        ]);
+        $distribusi = [
+            2021 => 5,
+            2022 => 5,
+            2023 => 7,
+            2024 => 8,
+            2025 => 3,
+        ];
+
+        $counter = 1;
+        $anggotaList = User::where('role', 'anggota')->pluck('id')->toArray();
+
+        foreach ($distribusi as $tahun => $jumlah) {
+            for ($i = 1; $i <= $jumlah; $i++) {
+                $created = Carbon::create($tahun, rand(1, 12), rand(1, 28));
+                $user_id = $anggotaList[array_rand($anggotaList)];
+
+                Bonsai::create([
+                    'user_id' => $user_id,
+                    'slug' => Str::slug("bonsai-{$counter}-{$tahun}"),
+                    'nama_pohon' => "Bonsai {$counter}",
+                    'nama_lokal' => "Lokal {$counter}",
+                    'nama_latin' => "Latin {$counter}",
+                    'ukuran' => ['Kecil', 'Sedang', 'Besar'][rand(0, 2)],
+                    'ukuran_1' => rand(20, 40) . ' cm',
+                    'ukuran_2' => rand(30, 60) . ' cm',
+                    'format_ukuran' => 'Custom',
+
+                    'no_induk_pohon' => "BNS-{$tahun}-{$counter}",
+                    'masa_pemeliharaan' => rand(1, 10) . ' tahun',
+                    'format_masa' => 'Tahun',
+                    'kelas' => ['Pemula', 'Madya', 'Utama'][rand(0, 2)],
+                    'foto' => 'foto-default.jpg',
+
+                    'created_at' => $created,
+                    'updated_at' => $created,
+                ]);
+
+                $counter++;
+            }
+        }
     }
 }
