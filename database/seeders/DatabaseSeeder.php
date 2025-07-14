@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             // BonsaiSeeder::class,
             HelperKriteriaSeeder::class,
             // PenilaianSeeder::class,
+            FuzzyRuleSeeder::class
         ]);
     }
 }

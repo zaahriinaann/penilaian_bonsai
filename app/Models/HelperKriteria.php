@@ -26,4 +26,9 @@ class HelperKriteria extends Model
     //     'min' => 'integer',
     //     'max' => 'integer',
     // ];
+
+    public function subKriterias()
+    {
+        return $this->hasMany(HelperSubKriteria::class, 'id_kriteria');
+    }
 }

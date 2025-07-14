@@ -54,14 +54,18 @@
                                 @foreach ($groupedBySub as $idSubKriteria => $domainsPerSub)
                                     @php
                                         $subNama = $domainsPerSub->first()?->subKriteria?->sub_kriteria ?? null;
+                                        $min = $domainsPerSub->last()?->domain_min ?? null;
+                                        $max = $domainsPerSub->first()?->domain_max ?? null;
                                     @endphp
 
                                     @if ($subNama)
                                         <div class="mb-3">
                                             <label class="form-label">Nilai untuk
-                                                <strong>{{ $subNama }}</strong></label>
+                                                <strong>{{ $subNama }}</strong>
+                                            </label>
+
                                             <input type="number" name="nilai[{{ $idSubKriteria }}]" class="form-control"
-                                                step="0.01" required>
+                                                required min="{{ $min }}" max="{{ $max }}">
                                         </div>
                                     @endif
                                 @endforeach

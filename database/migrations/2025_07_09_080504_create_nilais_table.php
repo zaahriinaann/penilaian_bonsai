@@ -18,7 +18,11 @@ return new class extends Migration
             $table->bigInteger('id_juri')->unsigned()->index();
             $table->bigInteger('id_bonsai')->unsigned()->index();
             $table->bigInteger('id_pendaftaran')->unsigned()->index();
-            $table->bigInteger('id_kriteria_penilaian')->unsigned()->index();
+            $table->bigInteger('id_kriteria')->unsigned()->index();
+            $table->string('kriteria');
+            $table->bigInteger('id_sub_kriteria')->unsigned()->index();
+            $table->string('sub_kriteria');
+            $table->string('himpunan');
             $table->double('nilai_awal', 8, 2)->default(0);
             $table->double('derajat_anggota', 8, 2)->default(0);
             $table->timestamps();

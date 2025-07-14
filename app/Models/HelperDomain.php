@@ -137,12 +137,16 @@ class HelperDomain extends Model
         $max = $domain->domain_max;
         $mid = ($min + $max) / 2;
 
-        if ($nilai < $min || $nilai > $max) return [0, $mid]; // nilai di luar range
+        // Cek apakah nilai di luar range
+        if ($nilai < $min || $nilai > $max) {
+            return [0, round($mid, 2)]; // mu = 0, z = centroid
+        }
 
+        // Hitung derajat keanggotaan (mu)
         $mu = $nilai <= $mid
             ? ($nilai - $min) / ($mid - $min)
             : ($max - $nilai) / ($max - $mid);
 
-        return [round($mu, 4), round($mid, 2)];
+        return [round($mu, 4), round($mid, 2)]; // [mu, z]
     }
 }
