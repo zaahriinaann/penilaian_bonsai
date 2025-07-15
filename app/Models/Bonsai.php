@@ -42,4 +42,9 @@ class Bonsai extends Model
     {
         return $this->hasOne(RekapNilai::class, 'id_bonsai');
     }
+
+    public function pendaftaranKontes()
+    {
+        return $this->hasOne(PendaftaranKontes::class, 'bonsai_id');
+    }
 }

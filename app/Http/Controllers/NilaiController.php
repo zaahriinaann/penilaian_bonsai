@@ -95,9 +95,8 @@ class NilaiController extends Controller
 
     public function show($id)
     {
-        $bonsai = Bonsai::with('user')->findOrFail($id);
+        $bonsai = Bonsai::with(['user', 'pendaftaranKontes.juri'])->findOrFail($id);
 
-        // Ambil id_juri berdasarkan user login (users.id = juri.user_id)
         $juri = Juri::where('user_id', Auth::id())->first();
         if (!$juri) {
             abort(403, 'Anda bukan juri yang terdaftar.');
@@ -114,6 +113,7 @@ class NilaiController extends Controller
 
         return view('juri.nilai.show', compact('bonsai', 'nilaiAwal', 'nilaiPerJuri'));
     }
+
 
 
     public function edit($id)
