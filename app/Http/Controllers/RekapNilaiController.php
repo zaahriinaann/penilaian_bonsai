@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kontes;
 use App\Models\RekapNilai;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,18 @@ class RekapNilaiController extends Controller
      */
     public function index()
     {
-        return view('rekap_nilai.index');
+        $kontesId = Kontes::where('status', 1)->firstOrFail();
+
+        $ranking = RekapNilai::where('id_kontes', $kontesId)
+            ->select('id_bonsai')
+            ->selectRaw('AVG(skor_akhir) as skor_akhir')
+            ->groupBy('id_bonsai')
+            ->orderByDesc('skor_akhir')
+            ->get();
+
+        dd($ranking);
+        return view('rekap_nilai.index', compact('ranking'));
+        // return view('rekap_nilai.index');
     }
 
     /**

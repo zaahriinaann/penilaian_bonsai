@@ -8,16 +8,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Nilai extends Model
 {
-    protected $fillable = [
-        'id_kontes',
-        'id_pendaftaran',
-        'id_peserta',
-        'id_juri',
-        'id_bonsai',
-        'id_kriteria_penilaian',
-        'nilai_awal',
-        'derajat_anggota',
-    ];
+    // protected $fillable = [
+    //     'id_kontes',
+    //     'id_pendaftaran',
+    //     'id_peserta',
+    //     'id_juri',
+    //     'id_bonsai',
+    //     'id_kriteria_penilaian',
+    //     'nilai_awal',
+    //     'derajat_anggota',
+    //     'himpunan'
+    // ];
+
+    protected $guarded = [];
 
     // Relasi ke kontes
     public function kontes()
@@ -63,56 +66,45 @@ class Nilai extends Model
             ->exists();
     }
 
-    // public static function hitungFuzzy($nilai = null, $kriteria)
-    // {
-    //     // Definisi domain fuzzy untuk setiap himpunan
-    //     $domain = [
-    //         'Kurang'       => [10, 40],
-    //         'Cukup'        => [30, 60],
-    //         'Baik'         => [50, 80],
-    //         'Baik Sekali'  => [70, 90],
-    //     ];
-
-    //     $himpunan = $kriteria->himpunan; // Nama himpunan, misal: "Baik"
-
-    //     // Validasi jika himpunan tidak dikenali
-    //     if (!isset($domain[$himpunan])) {
-    //         return [null, 0]; // atau bisa lempar exception jika perlu
-    //     }
-
-    //     [$min, $max] = $domain[$himpunan];
-    //     $mid = ($min + $max) / 2;
-
-    //     // Nilai di luar domain → derajat keanggotaan = 0
-    //     if ($nilai < $min || $nilai > $max) {
-    //         return [$nilai, 0.0];
-    //     }
-
-    //     // Hitung derajat keanggotaan (μ)
-    //     if ($nilai >= $min && $nilai <= $mid) {
-    //         $mu = ($nilai - $min) / ($mid - $min); // Naik
-    //     } else {
-    //         $mu = ($max - $nilai) / ($max - $mid); // Turun
-    //     }
-
-    //     return [$nilai, round($mu, 2)];
-    // }
-
-    public static function hitungFuzzy($nilai, $kriteria)
+    public static function hitungFuzzy($nilai, $idSubKriteria)
     {
-        $idSub = $kriteria->id_sub_kriteria ?? $kriteria->id_kriteria_penilaian;
-        $himpunan = $kriteria->himpunan ?? null;
+        $domainList = HelperDomain::where('id_sub_kriteria', $idSubKriteria)->get();
+        $result = [];
 
-        if (!$idSub || !$himpunan) return [$nilai, 0];
+        foreach ($domainList as $domain) {
+            $min = $domain->domain_min;
+            $max = $domain->domain_max;
+            $mid = ($min + $max) / 2;
 
-        [$mu, $_] = HelperDomain::getCentroidAndMu($nilai, $idSub, $himpunan);
+            // Skip jika nilai di luar domain
+            if ($nilai < $min || $nilai > $max) continue;
 
-        return [$nilai, $mu];
+            $mu = $nilai <= $mid
+                ? ($nilai - $min) / ($mid - $min)
+                : ($max - $nilai) / ($max - $mid);
+
+            // Tambahkan hanya jika mu valid
+            if ($mu > 0) {
+                $result[] = [
+                    'id_kriteria' => $domain->id_kriteria,
+                    'id_sub_kriteria' => $idSubKriteria,
+                    'himpunan' => $domain->himpunan,
+                    'mu' => round($mu, 4),
+                    'z' => round($mid, 2),
+                    'nilai_awal' => $nilai,
+                    'kriteria' => $domain->kriteria,
+                    'sub_kriteria' => $domain->sub_kriteria
+                ];
+            }
+        }
+
+        // dd($result);
+        return $result; // bisa lebih dari 1
     }
 
     public static function defuzzifikasi($bonsaiId, $juriId, $kontesId)
     {
-        $data = self::where('id_bonsai', $bonsaiId)
+        $nilaiList = self::where('id_bonsai', $bonsaiId)
             ->where('id_juri', $juriId)
             ->where('id_kontes', $kontesId)
             ->get();
@@ -120,18 +112,20 @@ class Nilai extends Model
         $totalZ = 0;
         $totalMu = 0;
 
-        foreach ($data as $item) {
-            $himpunan = $item->penilaian->himpunan ?? null;
-            $idSub = $item->id_kriteria_penilaian;
+        foreach ($nilaiList as $item) {
+            // Ambil domain berdasarkan sub_kriteria dan himpunan
+            $domain = HelperDomain::where('id_sub_kriteria', $item->id_kriteria_penilaian ?? $item->id_sub_kriteria)
+                ->where('himpunan', $item->himpunan)
+                ->first();
 
-            if (!$himpunan || !$idSub) continue;
+            if (!$domain || $item->derajat_anggota <= 0) continue;
 
-            [$mu, $z] = HelperDomain::getCentroidAndMu($item->nilai_awal, $idSub, $himpunan);
+            // Hitung centroid (z) sebagai nilai tengah dari domain
+            $centroid = ($domain->domain_min + $domain->domain_max) / 2;
 
-            if ($mu > 0) {
-                $totalZ += $mu * $z;
-                $totalMu += $mu;
-            }
+            // Kalikan μ dengan z lalu tambahkan ke total
+            $totalZ += $item->derajat_anggota * $centroid;
+            $totalMu += $item->derajat_anggota;
         }
 
         return $totalMu > 0 ? round($totalZ / $totalMu, 2) : 0;

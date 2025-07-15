@@ -58,7 +58,7 @@
                                     @endif
                                 </td>
                                 <td class="text-nowrap">
-                                    <a href="{{ route('nilai.show', $item->bonsai_id) }}"
+                                    <a href="{{ $sudahDinilai ? route('nilai.edit', $item->bonsai_id) : route('nilai.show', $item->bonsai_id) }}"
                                         class="btn btn-sm {{ $sudahDinilai ? 'btn-warning' : 'btn-primary' }}">
                                         {{ $sudahDinilai ? 'Edit Nilai' : 'Nilai' }}
                                     </a>
