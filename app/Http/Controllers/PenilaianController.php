@@ -2,153 +2,145 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Penilaian;
-use App\Http\Controllers\Controller;
-use App\Models\HelperDomain;
-use App\Models\HelperHimpunan;
-use App\Models\HelperKriteria;
-use App\Models\HelperSubKriteria;
+use App\Models\{
+    Penilaian,
+    HelperDomain,
+    HelperHimpunan,
+    HelperKriteria,
+    HelperSubKriteria
+};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PenilaianController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    /*--------------------------------------------------------------
+     |  LIST
+     |--------------------------------------------------------------*/
     public function index()
     {
         $penilaians = Penilaian::all();
-        $kriteria = HelperKriteria::all()->toArray();
+        $kriteria   = HelperKriteria::all()->toArray();
 
         if ($penilaians->isEmpty()) {
             return view('admin.penilaian.index', [
-                'kategori' => [],
-                'himpunan' => [],
+                'kategori'   => [],
+                'himpunan'   => [],
                 'penilaians' => [],
-                'isEmpty' => true,
-                'kriteria' => $kriteria,
+                'isEmpty'    => true,
+                'kriteria'   => $kriteria,
             ]);
         }
 
-        $kategori = [];
-        $penilaianGrouped = [];
-        $himpunanRange = [];
+        /* ── Merapikan data utk ditampilkan ── */
+        $kategori       = [];   // [kriteria => [sub1,sub2]]
+        $penilaianGroup = [];   // [slug_sub][himpunan] => [min,max]
+        $himpunanRange  = [];   // [himpunan] => [min,max]
 
-        foreach ($penilaians as $item) {
-            $kategori[$item->kriteria][$item->sub_kriteria] = true;
+        foreach ($penilaians as $row) {
+            $kategori[$row->kriteria][$row->sub_kriteria] = true;
 
-            $slug = Str::slug($item->sub_kriteria, '_');
-
-            $penilaianGrouped[$slug][$item->himpunan] = [
-                'min' => $item->min,
-                'max' => $item->max,
+            $slug = Str::slug($row->sub_kriteria, '_');
+            $penilaianGroup[$slug][$row->himpunan] = [
+                'min' => $row->min,
+                'max' => $row->max
             ];
-
-            // Only store one representative min/max per himpunan
-            if (!isset($himpunanRange[$item->himpunan])) {
-                $himpunanRange[$item->himpunan] = [$item->min, $item->max];
-            }
+            $himpunanRange[$row->himpunan] = [$row->min, $row->max];
         }
-
-        // Flatten kategori to unique sub_kriteria lists
-        foreach ($kategori as $key => $subs) {
-            $kategori[$key] = array_keys($subs);
-        }
+        foreach ($kategori as $k => $subs) $kategori[$k] = array_keys($subs);
 
         return view('admin.penilaian.index', [
-            'kategori' => $kategori,
-            'himpunan' => $himpunanRange,
-            'penilaians' => $penilaianGrouped,
-            'isEmpty' => false,
-            'kriteria' => $kriteria,
+            'kategori'   => $kategori,
+            'himpunan'   => $himpunanRange,
+            'penilaians' => $penilaianGroup,
+            'isEmpty'    => false,
+            'kriteria'   => $kriteria,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    /*--------------------------------------------------------------
+     |  STORE  (tambah sub‑kriteria & domain input)
+     |--------------------------------------------------------------*/
+    public function store(Request $r)
     {
-        //
-    }
+        $kriteriaId   = $r->input('kriteria');
+        $subKriteria  = $r->input('sub_kriteria');
+        $himpunanList = $r->input('himpunan', []);
+        $minList      = $r->input('min', []);
+        $maxList      = $r->input('max', []);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        // Tambah data baru
-        $kriteriaId = $request->input('kriteria');
-        $subKriteria = $request->input('sub_kriteria');
-        $himpunanList = $request->input('himpunan', []);
-        $minList = $request->input('min', []);
-        $maxList = $request->input('max', []);
+        $krit = HelperKriteria::findOrFail($kriteriaId);
 
-        // Ambil nama kriteria
-        $kriteriaModel = HelperKriteria::findOrFail($kriteriaId);
-        $data = [
-            'id' => $kriteriaModel->id,
-            'kriteria' => $kriteriaModel->kriteria,
+        /* 1. pastikan sub‑kriteria & himpunan ada di helper */
+        $sub  = HelperSubKriteria::ValidateSubKriteria([
+            'id'         => $krit->id,
+            'kriteria'   => $krit->kriteria,
             'sub_kriteria' => $subKriteria,
-        ];
+        ]);
+        $himp = HelperHimpunan::ValidateHimpunan($sub['data'], $himpunanList);
+        $dom  = HelperDomain::ValidateDomain($himp['data'], $minList, $maxList); // INPUT
 
-        // Validasi dan Simpan
-        $subKriteriaResult = HelperSubKriteria::ValidateSubKriteria($data);
-        $himpunanResult = HelperHimpunan::ValidateHimpunan($subKriteriaResult['data'], $himpunanList);
-        $domainResult = HelperDomain::ValidateDomain($himpunanResult['data'], $minList, $maxList);
-
-        // Simpan ke tabel penilaian
-        $penilaianData = collect($domainResult['data'])->map(function ($item) {
+        /* 2. simpan ke tabel penilaian */
+        $rows = collect($dom['data'])->map(function ($d) {
             return [
-                'kriteria' => $item['kriteria'],
-                'sub_kriteria' => $item['sub_kriteria'],
-                'himpunan' => $item['himpunan'],
-                'min' => $item['domain_min'],
-                'max' => $item['domain_max'],
-                'created_at' => now(),
+                'kriteria'    => $d['kriteria'],
+                'sub_kriteria' => $d['sub_kriteria'],
+                'himpunan'    => $d['himpunan'],
+                'min'         => $d['domain_min'],
+                'max'         => $d['domain_max'],
+                'created_at'  => now(),
             ];
         })->toArray();
+        Penilaian::insert($rows);
 
-        Penilaian::insert($penilaianData);
+        /* 3. ── AUTO‑GENERATE DOMAIN OUTPUT (sekali per kriteria) ── */
+        $outExists = HelperDomain::where('id_kriteria', $krit->id)
+            ->whereNull('id_sub_kriteria')
+            ->exists();
+        if (!$outExists) {
+            $default = [
+                ['Kurang',      50, 60],
+                ['Cukup',       61, 70],
+                ['Baik',        71, 80],
+                ['Baik Sekali', 81, 90],
+            ];
+            foreach ($default as $i => $d) {
+                HelperDomain::create([
+                    'id_kriteria'     => $krit->id,
+                    'kriteria'        => $krit->kriteria,
+                    'id_sub_kriteria' => null,
+                    'sub_kriteria'    => null,
+                    'id_himpunan'     => $i + 1,
+                    'himpunan'        => $d[0],
+                    'id_domain'       => 1000 + $i,
+                    'domain_min'      => $d[1],
+                    'domain_max'      => $d[2],
+                ]);
+            }
+        }
 
-        return redirect()->back()->with('success', 'Data penilaian berhasil disimpan!');
+        return back()->with('success', 'Data penilaian & domain berhasil disimpan!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Penilaian $penilaian)
+    /*--------------------------------------------------------------
+     |  UPDATE  (edit min–max)
+     |--------------------------------------------------------------*/
+    public function update(Request $r, Penilaian $penilaian)
     {
-        //
-    }
+        $kriteria    = $r->input('kategori');
+        $subKriteria = $r->input('sub_kriteria');
+        $slug        = $r->input('slug');
+        $dat         = $r->input($slug, []);   // [himpunan][min/max]
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Penilaian $penilaian)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Penilaian $penilaian)
-    {
-        $kriteria = $request->input('kategori');
-        $subKriteria = $request->input('sub_kriteria');
-        $slug = $request->input('slug');
-        $dataUpdate = $request->input($slug, []);
-
-        $penilaianList = DB::table('penilaian')
-            ->join('helper_sub_kriteria', function ($join) {
-                $join->on('penilaian.kriteria', '=', 'helper_sub_kriteria.kriteria')
+        /* Ambil record terkait + info ID helper */
+        $list = DB::table('penilaian')
+            ->join('helper_sub_kriteria', function ($j) {
+                $j->on('penilaian.kriteria', '=', 'helper_sub_kriteria.kriteria')
                     ->on('penilaian.sub_kriteria', '=', 'helper_sub_kriteria.sub_kriteria');
             })
-            ->join('helper_himpunan', function ($join) {
-                $join->on('helper_sub_kriteria.id_sub_kriteria', '=', 'helper_himpunan.id_sub_kriteria')
+            ->join('helper_himpunan', function ($j) {
+                $j->on('helper_sub_kriteria.id_sub_kriteria', '=', 'helper_himpunan.id_sub_kriteria')
                     ->on('penilaian.himpunan', '=', 'helper_himpunan.himpunan');
             })
             ->where('penilaian.kriteria', $kriteria)
@@ -158,73 +150,72 @@ class PenilaianController extends Controller
                 'helper_sub_kriteria.id_kriteria',
                 'helper_sub_kriteria.id_sub_kriteria',
                 'helper_himpunan.id_himpunan'
-            )
-            ->get();
+            )->get();
 
-        if ($penilaianList->isEmpty()) {
-            return redirect()->back()->with('error', 'Data penilaian tidak ditemukan!');
+        if ($list->isEmpty())
+            return back()->with('error', 'Data penilaian tidak ditemukan!');
+
+        /* 1. update tabel penilaian */
+        foreach ($list as $row) {
+            DB::table('penilaian')->where('id', $row->id)->update([
+                'min' => $dat[$row->himpunan]['min'] ?? $row->min,
+                'max' => $dat[$row->himpunan]['max'] ?? $row->max,
+            ]);
         }
 
-        foreach ($penilaianList as $item) {
-            DB::table('penilaian')
-                ->where('id', $item->id)
-                ->update([
-                    'min' => $dataUpdate[$item->himpunan]['min'] ?? null,
-                    'max' => $dataUpdate[$item->himpunan]['max'] ?? null,
-                ]);
-        }
-
-        // Perbaiki struktur array agar sesuai dengan kebutuhan ValidateDomain
-        $formattedData = $penilaianList->map(function ($item) {
+        /* 2. sync helper_domain input */
+        $helperFormat = $list->map(function ($r) {
             return [
-                'id_kriteria'     => $item->id_kriteria,
-                'kriteria'        => $item->kriteria,
-                'id_sub_kriteria' => $item->id_sub_kriteria,
-                'sub_kriteria'    => $item->sub_kriteria,
-                'id_himpunan'     => $item->id_himpunan,
-                'himpunan'        => $item->himpunan,
+                'id_kriteria'     => $r->id_kriteria,
+                'kriteria'        => $r->kriteria,
+                'id_sub_kriteria' => $r->id_sub_kriteria,
+                'sub_kriteria'    => $r->sub_kriteria,
+                'id_himpunan'     => $r->id_himpunan,
+                'himpunan'        => $r->himpunan,
             ];
         })->toArray();
 
         HelperDomain::ValidateDomain(
-            $formattedData,
-            collect($dataUpdate)->pluck('min')->values()->toArray(),
-            collect($dataUpdate)->pluck('max')->values()->toArray()
+            $helperFormat,
+            collect($dat)->pluck('min')->values()->toArray(),
+            collect($dat)->pluck('max')->values()->toArray()
         );
 
-        return redirect()->back()->with('success', 'Data penilaian berhasil diperbarui!');
+        return back()->with('success', 'Domain & penilaian berhasil diperbarui!');
     }
 
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Request $request, Penilaian $penilaian)
+    /*--------------------------------------------------------------
+     |  DESTROY  (hapus)
+     |--------------------------------------------------------------*/
+    public function destroy(Request $r, Penilaian $penilaian)
     {
-        $kriteria = $request->input('kriteria');
-        $subKriteria = $request->input('sub_kriteria');
-        $himpunan = $request->input('himpunan');
+        $kriteria    = $r->input('kriteria');
+        $subKriteria = $r->input('sub_kriteria');
+        $himpunan    = $r->input('himpunan');
 
-        // Query dasar
-        $query = $penilaian->newQuery();
-
+        $q = $penilaian->newQuery();
         if ($himpunan && $subKriteria) {
-            $query->where('himpunan', $himpunan)->where('sub_kriteria', $subKriteria);
+            $q->where('himpunan', $himpunan)->where('sub_kriteria', $subKriteria);
         } elseif ($subKriteria) {
-            $query->where('sub_kriteria', $subKriteria);
+            $q->where('sub_kriteria', $subKriteria);
         } elseif ($kriteria) {
-            $query->where('kriteria', $kriteria);
+            $q->where('kriteria', $kriteria);
         } else {
-            return redirect()->back()->with('error', 'Parameter penghapusan tidak lengkap!');
+            return back()->with('error', 'Parameter penghapusan tidak lengkap!');
         }
 
-        $deletedCount = $query->delete();
+        $deleted = $q->delete();
 
-        if ($deletedCount > 0) {
-            return redirect()->back()->with('success', 'Data penilaian berhasil dihapus!');
-        } else {
-            return redirect()->back()->with('warning', 'Tidak ada data yang dihapus.');
+        /* bersihkan helper_domain input yg kena */
+        if ($subKriteria) {
+            HelperDomain::where('sub_kriteria', $subKriteria)
+                ->where('kriteria', $kriteria)
+                ->delete();
         }
+
+        return back()->with(
+            $deleted ? 'success' : 'warning',
+            $deleted ? 'Data berhasil dihapus!' : 'Tidak ada data yang dihapus.'
+        );
     }
 }

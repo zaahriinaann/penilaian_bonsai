@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Bonsai extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'bonsai';
     protected $guarded = [];
@@ -32,5 +31,15 @@ class Bonsai extends Model
     public function nilai()
     {
         return $this->hasMany(Nilai::class, 'id_bonsai');
+    }
+
+    public function defuzzifikasi()
+    {
+        return $this->hasMany(Defuzzifikasi::class, 'id_bonsai');
+    }
+
+    public function rekapNilai()
+    {
+        return $this->hasOne(RekapNilai::class, 'id_bonsai');
     }
 }

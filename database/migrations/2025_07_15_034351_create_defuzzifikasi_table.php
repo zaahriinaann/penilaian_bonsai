@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rekap_nilai', function (Blueprint $table) {
+        Schema::create('defuzzifikasi', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_kontes');
             $table->unsignedBigInteger('id_bonsai');
-            $table->float('skor_akhir');
-            $table->integer('peringkat')->nullable();
+            $table->unsignedBigInteger('id_juri');
+            $table->float('hasil_defuzzifikasi', 8, 2);
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rekap_nilai');
+        Schema::dropIfExists('defuzzifikasis');
     }
 };

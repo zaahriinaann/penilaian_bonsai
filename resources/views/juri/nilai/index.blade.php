@@ -43,8 +43,12 @@
                     <tbody>
                         @foreach ($pendaftarans as $item)
                             @php
-                                $sudahDinilai = \App\Models\Nilai::sudahDinilai($item->bonsai_id, Auth::id());
+                                $juri = \App\Models\Juri::where('user_id', Auth::id())->first();
+                                $sudahDinilai = $juri
+                                    ? \App\Models\Nilai::sudahDinilai($item->bonsai_id, $juri->id)
+                                    : false;
                             @endphp
+
                             <tr>
                                 <td class="text-center">{{ $item->nomor_juri ?? '-' }}</td>
                                 <td class="text-center">{{ $item->nomor_pendaftaran ?? '-' }}</td>
@@ -58,10 +62,17 @@
                                     @endif
                                 </td>
                                 <td class="text-nowrap">
-                                    <a href="{{ $sudahDinilai ? route('nilai.edit', $item->bonsai_id) : route('nilai.show', $item->bonsai_id) }}"
+                                    <a href="{{ $sudahDinilai ? route('nilai.edit', $item->bonsai_id) : route('nilai.form', $item->bonsai_id) }}"
                                         class="btn btn-sm {{ $sudahDinilai ? 'btn-warning' : 'btn-primary' }}">
                                         {{ $sudahDinilai ? 'Edit Nilai' : 'Nilai' }}
                                     </a>
+
+                                    @if ($sudahDinilai)
+                                        <a href="{{ route('nilai.hasil', $item->bonsai_id) }}"
+                                            class="btn btn-sm btn-info"><i class="bi bi-eye"></i>
+                                            Lihat Nilai
+                                        </a>
+                                    @endif
                                     {{-- Tombol hapus bisa diatur jika dibutuhkan --}}
                                     {{-- <form action="{{ route('nilai.destroy', $item->bonsai_id) }}" method="POST" class="d-inline">
                                         @csrf

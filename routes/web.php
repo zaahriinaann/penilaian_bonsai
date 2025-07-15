@@ -64,6 +64,10 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('nilai', NilaiController::class)->parameters([
         'nilai' => 'id'
     ]);
+    Route::get('nilai/{id}/form', [NilaiController::class, 'formPenilaian'])->name('nilai.form');
+
+    Route::get('nilai/{id}/hasil', [NilaiController::class, 'show'])->name('nilai.hasil');
+
     Route::resource('riwayat', RiwayatController::class)->parameters([
         'riwayat' => 'id'
     ]);

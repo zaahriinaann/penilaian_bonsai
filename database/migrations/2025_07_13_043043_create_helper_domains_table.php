@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('id_kriteria')->unsigned();
             $table->string('kriteria');
-            $table->bigInteger('id_sub_kriteria')->unsigned();
-            $table->string('sub_kriteria');
+            $table->bigInteger('id_sub_kriteria')->unsigned()->nullable();
+            $table->string('sub_kriteria')->nullable();
             $table->bigInteger('id_himpunan')->unsigned();
             $table->string('himpunan');
             $table->bigInteger('id_domain')->unsigned();

@@ -13,6 +13,7 @@ class RekapNilai extends Model
         'id_bonsai',
         'id_juri',
         'skor_akhir',
+        'peringkat',
     ];
 
     public function bonsai()
