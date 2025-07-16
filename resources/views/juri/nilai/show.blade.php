@@ -102,8 +102,8 @@
                         <tr>
                             <th>#</th>
                             <th>Kriteria</th>
-                            <th>Skor Defuzzifikasi</th>
                             <th>Himpunan</th>
+                            <th>Skor Defuzzifikasi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -111,8 +111,8 @@
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $kriteria }}</td>
+                                <td>{{ $item->hasil_himpunan }}</td>
                                 <td><strong>{{ $item->hasil_defuzzifikasi }}</strong></td>
-                                <td>himpunan</td>
                             </tr>
                         @empty
                             <tr>

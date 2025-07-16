@@ -15,6 +15,8 @@ class Defuzzifikasi extends Model
         'id_bonsai',
         'id_juri',
         'hasil_defuzzifikasi',
+        'id_hasil_himpunan',
+        'hasil_himpunan',
     ];
 
     public function bonsai()
@@ -25,5 +27,10 @@ class Defuzzifikasi extends Model
     public function juri()
     {
         return $this->belongsTo(Juri::class, 'id_juri');
+    }
+
+    public function hasilHimpunan()
+    {
+        return $this->belongsTo(HelperDomain::class, 'id_hasil_himpunan');
     }
 }
