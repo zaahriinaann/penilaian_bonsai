@@ -72,4 +72,6 @@ Route::middleware(['auth', 'web'])->group(function () {
         'riwayat' => 'id'
     ]);
     Route::resource('rekap-nilai', RekapNilaiController::class);
+
+    Route::get('/rekap/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export');
 });

@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="container-fluid">
-        {{-- TOP 10 --}}
+        {{-- 10 Besar --}}
         <div class="card mb-4 shadow-sm rounded-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">🏆 10 Besar Nilai Bonsai</h4>
@@ -37,6 +37,11 @@
                                         data-kategori='@json($b['kategori'])'>
                                         Detail
                                     </button>
+                                    <a href="{{ route('rekap.export', ['nama_pohon' => urlencode($b['nama_pohon'])]) }}"
+                                        class="btn btn-sm btn-danger">
+                                        PDF
+                                    </a>
+
                                 </td>
                             </tr>
                         @endforeach
@@ -109,15 +114,13 @@
             $('#rekap-table').DataTable({
                 responsive: true
             });
-        });
 
-        // SweetAlert modal detail
-        document.querySelectorAll('.btn-detail').forEach(button => {
-            button.addEventListener('click', function() {
-                const nama = this.dataset.nama;
-                const juri = this.dataset.juri;
-                const total = parseFloat(this.dataset.total).toFixed(2);
-                const kategori = JSON.parse(this.dataset.kategori);
+            // Modal Detail (pakai event delegation biar aman di mode mobile)
+            $(document).on('click', '.btn-detail', function() {
+                const nama = $(this).data('nama');
+                const juri = $(this).data('juri');
+                const total = parseFloat($(this).data('total')).toFixed(2);
+                const kategori = $(this).data('kategori');
 
                 let html = `
                 <table class="table table-bordered text-start">

@@ -9,6 +9,7 @@ use App\Models\HelperKriteria;
 use App\Models\Kontes;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
+use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -57,6 +58,8 @@ class RekapNilaiController extends Controller
         $rekapSorted = $rekapData->sortByDesc('skor_akhir')->values();
         $bestTen = $rekapSorted->take(10);
 
+        session()->put('rekap_export_data', $rekapSorted->toArray());
+
         return view('juri.rekap.index', compact('rekapSorted', 'bestTen'));
     }
     private function kontesAktifId()
@@ -64,6 +67,19 @@ class RekapNilaiController extends Controller
         return Kontes::where('status', '1')->value('id');
     }
 
+
+    public function exportPdf($nama_pohon)
+    {
+        $data = session()->get('rekap_export_data') ?? [];
+
+        $detail = collect($data)->firstWhere('nama_pohon', urldecode($nama_pohon));
+
+        if (!$detail) abort(404);
+
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('juri.rekap.pdf', compact('detail'))->setPaper('A4', 'portrait');
+        return $pdf->download('Rekap_Nilai_Bonsai_' . $detail['nama_pohon'] . '.pdf');
+    }
 
     /**
      * Show the form for creating a new resource.
