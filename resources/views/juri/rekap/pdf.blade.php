@@ -70,7 +70,7 @@
         </tr>
         <tr>
             <th>Skor Akhir</th>
-            <td><strong>{{ $detail['skor_akhir'] }}</strong></td>
+            <td><strong>{{ number_format($detail['skor_akhir'], 2) }}</strong></td>
         </tr>
     </table>
 
@@ -79,16 +79,20 @@
         <thead>
             <tr>
                 <th>Kriteria</th>
-                <th>Hasil Defuzzifikasi</th>
-                <th>Himpunan</th>
+                <th>Rata-rata Defuzzifikasi</th>
+                <th>Mayoritas Himpunan</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($detail['kategori'] as $kriteria => $k)
+            @foreach ($detail['kategori'] as $kriteria => $list)
+                @php
+                    $avg = collect($list)->pluck('hasil')->avg();
+                    $himpunan = collect($list)->groupBy('himpunan')->sortByDesc(fn($x) => count($x))->keys()->first();
+                @endphp
                 <tr>
                     <td>{{ $kriteria }}</td>
-                    <td>{{ number_format($k['hasil'], 2) }}</td>
-                    <td>{{ $k['himpunan'] }}</td>
+                    <td>{{ number_format($avg, 2) }}</td>
+                    <td>{{ $himpunan }}</td>
                 </tr>
             @endforeach
         </tbody>

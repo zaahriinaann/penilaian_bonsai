@@ -154,21 +154,61 @@ class FuzzyMamDaniService
 
     public function hitungRekapAkhir(int $bonsaiId, int $kontesId): ?float
     {
-        $values = Defuzzifikasi::where('id_bonsai', $bonsaiId)
+        // Ambil semua defuzzifikasi untuk satu bonsai pada kontes
+        $defuzz = Defuzzifikasi::where('id_bonsai', $bonsaiId)
             ->where('id_kontes', $kontesId)
-            ->pluck('hasil_defuzzifikasi');
+            ->get();
 
-        if ($values->isEmpty()) return null;
+        if ($defuzz->isEmpty()) return null; // tidak ada data sama sekali
 
-        $avg = round($values->avg(), 2);
+        $rataPerKriteria = $defuzz->groupBy('id_kriteria')->map(function ($group) use ($bonsaiId, $kontesId) {
+            // 1. Rata-rata hasil_defuzzifikasi dari semua juri untuk satu kriteria
+            $avg = round($group->avg('hasil_defuzzifikasi'), 2);
 
-        RekapNilai::updateOrCreate([
+            // 2. Tentukan himpunan mayoritas
+            $himpunan = $group->groupBy('hasil_himpunan')
+                ->sortByDesc(fn($g) => $g->count())
+                ->keys()
+                ->first();
+
+            // 3. Ambil id_hasil_himpunan dari salah satu record
+            $idHimpunan = $group->firstWhere('hasil_himpunan', $himpunan)?->id_hasil_himpunan;
+
+            // 4. Simpan atau update ke tabel hasil
+            \App\Models\Hasil::updateOrCreate([
+                'id_bonsai' => $bonsaiId,
+                'id_kontes' => $kontesId,
+                'id_kriteria' => $group->first()->id_kriteria,
+            ], [
+                'hasil_defuzzifikasi' => $avg,
+                'hasil_himpunan' => $himpunan,
+                'id_hasil_himpunan' => $idHimpunan,
+            ]);
+
+            return $avg;
+        });
+
+        // 5. Jumlahkan semua rata-rata per kriteria
+        $total = round($rataPerKriteria->sum(), 2);
+        $total = max(0, min($total, 360)); // batasan 0 – 360, jika diperlukan
+
+        // 6. Tentukan himpunan akhir berdasarkan skor total
+        $himpunanAkhir = match (true) {
+            $total >= 321 => 'Baik Sekali',
+            $total >= 281 => 'Baik',
+            $total >= 241 => 'Cukup',
+            default => 'Kurang',
+        };
+
+        // 7. Simpan ke tabel rekap_nilai
+        \App\Models\RekapNilai::updateOrCreate([
             'id_kontes' => $kontesId,
             'id_bonsai' => $bonsaiId
         ], [
-            'skor_akhir' => $avg
+            'skor_akhir' => $total,
+            'himpunan_akhir' => $himpunanAkhir
         ]);
 
-        return $avg;
+        return $total;
     }
 }

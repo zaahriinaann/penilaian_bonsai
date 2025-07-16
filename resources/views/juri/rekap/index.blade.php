@@ -41,7 +41,6 @@
                                         class="btn btn-sm btn-danger">
                                         PDF
                                     </a>
-
                                 </td>
                             </tr>
                         @endforeach
@@ -94,10 +93,7 @@
 @endsection
 
 @section('script')
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
@@ -110,12 +106,10 @@
                 info: false,
                 responsive: true
             });
-
             $('#rekap-table').DataTable({
                 responsive: true
             });
 
-            // Modal Detail (pakai event delegation biar aman di mode mobile)
             $(document).on('click', '.btn-detail', function() {
                 const nama = $(this).data('nama');
                 const juri = $(this).data('juri');
@@ -123,21 +117,28 @@
                 const kategori = $(this).data('kategori');
 
                 let html = `
-                <table class="table table-bordered text-start">
-                    <tr><th width="140">Nama Bonsai</th><td>${nama}</td></tr>
-                    <tr><th>No Juri</th><td>${juri}</td></tr>
-                    <tr><th>Skor Akhir</th><td><strong>${total}</strong></td></tr>
-                </table>
-                <h6 class="mt-3">Detail Kategori</h6>
+            <table class="table table-bordered text-start">
+                <tr><th width="140">Nama Bonsai</th><td>${nama}</td></tr>
+                <tr><th>No Juri</th><td>${juri}</td></tr>
+                <tr><th>Skor Akhir</th><td><strong>${total}</strong></td></tr>
+            </table>
+            <h6 class="mt-3">Detail Kategori</h6>
             `;
 
-                for (const [kriteria, data] of Object.entries(kategori)) {
+                for (const [kriteria, list] of Object.entries(kategori)) {
+                    const rata2 = list.reduce((a, b) => a + parseFloat(b.hasil), 0) / list.length;
+                    const himpunanCount = {};
+                    list.forEach(d => {
+                        himpunanCount[d.himpunan] = (himpunanCount[d.himpunan] || 0) + 1;
+                    });
+                    const mayoritas = Object.entries(himpunanCount).sort((a, b) => b[1] - a[1])[0][0];
+
                     html += `
-                    <div class="border rounded p-2 mb-2">
-                        <strong>${kriteria}</strong><br/>
-                        Hasil Defuzzifikasi: <strong>${parseFloat(data.hasil).toFixed(2)}</strong><br/>
-                        Himpunan: <em>${data.himpunan}</em>
-                    </div>
+                <div class="border rounded p-2 mb-2">
+                    <strong>${kriteria}</strong><br/>
+                    Rata-rata Defuzzifikasi: <strong>${rata2.toFixed(2)}</strong><br/>
+                    Mayoritas Himpunan: <em>${mayoritas}</em>
+                </div>
                 `;
                 }
 
