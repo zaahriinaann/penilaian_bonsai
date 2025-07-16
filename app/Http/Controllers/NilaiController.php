@@ -95,55 +95,95 @@ class NilaiController extends Controller
 
     public function show($id)
     {
-        $bonsai = Bonsai::with(['user', 'pendaftaranKontes.juri'])->findOrFail($id);
+        $bonsai = Bonsai::with('user')->findOrFail($id);
+        $juriId = Auth::id();
+        $juriModelId = Juri::where('user_id', $juriId)->value('id');
 
-        $juri = Juri::where('user_id', Auth::id())->first();
-        if (!$juri) {
-            abort(403, 'Anda bukan juri yang terdaftar.');
-        }
+        // Ambil kontes berdasarkan nilai yang sudah pernah diberikan juri ini
+        $kontesId = Nilai::where('id_bonsai', $id)
+            ->where('id_juri', $juriModelId)
+            ->orderByDesc('id') // ambil yang terbaru kalau ada lebih dari satu
+            ->value('id_kontes');
 
+        // Ambil nilai awal juri ini
         $nilaiAwal = Nilai::where('id_bonsai', $id)
-            ->where('id_juri', $juri->id)
-            ->whereNotNull('nilai_awal')
+            ->where('id_juri', $juriModelId)
+            ->where('id_kontes', $kontesId)
             ->get();
 
-        $nilaiPerJuri = Defuzzifikasi::where('id_bonsai', $id)
-            ->where('id_juri', $juri->id)
-            ->get();
+        // Ambil defuzzifikasi per kriteria
+        $defuzzifikasiPerKriteria = Defuzzifikasi::where('id_bonsai', $id)
+            ->where('id_juri', $juriModelId)
+            ->where('id_kontes', $kontesId)
+            ->get()
+            ->unique('id_kriteria') // ⬅️ hanya ambil satu per kriteria
+            ->map(function ($item) {
+                $domain = HelperDomain::where('id_kriteria', $item->id_kriteria)
+                    ->whereNull('id_sub_kriteria')
+                    ->first();
 
-        return view('juri.nilai.show', compact('bonsai', 'nilaiAwal', 'nilaiPerJuri'));
+                $item->nama_kriteria = $domain->kriteria ?? '—';
+                return $item;
+            });
+
+
+        // Ambil pendaftaran (opsional ditampilkan)
+        $pendaftaran = PendaftaranKontes::where('bonsai_id', $id)
+            ->where('kontes_id', $kontesId)
+            ->first();
+
+        return view('juri.nilai.show', compact(
+            'bonsai',
+            'nilaiAwal',
+            'defuzzifikasiPerKriteria',
+            'pendaftaran'
+        ));
     }
-
 
 
     public function edit($id)
     {
-        $kriterias = HelperKriteria::with('subKriterias')->get();
+        $bonsai = Bonsai::with('user')->findOrFail($id);
+        $juri = Juri::where('user_id', Auth::id())->firstOrFail();
+
+        // Ambil semua nilai yang SUDAH diinput juri
         $nilai = Nilai::where('id_bonsai', $id)
-            ->where('id_juri', Auth::id())
+            ->where('id_juri', $juri->id)
+            ->whereNotNull('nilai_awal')
             ->get()
             ->keyBy('id_sub_kriteria');
 
+        // Ambil semua sub-kriteria yang dipakai dalam penilaian bonsai ini
+        $subDomains = HelperDomain::whereNotNull('id_sub_kriteria')
+            ->whereIn('id_kriteria', $nilai->pluck('id_kriteria')->unique())
+            ->get()
+            ->unique('id_sub_kriteria') // ⬅️ hanya ambil 1 per sub_kriteria
+            ->groupBy('kriteria');      // ⬅️ grup berdasarkan nama kriteria
+
+
         $data = [];
-        foreach ($kriterias as $kriteria) {
+
+        foreach ($subDomains as $namaKriteria => $subList) {
             $subs = [];
-            foreach ($kriteria->subKriterias as $sub) {
+
+            foreach ($subList as $sub) {
                 $subs[] = [
-                    'id_sub_kriteria' => $sub->id_sub_kriteria,
-                    'nama_sub_kriteria' => $sub->sub_kriteria,
-                    'nilai_awal' => $nilai[$sub->id_sub_kriteria]->nilai_awal ?? null,
+                    'id_sub_kriteria'    => $sub->id_sub_kriteria,
+                    'nama_sub_kriteria'  => $sub->sub_kriteria,
+                    'nilai_awal'         => $nilai[$sub->id_sub_kriteria]->nilai_awal ?? null,
                 ];
             }
+
             $data[] = [
-                'kriteria' => $kriteria->kriteria,
-                'sub_kriterias' => $subs,
+                'kriteria'       => $namaKriteria,
+                'sub_kriterias'  => $subs,
             ];
         }
 
-        $bonsai = Bonsai::with('user')->findOrFail($id);
-
-        return view('juri.nilai.edit', compact('data', 'bonsai'));
+        return view('juri.nilai.edit', compact('bonsai', 'data'));
     }
+
+
 
     public function update(Request $request, FuzzyMamDaniService $fuzzy, $bonsaiId)
     {
@@ -153,15 +193,14 @@ class NilaiController extends Controller
 
         $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
         $juriId = Juri::where('user_id', Auth::id())->value('id');
-
-        $kontes = Kontes::where('status', 1)->first();
-        if (!$kontes) {
-            return redirect()->back()->withErrors('Tidak ada kontes yang sedang berlangsung.');
-        }
-
+        $kontes = Kontes::where('status', 1)->firstOrFail();
         $pesertaId = $bonsai->user->id;
-        $pendaftaran = PendaftaranKontes::where('bonsai_id', $bonsaiId)->firstOrFail();
 
+        $pendaftaran = PendaftaranKontes::where('kontes_id', $kontes->id)
+            ->where('bonsai_id', $bonsaiId)
+            ->firstOrFail();
+
+        // Hapus nilai lama juri ini untuk bonsai ini
         Nilai::where('id_bonsai', $bonsaiId)
             ->where('id_juri', $juriId)
             ->where('id_kontes', $kontes->id)
@@ -190,6 +229,7 @@ class NilaiController extends Controller
             }
         }
 
+        // Hitung hasil fuzzy untuk juri ini & rekap akhir
         $hasilJuri = $fuzzy->hitungFuzzyPerJuri($bonsai->id, $juriId, $kontes->id);
         $hasilTotal = $fuzzy->hitungRekapAkhir($bonsai->id, $kontes->id);
 
@@ -197,6 +237,7 @@ class NilaiController extends Controller
             ->route('nilai.index')
             ->with('success', 'Nilai berhasil diperbarui. Skor juri: ' . $hasilJuri . ' | Rata²: ' . $hasilTotal);
     }
+
 
     public function destroy(Nilai $nilai)
     {

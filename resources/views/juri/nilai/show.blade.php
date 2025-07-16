@@ -13,10 +13,10 @@
             <div class="card-body">
                 <div class="row mb-2">
                     <div class="col-md-6">
-                        <strong>Nomor Juri:</strong> {{ $bonsai->pendaftaranKontes->nomor_juri ?? '-' }}
+                        <strong>Nomor Juri:</strong> {{ $pendaftaran->nomor_juri ?? '-' }}
                     </div>
                     <div class="col-md-6">
-                        <strong>No Daftar:</strong> {{ $bonsai->pendaftaranKontes->nomor_pendaftaran ?? '-' }}
+                        <strong>No Daftar:</strong> {{ $pendaftaran->nomor_pendaftaran ?? '-' }}
                     </div>
                 </div>
                 <div class="row mb-2">
@@ -39,7 +39,7 @@
             <div class="card-header rounded-top-4 align-items-center">
                 <strong>Nilai Awal yang Diinput</strong>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body table-responsive">
                 <table class="table table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
@@ -92,37 +92,38 @@
         </div>
 
         {{-- Hasil Defuzzifikasi --}}
-        <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header rounded-top-4 align-items-center">
+        <div class="card shadow-sm rounded-4 mt-4">
+            <div class="card-header bg-secondary text-white rounded-top-4">
                 <strong>Hasil Defuzzifikasi</strong>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-bordered align-middle mb-0 text-center">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>#</th>
+                            <th style="width: 5%">#</th>
                             <th>Kriteria</th>
                             <th>Himpunan</th>
                             <th>Skor Defuzzifikasi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($nilaiPerJuri as $i => $item)
+                        @forelse ($defuzzifikasiPerKriteria as $index => $item)
                             <tr>
-                                <td>{{ $i + 1 }}</td>
-                                <td>{{ $kriteria }}</td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $item->nama_kriteria }}</td>
                                 <td>{{ $item->hasil_himpunan }}</td>
                                 <td><strong>{{ $item->hasil_defuzzifikasi }}</strong></td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="2" class="text-center text-muted">Belum ada hasil fuzzy.</td>
+                                <td colspan="4" class="text-center">Belum ada hasil defuzzifikasi.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+
 
         {{-- Tombol Kembali --}}
         <div class="text-end mt-4">

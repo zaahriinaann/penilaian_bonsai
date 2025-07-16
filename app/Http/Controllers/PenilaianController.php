@@ -100,11 +100,12 @@ class PenilaianController extends Controller
             ->exists();
         if (!$outExists) {
             $default = [
-                ['Kurang',      50, 60],
-                ['Cukup',       61, 70],
-                ['Baik',        71, 80],
-                ['Baik Sekali', 81, 90],
+                ['Kurang',      50, 65],
+                ['Cukup',       55, 75],
+                ['Baik',        65, 85],
+                ['Baik Sekali', 75, 90],
             ];
+
             foreach ($default as $i => $d) {
                 HelperDomain::create([
                     'id_kriteria'     => $krit->id,

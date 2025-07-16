@@ -14,6 +14,7 @@ class Defuzzifikasi extends Model
         'id_kontes',
         'id_bonsai',
         'id_juri',
+        'id_kriteria',
         'hasil_defuzzifikasi',
         'id_hasil_himpunan',
         'hasil_himpunan',
