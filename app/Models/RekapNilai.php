@@ -11,7 +11,6 @@ class RekapNilai extends Model
     protected $fillable = [
         'id_kontes',
         'id_bonsai',
-        'id_juri',
         'skor_akhir',
         'himpunan_akhir',
         'peringkat',
