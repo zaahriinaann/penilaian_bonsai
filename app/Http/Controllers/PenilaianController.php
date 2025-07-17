@@ -9,6 +9,7 @@ use App\Models\{
     HelperKriteria,
     HelperSubKriteria
 };
+use App\Services\AutoGenerateFuzzyRuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -218,5 +219,12 @@ class PenilaianController extends Controller
             $deleted ? 'success' : 'warning',
             $deleted ? 'Data berhasil dihapus!' : 'Tidak ada data yang dihapus.'
         );
+    }
+
+    public function autoGenerate()
+    {
+        app(AutoGenerateFuzzyRuleService::class)->generate();
+
+        return redirect()->back()->with('success', 'Fuzzy rules berhasil di-generate!');
     }
 }

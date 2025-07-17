@@ -24,6 +24,12 @@ $dropdown = [
                 'role' => ['admin'],
             ],
             [
+                'judul' => 'Fuzzy Rules',
+                'description' => 'Lihat dan kelola rule fuzzy yang terbentuk otomatis dari kriteria dan subkriteria.',
+                'link' => '/admin/penilaian/fuzzy-rules',
+                'role' => ['admin'],
+            ],
+            [
                 'judul' => 'Kelola Peserta',
                 'description' => 'Anda dapat mengelola peserta, serta menambahkan dan mengubah akun.',
                 'link' => '/master/peserta',

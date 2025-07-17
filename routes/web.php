@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AkunController;
 use App\Http\Controllers\BonsaiController;
+use App\Http\Controllers\FuzzyRuleController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
@@ -74,4 +75,8 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('rekap-nilai', RekapNilaiController::class);
 
     Route::get('/rekap/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export');
+
+    Route::post('/fuzzy-rules/auto-generate', [FuzzyRuleController::class, 'autoGenerate'])->name('fuzzy-rules.auto-generate');
+
+    Route::get('/admin/penilaian/fuzzy-rules', [FuzzyRuleController::class, 'index'])->name('fuzzy-rules.index');
 });

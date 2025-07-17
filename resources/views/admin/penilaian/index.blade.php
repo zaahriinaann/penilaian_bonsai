@@ -7,6 +7,12 @@
     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
         Tambah Kriteria
     </button>
+    <form action="{{ route('fuzzy-rules.auto-generate') }}" method="POST">
+        @csrf
+        <button type="submit" class="btn btn-sm btn-warning">
+            <i class="fa fa-cogs"></i> Auto Generate Fuzzy Rules
+        </button>
+    </form>
 @endsection
 
 @section('content')
@@ -217,8 +223,7 @@
                             $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
                             ?>
                             @foreach ($himpunan as $index => $huruf)
-                                <input type="hidden" name="himpunan[]" value="{{ $huruf }}"
-                                    id="">
+                                <input type="hidden" name="himpunan[]" value="{{ $huruf }}" id="">
                                 <div class="col-12 row align-items-center himpunan-set" style="display: none"
                                     id="himpunan-{{ $huruf }}">
                                     <div class="col mb-3">
