@@ -13,4 +13,9 @@ class Juri extends Model
 
     protected $table = 'juri';
     protected $guarded = [];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -42,6 +42,16 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::resource('peserta', PesertaController::class)->parameters(['peserta' => 'id']);
     });
 
+    // Admin: Daftar Juri Aktif
+    Route::get('/admin/nilai', [NilaiController::class, 'indexAdmin'])->name('admin.nilai.index');
+
+    // Admin: Daftar peserta yang dinilai oleh juri tertentu
+    Route::get('/admin/nilai/{juriId}', [NilaiController::class, 'showAdmin'])->name('admin.nilai.show');
+
+    // Admin: Detail nilai peserta dari juri tertentu
+    Route::get('/admin/nilai/{juriId}/bonsai/{bonsaiId}', [NilaiController::class, 'detailAdmin'])->name('admin.nilai.detail');
+
+
     // ==================== KONTESTAN ====================
     Route::prefix('kontes')->group(function () {
         Route::resource('pendaftaran-peserta', PendaftaranKontesController::class);

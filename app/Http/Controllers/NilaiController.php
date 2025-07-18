@@ -257,4 +257,94 @@ class NilaiController extends Controller
     {
         // belum digunakan
     }
+
+    public function indexAdmin()
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $juriAktif = Juri::with('user')->get();
+
+        return view('admin.nilai.index', compact('juriAktif'));
+    }
+
+
+    public function showAdmin($juriId)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $kontes = Kontes::where('status', 1)->firstOrFail();
+        $bonsaiIds = Nilai::where('id_juri', $juriId)
+            ->where('id_kontes', $kontes->id)
+            ->pluck('id_bonsai')
+            ->unique();
+
+        $pendaftarans = PendaftaranKontes::with(['user', 'bonsai'])
+            ->whereIn('bonsai_id', $bonsaiIds)
+            ->where('kontes_id', $kontes->id)
+            ->get();
+
+        $juri = Juri::with('user')->findOrFail($juriId);
+
+        return view('admin.nilai.show', compact('pendaftarans', 'kontes', 'juri'));
+    }
+
+    public function detailAdmin($juriId, $bonsaiId)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
+        $kontes = Kontes::where('status', 1)->firstOrFail();
+        $juri = Juri::with('user')->findOrFail($juriId);
+
+        $nilaiAwal = Nilai::where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juriId)
+            ->where('id_kontes', $kontes->id)
+            ->get();
+
+        $defuzzifikasiPerKriteria = Defuzzifikasi::where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juriId)
+            ->where('id_kontes', $kontes->id)
+            ->get()
+            ->unique('id_kriteria')
+            ->map(function ($item) {
+                $domain = HelperDomain::where('id_kriteria', $item->id_kriteria)
+                    ->whereNull('id_sub_kriteria')
+                    ->first();
+                $item->nama_kriteria = $domain->kriteria ?? '—';
+                return $item;
+            });
+
+        $pendaftaran = PendaftaranKontes::where('bonsai_id', $bonsaiId)
+            ->where('kontes_id', $kontes->id)
+            ->first();
+
+        $ruleAktif = HasilFuzzyRule::with(['rule.details'])
+            ->where('id_kontes', $kontes->id)
+            ->where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juriId)
+            ->get()
+            ->groupBy('id_kriteria');
+
+        $hasilAgregasi = HasilFuzzyRule::where('id_kontes', $kontes->id)
+            ->where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juriId)
+            ->get()
+            ->groupBy('id_kriteria');
+
+        return view('admin.nilai.detail', compact(
+            'bonsai',
+            'nilaiAwal',
+            'defuzzifikasiPerKriteria',
+            'pendaftaran',
+            'ruleAktif',
+            'hasilAgregasi',
+            'juri'
+        ));
+    }
 }
