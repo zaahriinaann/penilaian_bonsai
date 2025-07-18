@@ -208,6 +208,7 @@ class PenilaianController extends Controller
             return back()->with('warning', 'Tidak ada data yang dihapus.');
         }
 
+        // Ambil ID untuk hapus dari helper_domain (input)
         $refIds = DB::table('penilaian')
             ->join('helper_sub_kriteria', function ($j) {
                 $j->on('penilaian.kriteria', '=', 'helper_sub_kriteria.kriteria')
@@ -231,14 +232,22 @@ class PenilaianController extends Controller
                 ->delete();
         }
 
+        // Hapus dari penilaian
         $deleted = Penilaian::whereIn('id', $toDelete->pluck('id'))->delete();
 
-        // Hapus juga domain output jika tidak ada sub_kriteria tersisa
-        $stillExists = Penilaian::where('kriteria', $kriteria)->exists();
-        if (!$stillExists) {
-            HelperDomain::where('kriteria', $kriteria)
-                ->whereNull('sub_kriteria')
-                ->delete();
+        // ✅ CEK & HAPUS SEMUA OUTPUT YANG TIDAK PUNYA INPUT (orphaned outputs)
+        $outputDomains = HelperDomain::whereNull('id_sub_kriteria')->get();
+
+        foreach ($outputDomains->groupBy('id_kriteria') as $idKriteria => $rows) {
+            $hasInput = HelperDomain::where('id_kriteria', $idKriteria)
+                ->whereNotNull('id_sub_kriteria')
+                ->exists();
+
+            if (!$hasInput) {
+                HelperDomain::where('id_kriteria', $idKriteria)
+                    ->whereNull('id_sub_kriteria')
+                    ->delete();
+            }
         }
 
         return back()->with(
@@ -247,11 +256,9 @@ class PenilaianController extends Controller
         );
     }
 
-
     public function autoGenerate()
     {
         app(AutoGenerateFuzzyRuleService::class)->generate();
-
         return redirect()->back()->with('success', 'Fuzzy rules berhasil di-generate!');
     }
 }
