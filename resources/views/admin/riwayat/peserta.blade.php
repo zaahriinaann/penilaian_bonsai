@@ -8,6 +8,14 @@
                 <strong>📋 Peserta Dinilai oleh {{ $juri->user->name }} pada {{ $kontes->nama_kontes }}</strong>
             </div>
             <div class="card-body">
+                {{-- Tombol Cetak Laporan --}}
+                <div class="mb-3 text-end">
+                    <a href="{{ route('admin.riwayat.cetak', [$kontes->id, $juri->id]) }}" target="_blank"
+                        class="btn btn-success mb-3 rounded-pill">
+                        🖨️ Cetak Laporan Rekap
+                    </a>
+
+                </div>
                 <form method="GET" class="mb-3">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-4">

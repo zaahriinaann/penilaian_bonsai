@@ -14,6 +14,7 @@ use App\Models\HelperDomain;
 use App\Models\HelperSubKriteria;
 use App\Models\Juri;
 use App\Services\FuzzyMamDaniService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -486,6 +487,38 @@ class NilaiController extends Controller
             'rekap'
         ));
     }
+
+    public function cetakLaporan($kontesId, $juriId)
+    {
+        $kontes = Kontes::findOrFail($kontesId);
+        $juri = Juri::with('user')->findOrFail($juriId);
+
+        $nilaiBonsai = Nilai::where('id_kontes', $kontesId)
+            ->where('id_juri', $juriId)
+            ->get()
+            ->groupBy('id_bonsai');
+
+        $rekapData = [];
+
+        foreach ($nilaiBonsai as $idBonsai => $group) {
+            $rekap = RekapNilai::where('id_kontes', $kontesId)
+                ->where('id_bonsai', $idBonsai)
+                ->first();
+
+            if ($rekap) {
+                $rekapData[] = [
+                    'nama_pohon' => $group->first()->bonsai->nama_pohon ?? '—',
+                    'pemilik' => $group->first()->bonsai->user->name ?? '—',
+                    'skor_akhir' => $rekap->skor_akhir,
+                    'himpunan_akhir' => $rekap->himpunan_akhir,
+                ];
+            }
+        }
+
+        $pdf = Pdf::loadView('admin.riwayat.cetak', compact('kontes', 'juri', 'rekapData'));
+        return $pdf->stream('laporan-rekap-nilai.pdf');
+    }
+
 
     public function riwayatJuriIndex(Request $request)
     {

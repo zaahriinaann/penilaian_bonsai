@@ -50,10 +50,12 @@ Route::middleware(['auth', 'web'])->group(function () {
     // RIWAYAT PENILAIAN ADMIN
     Route::prefix('admin/riwayat')->name('admin.riwayat.')->group(function () {
         Route::get('/', [NilaiController::class, 'riwayatIndex'])->name('index');
+        Route::get('/{kontes}/{juri}/cetak', [NilaiController::class, 'cetakLaporan'])->name('cetak'); // ⬅️ Pindahkan ke atas!
         Route::get('/{kontes}', [NilaiController::class, 'riwayatJuri'])->name('juri');
         Route::get('/{kontes}/{juri}', [NilaiController::class, 'riwayatPeserta'])->name('peserta');
         Route::get('/{kontes}/{juri}/{bonsai}', [NilaiController::class, 'riwayatDetail'])->name('detail');
     });
+
 
     Route::prefix('juri/riwayat')->name('juri.riwayat.')->group(function () {
         Route::get('/', [NilaiController::class, 'riwayatJuriIndex'])->name('index');
