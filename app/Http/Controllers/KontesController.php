@@ -179,7 +179,7 @@ class KontesController extends Controller
 
         $image = $request->file('poster_kontes');
         $imageName = time() . '.' . $image->getClientOriginalExtension();
-        $destinationPath = public_path('images/kontes');
+        $destinationPath = public_path('assets/images/kontes');
 
         // Buat folder jika belum ada
         if (!file_exists($destinationPath)) {

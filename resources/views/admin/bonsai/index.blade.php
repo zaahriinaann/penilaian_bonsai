@@ -44,7 +44,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <img class="rounded"
-                                        src="{{ $item->foto ? asset('images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
+                                        src="{{ $item->foto ? asset('assets/images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
                                         alt="Foto Bonsai" style="width: 75px; height: 75px; object-fit: cover;">
                                 </td>
                                 <td>{{ $item->no_induk_pohon }}</td>
@@ -293,7 +293,7 @@
 
                                     <div class="mt-2">
                                         <label for="" class="form-label">Foto Lama</label>
-                                        <img src="{{ asset('images/bonsai/' . $item->foto) }}" alt="Foto Bonsai"
+                                        <img src="{{ asset('assets/images/bonsai/' . $item->foto) }}" alt="Foto Bonsai"
                                             class="img-fluid">
                                     </div>
                                 </div>

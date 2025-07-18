@@ -197,7 +197,7 @@ class BonsaiController extends Controller
         if ($request->hasFile('foto') && $typeInput) {
             $image = $request->file('foto');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $destinationPath = public_path('images/bonsai');
+            $destinationPath = public_path('assets/images/bonsai');
 
             // Buat folder jika belum ada (opsional)
             if (!file_exists($destinationPath)) {

@@ -42,7 +42,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <img class="rounded"
-                                        src="{{ $item->poster_kontes ? asset('images/kontes/' . $item->poster_kontes) : asset('assets/media/avatars/blank.png') }}"
+                                        src="{{ $item->poster_kontes ? asset('assets/images/kontes/' . $item->poster_kontes) : asset('assets/media/avatars/blank.png') }}"
                                         alt="Foto Kontes" style="width: 75px; height: 75px; object-fit: cover;">
                                 </td>
                                 <td>
