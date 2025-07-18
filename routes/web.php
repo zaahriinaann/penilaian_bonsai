@@ -42,14 +42,18 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::resource('peserta', PesertaController::class)->parameters(['peserta' => 'id']);
     });
 
-    // Admin: Daftar Juri Aktif
+    // PENILAIAN ROLE ADMIN
     Route::get('/admin/nilai', [NilaiController::class, 'indexAdmin'])->name('admin.nilai.index');
-
-    // Admin: Daftar peserta yang dinilai oleh juri tertentu
     Route::get('/admin/nilai/{juriId}', [NilaiController::class, 'showAdmin'])->name('admin.nilai.show');
-
-    // Admin: Detail nilai peserta dari juri tertentu
     Route::get('/admin/nilai/{juriId}/bonsai/{bonsaiId}', [NilaiController::class, 'detailAdmin'])->name('admin.nilai.detail');
+
+    // RIWAYAT PENILAIAN ADMIN
+    Route::prefix('admin/riwayat')->name('admin.riwayat.')->group(function () {
+        Route::get('/', [NilaiController::class, 'riwayatIndex'])->name('index');
+        Route::get('/{kontes}', [NilaiController::class, 'riwayatJuri'])->name('juri');
+        Route::get('/{kontes}/{juri}', [NilaiController::class, 'riwayatPeserta'])->name('peserta');
+        Route::get('/{kontes}/{juri}/{bonsai}', [NilaiController::class, 'riwayatDetail'])->name('detail');
+    });
 
 
     // ==================== KONTESTAN ====================

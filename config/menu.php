@@ -75,15 +75,8 @@ $dropdown = [
     [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Khusus Admin',
-        'submenu' => [
-            [
-                'judul' => 'Riwayat Penilaian',
-                'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
-                'link' => '/riwayat',
-                'role' => ['admin'],
-            ],
-        ],
-        'link' => '#',
+        'submenu' => [],
+        'link' => '/admin/riwayat',
         'role' => ['admin'],
     ],
 
