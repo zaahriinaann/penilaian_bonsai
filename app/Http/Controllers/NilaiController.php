@@ -352,19 +352,24 @@ class NilaiController extends Controller
     {
         $query = Kontes::query();
 
+        // Filter berdasarkan input search (nama kontes atau tahun dari teks bebas)
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_kontes', 'like', '%' . $search . '%')
-                    ->orWhereYear('tanggal_mulai_kontes', $search)
-                    ->orWhereYear('tanggal_selesai_kontes', $search);
+                    ->orWhereYear('tanggal_mulai_kontes', 'like', "%$search%")
+                    ->orWhereYear('tanggal_selesai_kontes', 'like', "%$search%");
             });
+        }
+
+        // Filter tahun spesifik dari dropdown
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_mulai_kontes', $request->tahun);
         }
 
         $kontesList = $query->orderByDesc('tanggal_mulai_kontes')->get();
 
         return view('admin.riwayat.index', compact('kontesList'));
     }
-
 
     public function riwayatJuri(Request $request, $kontesId)
     {
@@ -472,6 +477,114 @@ class NilaiController extends Controller
         return view('admin.riwayat.detail', compact(
             'kontes',
             'juri',
+            'bonsai',
+            'nilaiAwal',
+            'defuzzifikasiPerKriteria',
+            'pendaftaran',
+            'ruleAktif',
+            'hasilAgregasi',
+            'rekap'
+        ));
+    }
+
+    public function riwayatJuriIndex(Request $request)
+    {
+        $juri = Juri::where('user_id', Auth::id())->firstOrFail();
+
+        $kontesIds = Nilai::where('id_juri', $juri->id)->pluck('id_kontes')->unique();
+
+        $query = Kontes::whereIn('id', $kontesIds);
+
+        if ($request->filled('search')) {
+            $query->where('nama_kontes', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_mulai_kontes', $request->tahun);
+        }
+
+        $kontesList = $query->orderByDesc('tanggal_mulai_kontes')->get();
+
+        return view('juri.riwayat.index', compact('kontesList'));
+    }
+
+
+
+    public function riwayatJuriPeserta(Request $request, $kontesId)
+    {
+        $juri = Juri::where('user_id', Auth::id())->firstOrFail();
+        $kontes = Kontes::findOrFail($kontesId);
+
+        // Ambil bonsai yang pernah dinilai juri ini di kontes tersebut
+        $bonsaiIds = Nilai::where('id_kontes', $kontes->id)
+            ->where('id_juri', $juri->id)
+            ->pluck('id_bonsai')
+            ->unique();
+
+        $query = PendaftaranKontes::with(['user', 'bonsai'])
+            ->where('kontes_id', $kontes->id)
+            ->whereIn('bonsai_id', $bonsaiIds);
+
+        // Pencarian
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', fn($q1) => $q1->where('name', 'like', "%$search%"))
+                    ->orWhereHas('bonsai', fn($q2) => $q2->where('nama_pohon', 'like', "%$search%"));
+            });
+        }
+
+        $pendaftarans = $query->get();
+
+        return view('juri.riwayat.peserta', compact('kontes', 'pendaftarans'));
+    }
+
+    public function riwayatJuriDetail($kontesId, $bonsaiId)
+    {
+        $juri = Juri::where('user_id', Auth::id())->firstOrFail();
+        $kontes = Kontes::findOrFail($kontesId);
+        $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
+
+        $nilaiAwal = Nilai::where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juri->id)
+            ->where('id_kontes', $kontesId)
+            ->get();
+
+        $defuzzifikasiPerKriteria = Defuzzifikasi::where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juri->id)
+            ->where('id_kontes', $kontesId)
+            ->get()
+            ->unique('id_kriteria')
+            ->map(function ($item) {
+                $domain = HelperDomain::where('id_kriteria', $item->id_kriteria)
+                    ->whereNull('id_sub_kriteria')
+                    ->first();
+                $item->nama_kriteria = $domain->kriteria ?? '—';
+                return $item;
+            });
+
+        $pendaftaran = PendaftaranKontes::where('bonsai_id', $bonsaiId)
+            ->where('kontes_id', $kontesId)
+            ->first();
+
+        $ruleAktif = HasilFuzzyRule::with(['rule.details'])
+            ->where('id_kontes', $kontesId)
+            ->where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juri->id)
+            ->get()
+            ->groupBy('id_kriteria');
+
+        $hasilAgregasi = HasilFuzzyRule::where('id_kontes', $kontesId)
+            ->where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juri->id)
+            ->get()
+            ->groupBy('id_kriteria');
+
+        $rekap = RekapNilai::where('id_kontes', $kontesId)
+            ->where('id_bonsai', $bonsaiId)
+            ->first();
+
+        return view('juri.riwayat.detail', compact(
+            'kontes',
             'bonsai',
             'nilaiAwal',
             'defuzzifikasiPerKriteria',

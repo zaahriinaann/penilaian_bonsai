@@ -106,7 +106,7 @@ $dropdown = [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
         'submenu' => [],
-        'link' => '/riwayat',
+        'link' => '/juri/riwayat',
         'role' => ['juri'],
     ],
 ];

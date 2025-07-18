@@ -55,6 +55,12 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::get('/{kontes}/{juri}/{bonsai}', [NilaiController::class, 'riwayatDetail'])->name('detail');
     });
 
+    Route::prefix('juri/riwayat')->name('juri.riwayat.')->group(function () {
+        Route::get('/', [NilaiController::class, 'riwayatJuriIndex'])->name('index');
+        Route::get('/{kontes}', [NilaiController::class, 'riwayatJuriPeserta'])->name('peserta');
+        Route::get('/{kontes}/{bonsai}', [NilaiController::class, 'riwayatJuriDetail'])->name('detail');
+    });
+
 
     // ==================== KONTESTAN ====================
     Route::prefix('kontes')->group(function () {
