@@ -10,7 +10,17 @@ class HelperDomain extends Model
     use HasFactory;
     protected $table = 'helper_domain';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'id_kriteria',
+        'kriteria',
+        'id_sub_kriteria',
+        'sub_kriteria',
+        'id_himpunan',
+        'himpunan',
+        'id_domain',
+        'domain_min',
+        'domain_max',
+    ];
 
     public function subKriteria()
     {

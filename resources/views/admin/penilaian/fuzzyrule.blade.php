@@ -1,20 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="card">
-        <div class="container">
-            <h2>Daftar Fuzzy Rules</h2>
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @elseif(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
-            @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @elseif(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
 
+    <div class="card w-100 mb-5 card-kelola" style="z-index: 1">
+        <div class="card-header sticky-top bg-white">
+            <h1 class="card-title">Daftar Fuzzy Rules</h1>
+        </div>
+
+        <div class="card-body">
             <form action="{{ route('fuzzy-rules.auto-generate') }}" method="POST" class="mb-3">
                 @csrf
                 <button type="submit" class="btn btn-warning">
-                    <i class="fa fa-sync"></i> Auto Generate Rules
+                    <i class="fa fa-cogs"></i> Generate Fuzzy Rules
                 </button>
             </form>
 

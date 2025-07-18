@@ -121,6 +121,105 @@
                         @endforelse
                     </tbody>
                 </table>
+                <hr>
+                <h5 class="mt-4">🔥 Rule Inferensi Aktif</h5>
+
+                @php use Illuminate\Support\Str; @endphp
+
+                @forelse($ruleAktif as $idKriteria => $rules)
+                    <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <ol class="mt-2">
+                            @foreach ($rules as $index => $hasil)
+                                @php
+                                    $details = $hasil->rule->details;
+
+                                    // Format: If KO Baik Sekali and RA Baik Sekali and Pn Baik Sekali
+                                    $antecedents = $details
+                                        ->map(fn($d) => $d->input_variable . ' ' . $d->himpunan)
+                                        ->implode(' and ');
+
+                                    // Format: μKOBaikSekali[x]; μRABaikSekali[y]; ...
+                                    $symbols = $details
+                                        ->map(function ($d) {
+                                            $abbr = implode(
+                                                '',
+                                                array_map(
+                                                    fn($word) => substr($word, 0, 1),
+                                                    explode(' ', $d->input_variable),
+                                                ),
+                                            );
+                                            return 'μ' . strtoupper($abbr) . $d->himpunan;
+                                        })
+                                        ->implode('; ');
+
+                                    // Ambil nilai derajat dari nilai awal
+                                    $values = $details
+                                        ->map(function ($d) use ($nilaiAwal) {
+                                            $match = $nilaiAwal->firstWhere('sub_kriteria', $d->input_variable);
+                                            return $match ? round($match->derajat_anggota, 2) : '0';
+                                        })
+                                        ->implode('; ');
+
+                                    $alpha = round($hasil->alpha, 3);
+                                    $z = round($hasil->z_value, 2);
+                                @endphp
+
+                                <li class="mb-2">
+                                    <strong>Rule {{ $index + 1 }}:</strong>
+                                    If {{ $antecedents }} then Penampilan
+                                    <strong>{{ $hasil->rule->output_himpunan }}</strong><br>
+                                    a-predikat{{ $index + 1 }} = {{ $symbols }} = Min ({{ $values }}) =
+                                    <strong>{{ $alpha }}</strong><br>
+                                    z = <strong>{{ $z }}</strong>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
+                @empty
+                    <p class="text-muted">Tidak ada rule aktif untuk bonsai ini.</p>
+                @endforelse
+                <hr>
+                <h5 class="mt-4">🧠 Proses Agregasi & Defuzzifikasi</h5>
+
+                @forelse($hasilAgregasi as $idKriteria => $items)
+                    @php
+                        $sumAlphaZ = 0;
+                        $sumAlpha = 0;
+                    @endphp
+
+                    <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <ol class="mt-2">
+                            @foreach ($items as $i => $item)
+                                @php
+                                    $alpha = round($item->alpha, 3);
+                                    $z = round($item->z_value, 2);
+                                    $product = round($alpha * $z, 2);
+                                    $sumAlphaZ += $product;
+                                    $sumAlpha += $alpha;
+                                @endphp
+                                <li>
+                                    Rule z{{ $i + 1 }} = {{ $z }}, α{{ $i + 1 }} =
+                                    {{ $alpha }}
+                                    → α{{ $i + 1 }} × z{{ $i + 1 }} = <strong>{{ $product }}</strong>
+                                </li>
+                            @endforeach
+                        </ol>
+
+                        <div class="mt-2">
+                            ∑(α × z) = <strong>{{ round($sumAlphaZ, 2) }}</strong>,
+                            ∑α = <strong>{{ round($sumAlpha, 3) }}</strong><br>
+                            z_final =
+                            <strong>
+                                {{ $sumAlpha > 0 ? round($sumAlphaZ / $sumAlpha, 2) : '0.00' }}
+                            </strong>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted">Tidak ada proses agregasi ditemukan.</p>
+                @endforelse
+
             </div>
         </div>
 

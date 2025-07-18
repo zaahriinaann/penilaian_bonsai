@@ -4,6 +4,7 @@ use App\Http\Controllers\AkunController;
 use App\Http\Controllers\BonsaiController;
 use App\Http\Controllers\FuzzyRuleController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Juri\RiwayatController as JuriRiwayatController;
 use App\Http\Controllers\JuriController;
 use App\Http\Controllers\KontesController;
 use App\Http\Controllers\NilaiController;
@@ -79,4 +80,10 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::post('/fuzzy-rules/auto-generate', [FuzzyRuleController::class, 'autoGenerate'])->name('fuzzy-rules.auto-generate');
 
     Route::get('/admin/penilaian/fuzzy-rules', [FuzzyRuleController::class, 'index'])->name('fuzzy-rules.index');
+
+    Route::prefix('riwayat')->name('riwayat.')->group(function () {
+        Route::get('/', [RiwayatController::class, 'index'])->name('index');
+        Route::get('/{kontes}', [RiwayatController::class, 'show'])->name('show');
+        Route::get('/{kontes}/{bonsai}', [RiwayatController::class, 'detail'])->name('detail');
+    });
 });

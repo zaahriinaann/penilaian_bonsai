@@ -2,30 +2,39 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 class Nilai extends Model
 {
-    // protected $fillable = [
-    //     'id_kontes',
-    //     'id_pendaftaran',
-    //     'id_peserta',
-    //     'id_juri',
-    //     'id_bonsai',
-    //     'id_kriteria_penilaian',
-    //     'nilai_awal',
-    //     'derajat_anggota',
-    //     'himpunan'
-    // ];
+    use HasFactory;
+    protected $table = 'nilais';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'id_kontes',
+        'id_peserta',
+        'id_juri',
+        'id_bonsai',
+        'id_pendaftaran',
+        'id_kriteria',
+        'kriteria',
+        'id_sub_kriteria',
+        'sub_kriteria',
+        'himpunan',
+        'nilai_awal',
+        'derajat_anggota',
+    ];
 
     // Relasi ke kontes
     public function kontes()
     {
         return $this->belongsTo(Kontes::class, 'id_kontes');
+    }
+
+    public function subKriteria()
+    {
+        return $this->belongsTo(HelperSubKriteria::class, 'id_sub_kriteria');
     }
 
     // Relasi ke PendaftaranKontes
@@ -129,5 +138,10 @@ class Nilai extends Model
         }
 
         return $totalMu > 0 ? round($totalZ / $totalMu, 2) : 0;
+    }
+
+    public function kriteria()
+    {
+        return $this->belongsTo(HelperKriteria::class, 'id_kriteria');
     }
 }

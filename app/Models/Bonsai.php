@@ -47,4 +47,9 @@ class Bonsai extends Model
     {
         return $this->hasOne(PendaftaranKontes::class, 'bonsai_id');
     }
+
+    public function pemilik()
+    {
+        return $this->belongsTo(User::class, 'id_pemilik');
+    }
 }

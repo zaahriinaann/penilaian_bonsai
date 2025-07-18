@@ -1,28 +1,28 @@
 @extends('layouts.app')
-
-@section('title', 'Riwayat Penilaian Bonsai')
+@section('title', 'Riwayat Penilaian - Daftar Kontes')
 
 @section('content')
     <div class="card">
+        <div class="card-header">
+            <h4>Daftar Kontes</h4>
+        </div>
         <div class="card-body">
-            <h3>🏆 Ranking Hasil Penilaian Bonsai</h3>
-
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-bordered">
+                <thead class="table-light">
                     <tr>
-                        <th>Ranking</th>
-                        <th>Nama Pemilik</th>
-                        <th>Nama Bonsai</th>
-                        <th>Skor Akhir</th>
+                        <th>Nama Kontes</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($ranking as $i => $item)
+                    @foreach ($kontes as $k)
                         <tr>
-                            <td>{{ $i + 1 }}</td>
-                            <td>{{ $item->bonsai->user->name }}</td>
-                            <td>{{ $item->bonsai->nama_pohon }}</td>
-                            <td><strong>{{ $item->skor_akhir }}</strong></td>
+                            <td>{{ $k->nama_kontes }}</td>
+                            <td>{{ $k->tanggal_mulai_kontes }} sd. {{ $k->tanggal_selesai_kontes }}</td>
+                            <td>
+                                <a href="{{ route('riwayat.show', $k->id) }}" class="btn btn-primary">Lihat Bonsai</a>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

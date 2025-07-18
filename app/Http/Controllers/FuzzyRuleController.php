@@ -20,7 +20,7 @@ class FuzzyRuleController extends Controller
     {
         try {
             app(AutoGenerateFuzzyRuleService::class)->generate();
-            return redirect()->back()->with('success', 'Fuzzy rules berhasil digenerate.');
+            return redirect()->back()->with('success', 'Fuzzy rules berhasil digenerate. Cek di menu fuzzy rules.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal generate fuzzy rules: ' . $e->getMessage());
         }

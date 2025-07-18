@@ -12,9 +12,9 @@ return new class extends Migration {
             $table->foreignId('id_kontes')->constrained('kontes')->onDelete('cascade');
             $table->foreignId('id_bonsai')->constrained('bonsai')->onDelete('cascade');
             $table->foreignId('id_kriteria')->constrained('helper_kriteria')->onDelete('cascade');
-            $table->double('hasil_defuzzifikasi');
-            $table->string('hasil_himpunan');
-            $table->unsignedBigInteger('id_hasil_himpunan')->nullable();
+            $table->double('rata_defuzzifikasi');
+            $table->string('rata_himpunan');
+            $table->unsignedBigInteger('id_rata_himpunan')->nullable();
             $table->timestamps();
 
             $table->unique(['id_kontes', 'id_bonsai', 'id_kriteria']);
