@@ -143,7 +143,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-12 mb-3 d-none">
                                 <label for="kelas" class="form-label">Kelas</label>
                                 <select name="kelas" id="kelas" class="form-select form-control" required>
                                     <option selected disabled>Pilih kelas</option>
@@ -240,7 +240,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-12 mb-3">
+                                <div class="col-md-12 mb-3 d-none">
                                     <label for="kelas" class="form-label">kelas</label>
                                     <select name="kelas" id="edit_kelas"
                                         class="form-select form-control text-capitalize" required>

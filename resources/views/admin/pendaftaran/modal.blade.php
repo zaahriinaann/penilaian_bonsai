@@ -26,7 +26,7 @@
                                 <select id="pohon-peserta" name="bonsai_id" class="text-capitalize pohon-peserta">
                                 </select>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 d-none">
                                 <label for="kelas-pohon" class="form-label">
                                     Kelas Pohon
                                 </label>
@@ -84,7 +84,7 @@
                                     Kelas Pohon
                                 </label>
                                 <select id="kelas-pohon-edit" name="kelas"
-                                    class="text-capitalize kelas-pohon form-select">
+                                    class="text-capitalize kelas-pohon form-select d-none">
                                     <option selected disabled>Pilih Kelas</option>
                                     <option value="bahan">Bahan</option>
                                     <option value="matang">Matang</option>
@@ -158,10 +158,10 @@
                                 options: data,
                                 render: {
                                     item: (data, escape) => {
-                                        return `<div>${escape(data.nama_pohon)} (${escape(data.no_induk_pohon)})</div>`;
+                                        return `<div>${escape(data.nama_pohon)} (${escape(data.no_induk_pohon)} | ${escape(data.kelas)})</div>`;
                                     },
                                     option: (data, escape) => {
-                                        return `<div>${escape(data.nama_pohon)} (${escape(data.no_induk_pohon)})</div>`;
+                                        return `<div>${escape(data.nama_pohon)} (${escape(data.no_induk_pohon)} | ${escape(data.kelas)})</div>`;
                                     }
                                 }
                             });
@@ -211,7 +211,7 @@
                     success: function(data) {
                         if (data.length) {
                             const pohonEdit = $('#pohon-peserta-edit');
-                            
+
                             $('#pohon-peserta-edit').selectize({
                                 allowEmptyOption: true,
                                 placeholder: 'Pilih Pohon Peserta',

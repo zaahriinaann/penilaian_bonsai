@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bonsai;
 use App\Http\Controllers\Controller;
+use App\Models\Kontes;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -12,9 +13,13 @@ use Illuminate\Support\Str;
 
 class BonsaiController extends Controller
 {
+    protected $kontes;
+
+
     public function __construct()
     {
         $this->middleware('auth');
+        $this->kontes = Kontes::where('status', 1)->first();
     }
     /**
      * Display a listing of the resource.
@@ -22,11 +27,10 @@ class BonsaiController extends Controller
     public function index(Bonsai $bonsai)
     {
         $dataRender = $bonsai::all();
-
         $user = User::where('role', 'anggota')->get();
-
         $province = config('province.obj');
-        return view('admin.bonsai.index', compact('dataRender', 'province', 'user'));
+        $kontes = $this->kontes;
+        return view('admin.bonsai.index', compact('dataRender', 'province', 'user', 'kontes'));
     }
 
     /**
@@ -68,8 +72,9 @@ class BonsaiController extends Controller
             // Ganti nilai null dengan '-'
             $data = Arr::map($data, fn($value) => $value ?? '-');
 
-
             $data['foto'] = $this->handleImageUpload($request, 'store');
+
+            // dd($data);
             $data = [
                 'user_id' => $data['peserta'],
                 'slug' => $data['slug'],
@@ -83,7 +88,7 @@ class BonsaiController extends Controller
                 'no_induk_pohon' => $data['no_induk_pohon'],
                 'masa_pemeliharaan' => $data['masa_pemeliharaan'],
                 'format_masa' => $data['format_masa'],
-                'kelas' => $data['kelas'],
+                'kelas' => $this->kontes->tingkat_kontes,
                 'foto' => $data['foto'],
             ];
 
@@ -147,7 +152,7 @@ class BonsaiController extends Controller
                 'format_ukuran' => $data['format_ukuran'],
                 'masa_pemeliharaan' => $data['masa_pemeliharaan'],
                 'format_masa' => $data['format_masa'],
-                'kelas' => $data['kelas'],
+                'kelas' => $this->kontes->tingkat_kontes,
                 'foto' => $data['foto'],
             ];
 

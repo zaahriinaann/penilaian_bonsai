@@ -30,7 +30,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->nomor_pendaftaran ?? 1 }}</td>
                                 <td>{{ $item->nomor_juri ?? 1 }}</td>
-                                <td>{{ $item->bonsai->nama_pohon }} - {{ $item->bonsai->no_induk_pohon }}</td>
+                                <td>{{ $item->bonsai->nama_pohon }} - {{ $item->bonsai->no_induk_pohon }} - {{ $item->kelas }}</td>
                                 <td>{{ $item->user->name }}</td>
                                 <td>
                                     <a href="{{ route('pendaftaran-peserta.show', $item->id) }}"
