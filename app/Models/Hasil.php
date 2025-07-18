@@ -10,12 +10,13 @@ class Hasil extends Model
     use HasFactory;
 
     protected $table = 'hasil';
+
     protected $fillable = [
-        'id_bonsai',
         'id_kontes',
+        'id_bonsai',
         'id_kriteria',
-        'hasil_defuzzifikasi',
-        'hasil_himpunan',
-        'id_hasil_himpunan',
+        'rata_defuzzifikasi',
+        'rata_himpunan',
+        'id_rata_himpunan',
     ];
 }

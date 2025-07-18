@@ -8,6 +8,7 @@ use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
 use App\Models\Defuzzifikasi;
+use App\Models\HasilFuzzyRule;
 use App\Models\HelperKriteria;
 use App\Models\HelperDomain;
 use App\Models\HelperSubKriteria;
@@ -99,24 +100,21 @@ class NilaiController extends Controller
         $juriId = Auth::id();
         $juriModelId = Juri::where('user_id', $juriId)->value('id');
 
-        // Ambil kontes berdasarkan nilai yang sudah pernah diberikan juri ini
         $kontesId = Nilai::where('id_bonsai', $id)
             ->where('id_juri', $juriModelId)
-            ->orderByDesc('id') // ambil yang terbaru kalau ada lebih dari satu
+            ->orderByDesc('id')
             ->value('id_kontes');
 
-        // Ambil nilai awal juri ini
         $nilaiAwal = Nilai::where('id_bonsai', $id)
             ->where('id_juri', $juriModelId)
             ->where('id_kontes', $kontesId)
             ->get();
 
-        // Ambil defuzzifikasi per kriteria
         $defuzzifikasiPerKriteria = Defuzzifikasi::where('id_bonsai', $id)
             ->where('id_juri', $juriModelId)
             ->where('id_kontes', $kontesId)
             ->get()
-            ->unique('id_kriteria') // ⬅️ hanya ambil satu per kriteria
+            ->unique('id_kriteria')
             ->map(function ($item) {
                 $domain = HelperDomain::where('id_kriteria', $item->id_kriteria)
                     ->whereNull('id_sub_kriteria')
@@ -126,17 +124,33 @@ class NilaiController extends Controller
                 return $item;
             });
 
-
-        // Ambil pendaftaran (opsional ditampilkan)
         $pendaftaran = PendaftaranKontes::where('bonsai_id', $id)
             ->where('kontes_id', $kontesId)
             ->first();
+
+        // ✅ Tambahkan: ambil rule yang aktif
+        $ruleAktif = HasilFuzzyRule::with(['rule.details'])
+            ->where('id_kontes', $kontesId)
+            ->where('id_bonsai', $id)
+            ->where('id_juri', $juriModelId)
+            ->orderBy('id_kriteria')
+            ->get()
+            ->groupBy('id_kriteria');
+
+        $hasilAgregasi = HasilFuzzyRule::where('id_kontes', $kontesId)
+            ->where('id_bonsai', $id)
+            ->where('id_juri', $juriModelId)
+            ->get()
+            ->groupBy('id_kriteria');
+
 
         return view('juri.nilai.show', compact(
             'bonsai',
             'nilaiAwal',
             'defuzzifikasiPerKriteria',
-            'pendaftaran'
+            'pendaftaran',
+            'ruleAktif',
+            'hasilAgregasi',
         ));
     }
 

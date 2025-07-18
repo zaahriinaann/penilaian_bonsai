@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_kontes');
             $table->unsignedBigInteger('id_bonsai');
             $table->float('skor_akhir');
+            $table->string('himpunan_akhir');
             $table->integer('peringkat')->nullable();
             $table->timestamps();
         });

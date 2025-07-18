@@ -5,75 +5,75 @@ namespace App\Http\Controllers;
 use App\Models\Bonsai;
 use App\Models\Defuzzifikasi;
 use App\Models\HelperKriteria;
-use App\Models\Kontes;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class RekapNilaiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(RekapNilai $rekap)
     {
-        $rekapNilais = RekapNilai::with('bonsai.user')->get();
+        $rekapData = $rekap->with('bonsai.user')->get()->map(function ($item) {
+            $bonsai = $item->bonsai;
+            $pendaftaran = PendaftaranKontes::where('bonsai_id', $item->id_bonsai)->first();
+            if (!$pendaftaran) return null;
 
-        $rekapData = collect();
+            $kategori = Defuzzifikasi::where('id_bonsai', $item->id_bonsai)
+                ->get()
+                ->groupBy('id_kriteria')
+                ->mapWithKeys(function ($group, $id_kriteria) {
+                    $namaKriteria = HelperKriteria::find($id_kriteria)?->kriteria ?? 'Tanpa Nama';
+                    return [
+                        $namaKriteria => $group->map(function ($d) {
+                            return [
+                                'hasil' => $d->hasil_defuzzifikasi,
+                                'himpunan' => $d->hasil_himpunan,
+                                'juri_id' => $d->id_juri,
+                            ];
+                        })->all()
+                    ];
+                })->toArray();
 
-        foreach ($rekapNilais as $rekap) {
-            $bonsai = $rekap->bonsai;
-            $pendaftaran = PendaftaranKontes::where('bonsai_id', $rekap->id_bonsai)->first();
-            if (!$pendaftaran) continue;
-
-            $kategori = [];
-            $defuzz = Defuzzifikasi::where('id_bonsai', $rekap->id_bonsai)->get();
-
-            foreach ($defuzz as $d) {
-                $namaKriteria = HelperKriteria::find($d->id_kriteria)?->kriteria ?? 'Tanpa Nama';
-                $kategori[$namaKriteria][] = [
-                    'hasil' => $d->hasil_defuzzifikasi,
-                    'himpunan' => $d->hasil_himpunan,
-                    'juri_id' => $d->id_juri,
-                ];
-            }
-
-            $rekapData->push([
+            return [
                 'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran,
                 'nomor_juri' => $pendaftaran->nomor_juri,
                 'nama_pohon' => $bonsai->nama_pohon,
                 'pemilik' => $bonsai->user->name ?? '-',
-                'skor_akhir' => $this->hitungSkorAkhir($kategori),
+                'skor_akhir' => $item->skor_akhir,
+                'himpunan_akhir' => $item->himpunan_akhir,
                 'kategori' => $kategori,
-            ]);
-        }
+            ];
+        })->filter()->sortByDesc('skor_akhir')->values();
 
-        $rekapSorted = $rekapData->sortByDesc('skor_akhir')->values();
-        $bestTen = $rekapSorted->take(10);
+        $bestTen = $rekapData->take(10);
 
-        session()->put('rekap_export_data', $rekapSorted->toArray());
-
-        return view('juri.rekap.index', compact('rekapSorted', 'bestTen'));
+        return view('juri.rekap.index', [
+            'rekapSorted' => $rekapData,
+            'bestTen' => $bestTen,
+        ]);
     }
 
-    private function hitungSkorAkhir(array $kategori): float
+    public function show($nama_pohon, $nomor_juri)
     {
-        $total = 0;
+        $rekapData = $this->index(new RekapNilai())->getData()['rekapSorted'];
 
-        foreach ($kategori as $list) {
-            $avg = collect($list)->avg('hasil');
-            $total += $avg;
+        $detail = $rekapData->first(function ($item) use ($nama_pohon, $nomor_juri) {
+            return $item['nama_pohon'] === urldecode($nama_pohon) && $item['nomor_juri'] == $nomor_juri;
+        });
+
+        if (!$detail) {
+            abort(404, 'Data tidak ditemukan');
         }
 
-        return round(min(360, max(0, $total)), 2);
+        return view('juri.rekap.show', compact('detail'));
     }
 
     public function exportPdf($nama_pohon)
     {
-        $data = session()->get('rekap_export_data') ?? [];
-        $detail = collect($data)->firstWhere('nama_pohon', urldecode($nama_pohon));
+        $rekapData = $this->index(new RekapNilai())->getData()['rekapSorted'];
+
+        $detail = $rekapData->firstWhere('nama_pohon', urldecode($nama_pohon));
         if (!$detail) abort(404);
 
         $pdf = app('dompdf.wrapper');
@@ -81,40 +81,22 @@ class RekapNilaiController extends Controller
         return $pdf->download('Rekap_Nilai_Bonsai_' . $detail['nama_pohon'] . '.pdf');
     }
 
-    private function kontesAktifId()
+    public function cetak()
     {
-        return Kontes::where('status', '1')->value('id');
-    }
+        $rekapData = RekapNilai::with('bonsai.user')->get()->map(function ($item) {
+            $bonsai = $item->bonsai;
+            $pemilik = $bonsai->user->name ?? '-';
 
+            return [
+                'nama_pohon' => $bonsai->nama_pohon,
+                'pemilik' => $pemilik,
+                'skor_akhir' => $item->skor_akhir,
+                'himpunan_akhir' => $item->himpunan_akhir,
+            ];
+        })->sortByDesc('skor_akhir')->values();
 
-
-    public function create()
-    {
-        //
-    }
-
-    public function store(Request $request)
-    {
-        //
-    }
-
-    public function show(RekapNilai $rekapNilai)
-    {
-        //
-    }
-
-    public function edit(RekapNilai $rekapNilai)
-    {
-        //
-    }
-
-    public function update(Request $request, RekapNilai $rekapNilai)
-    {
-        //
-    }
-
-    public function destroy(RekapNilai $rekapNilai)
-    {
-        //
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('juri.rekap.cetak_laporan', compact('rekapData'))->setPaper('A4', 'portrait');
+        return $pdf->download('Laporan_Rekap_Nilai_Semua_Bonsai.pdf');
     }
 }

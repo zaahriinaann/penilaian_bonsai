@@ -19,11 +19,8 @@
                             <th>#</th>
                             <th>Nomor Pendaftaran</th>
                             <th>Nomor Juri</th>
-                            <th>Nama Peserta</th>
                             <th>Nama Bonsai</th>
-                            <th>Nama Kontes</th>
-                            <th>Kelas</th>
-                            <th>Tanggal Daftar</th>
+                            <th>Pemilik</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -33,12 +30,8 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->nomor_pendaftaran ?? 1 }}</td>
                                 <td>{{ $item->nomor_juri ?? 1 }}</td>
-                                <td>{{ $item->user->name }}</td>
                                 <td>{{ $item->bonsai->nama_pohon }} - {{ $item->bonsai->no_induk_pohon }}</td>
-                                <td>{{ $item->kontes->nama_kontes }}</td>
-                                <td>{{ $item->kelas }}</td>
-                                <td>{{ \Carbon\Carbon::parse($item->created_at)->locale('id')->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}
-                                </td>
+                                <td>{{ $item->user->name }}</td>
                                 <td>
                                     <a href="{{ route('pendaftaran-peserta.show', $item->id) }}"
                                         class="btn btn-sm btn-primary">Detail</a>

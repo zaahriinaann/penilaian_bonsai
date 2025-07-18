@@ -4,10 +4,19 @@
 
 
 @section('button-toolbar')
-    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
-        Tambah Kriteria
-    </button>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
+            Tambah Kriteria
+        </button>
+        <form action="{{ route('fuzzy-rules.auto-generate') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-warning">
+                <i class="fa fa-cogs"></i> Generate Fuzzy Rules
+            </button>
+        </form>
+    </div>
 @endsection
+
 
 @section('content')
     @if (session('success'))
@@ -217,8 +226,7 @@
                             $himpunan = ['Baik Sekali', 'Baik', 'Cukup', 'Kurang'];
                             ?>
                             @foreach ($himpunan as $index => $huruf)
-                                <input type="hidden" name="himpunan[]" value="{{ $huruf }}"
-                                    id="">
+                                <input type="hidden" name="himpunan[]" value="{{ $huruf }}" id="">
                                 <div class="col-12 row align-items-center himpunan-set" style="display: none"
                                     id="himpunan-{{ $huruf }}">
                                     <div class="col mb-3">
@@ -233,14 +241,14 @@
                                         <input type="number"
                                             class="form-control {{ $huruf == 'Baik Sekali' ? 'min_baik_sekali' : '' }}"
                                             name="min[]" id="min_{{ $huruf }}"
-                                            aria-describedby="min_{{ $huruf }}" min="0">
+                                            aria-describedby="min_{{ $huruf }}" min="0" required>
                                     </div>
                                     <div class="col mb-3">
                                         <label for="max_{{ $huruf }}" class="form-label">Max</label>
                                         <input type="number"
                                             class="form-control {{ $huruf == 'Baik Sekali' ? 'max_baik_sekali' : '' }}"
                                             name="max[]" id="max_{{ $huruf }}"
-                                            aria-describedby="max_{{ $huruf }}" min="0">
+                                            aria-describedby="max_{{ $huruf }}" min="0" required>
                                     </div>
                                 </div>
                             @endforeach

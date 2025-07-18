@@ -16,7 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('id_kontes');
             $table->unsignedBigInteger('id_bonsai');
             $table->unsignedBigInteger('id_juri');
+            $table->unsignedBigInteger('id_kriteria');
             $table->float('hasil_defuzzifikasi', 8, 2);
+            $table->unsignedBigInteger('id_hasil_himpunan')->nullable();
+            $table->string('hasil_himpunan')->nullable();
             $table->timestamps();
         });
     }

@@ -6,14 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('fuzzy_rule_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('fuzzy_rule_id')->constrained('fuzzy_rules')->onDelete('cascade');
-            $table->string('input_variable');      // Contoh: "Keseimbangan Optik"
-            $table->string('himpunan');            // Contoh: "Cukup", "Baik", "Kurang"
+            $table->unsignedBigInteger('fuzzy_rule_id');
+            $table->string('input_variable');
+            $table->string('himpunan');
             $table->timestamps();
+
+            $table->foreign('fuzzy_rule_id')
+                ->references('id')
+                ->on('fuzzy_rules')
+                ->onDelete('cascade');
         });
     }
 

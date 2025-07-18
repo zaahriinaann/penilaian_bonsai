@@ -20,4 +20,9 @@ class RekapNilai extends Model
     {
         return $this->belongsTo(Bonsai::class, 'id_bonsai');
     }
+
+    public function kontes()
+    {
+        return $this->belongsTo(Kontes::class, 'id_kontes');
+    }
 }

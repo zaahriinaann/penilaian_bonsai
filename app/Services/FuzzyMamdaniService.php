@@ -2,17 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Nilai;
-use App\Models\HelperDomain;
-use App\Models\Defuzzifikasi;
-use App\Models\Hasil;
-use App\Models\RekapNilai;
+use App\Models\{Nilai, HelperDomain, Defuzzifikasi, Hasil, RekapNilai, FuzzyRule, FuzzyRuleDetail, HasilFuzzyRule};
 
 class FuzzyMamDaniService
 {
     private function muTri(float $x, float $a, float $b, float $c): float
     {
-        if ($x < $a || $x > $c) return 0;
+        if ($x <= $a || $x >= $c) return 0;
         if ($x == $b) return 1;
         return $x < $b ? ($x - $a) / ($b - $a) : ($c - $x) / ($c - $b);
     }
@@ -26,10 +22,10 @@ class FuzzyMamDaniService
     }
 
     private const MID = [
-        'kurang'       => 25,
-        'cukup'        => 45,
-        'baik'         => 65,
-        'baik sekali'  => 85,
+        'kurang' => 25,
+        'cukup' => 45,
+        'baik' => 65,
+        'baik sekali' => 85,
     ];
 
     public function hitungDerajatKeanggotaan(float $x, HelperDomain $d): float
@@ -39,99 +35,150 @@ class FuzzyMamDaniService
         $b = ($a + $c) / 2;
 
         if (!is_null($d->id_sub_kriteria)) {
-            $mid = strtolower($d->himpunan);
-            $b   = self::MID[$mid] ?? $b;
+            $b = self::MID[strtolower($d->himpunan)] ?? $b;
         }
 
         $h = strtolower($d->himpunan);
-        if ($h === 'kurang') {
-            return $this->muTrapezoid($x, $a - 10, $a, $b, $c);
-        } elseif ($h === 'baik sekali') {
-            return $this->muTrapezoid($x, $a, $b, $c, $c + 10);
-        }
 
-        return $this->muTri($x, $a, $b, $c);
+        return match ($h) {
+            'kurang'       => $this->muTrapezoid($x, $a - 10, $a, $b, $c),
+            'baik sekali'  => $this->muTrapezoid($x, $a, $b, $c, $c + 10),
+            default        => $this->muTri($x, $a, $b, $c),
+        };
     }
 
     public function hitungFuzzyPerJuri(int $bonsaiId, int $juriId, int $kontesId): float
     {
-        $groups = Nilai::where('id_bonsai', $bonsaiId)
-            ->where('id_juri',   $juriId)
+        $inputs = Nilai::where('id_bonsai', $bonsaiId)
+            ->where('id_juri', $juriId)
             ->where('id_kontes', $kontesId)
             ->get()
             ->groupBy('id_kriteria');
 
-        if ($groups->isEmpty()) return 0;
+        if ($inputs->isEmpty()) return 0;
 
-        $sumZ = 0;
-        $countK = 0;
+        $totalZ = 0;
+        $jumlahKriteria = 0;
 
-        foreach ($groups as $idKriteria => $vals) {
-            $domains = HelperDomain::where('id_kriteria', $idKriteria)
+        foreach ($inputs as $idKriteria => $group) {
+            // ambil rules dan details
+            $rules = FuzzyRule::with('details')
+                ->where('id_kriteria', $idKriteria)
+                ->where('is_active', 1)
+                ->get();
+
+            $outputDomains = HelperDomain::where('id_kriteria', $idKriteria)
                 ->whereNull('id_sub_kriteria')
                 ->get();
-            if ($domains->isEmpty()) continue;
 
-            $alphaList = [];
-            foreach ($domains as $d) {
-                $muVals = $vals
-                    ->filter(fn($n) => strtolower($n->himpunan) === strtolower($d->himpunan) && $n->derajat_anggota > 0)
-                    ->pluck('derajat_anggota');
-                if ($muVals->isNotEmpty()) {
-                    $alphaList[$d->himpunan] = $muVals->min();
+            if ($outputDomains->isEmpty() || $rules->isEmpty()) continue;
+
+            // kelompokkan input berdasarkan sub_kriteria → himpunan → derajat
+            $inputMap = [];
+            foreach ($group as $n) {
+                if ($n->derajat_anggota > 0) {
+                    $inputMap[$n->sub_kriteria][strtolower($n->himpunan)] = $n->derajat_anggota;
                 }
             }
-            if (empty($alphaList)) continue;
 
-            $num = $den = 0;
-            foreach ($alphaList as $h => $α) {
-                $d = $domains->firstWhere('himpunan', $h);
-                if (!$d || $α == 0) continue;
+            // inferensi: hitung alpha & z berdasarkan aturan
+            $inferensi = [];
 
-                $a = $d->domain_min;
-                $c = $d->domain_max;
-                $b = ($a + $c) / 2;
-                $aCut = $a + $α * ($b - $a);
-                $cCut = $c - $α * ($c - $b);
-                $z = ($aCut + $b + $cCut) / 3;
+            foreach ($rules as $rule) {
+                $alphas = [];
 
-                $num += $z * $α;
-                $den += $α;
+                foreach ($rule->details as $d) {
+                    $sub = $d->input_variable;
+                    $himpunan = strtolower($d->himpunan);
+
+                    $α = $inputMap[$sub][$himpunan] ?? 0;
+                    $alphas[] = $α;
+                }
+
+                $minAlpha = min($alphas);
+                if ($minAlpha > 0) {
+                    // ambil domain output himpunan
+                    $outputDomain = $outputDomains->firstWhere('himpunan', $rule->output_himpunan);
+                    if (!$outputDomain) continue;
+
+                    $a = $outputDomain->domain_min;
+                    $c = $outputDomain->domain_max;
+                    $b = ($a + $c) / 2;
+
+                    $aCut = $a + $minAlpha * ($b - $a);
+                    $cCut = $c - $minAlpha * ($c - $b);
+                    $z = ($aCut + $b + $cCut) / 3;
+
+                    // Baru simpan ke hasil_fuzzy_rules
+                    HasilFuzzyRule::create([
+                        'id_kontes'     => $kontesId,
+                        'id_bonsai'     => $bonsaiId,
+                        'id_juri'       => $juriId,
+                        'id_kriteria'   => $idKriteria,
+                        'fuzzy_rule_id' => $rule->id,
+                        'alpha'         => $minAlpha,
+                        'z_value'       => $z,
+                    ]);
+
+                    $inferensi[] = [
+                        'z' => $z,
+                        'α' => $minAlpha,
+                        'himpunan' => $outputDomain->himpunan,
+                        'id_himpunan' => $outputDomain->id,
+                    ];
+                }
             }
+
+            if (empty($inferensi)) continue;
+
+            // agregasi defuzzifikasi dengan rata-rata tertimbang
+            $num = $den = 0;
+            foreach ($inferensi as $inf) {
+                $num += $inf['z'] * $inf['α'];
+                $den += $inf['α'];
+            }
+
             $zFinal = $den ? round($num / $den, 2) : 0;
 
-            $out = $domains
-                ->map(fn($d) => [
-                    'domain' => $d,
-                    'degree' => match (strtolower($d->himpunan)) {
-                        'kurang'      => $this->muTrapezoid($zFinal, $d->domain_min - 10, $d->domain_min, ($d->domain_min + $d->domain_max) / 2, $d->domain_max),
-                        'baik sekali' => $this->muTrapezoid($zFinal, $d->domain_min, ($d->domain_min + $d->domain_max) / 2, $d->domain_max, $d->domain_max + 10),
-                        default       => $this->muTri($zFinal, $d->domain_min, ($d->domain_min + $d->domain_max) / 2, $d->domain_max),
-                    }
-                ])
-                ->filter(fn($i) => $i['degree'] > 0)
+            // cari output himpunan dari hasil defuzzifikasi
+            $finalOutput = $outputDomains
+                ->map(function ($d) use ($zFinal) {
+                    $a = $d->domain_min;
+                    $c = $d->domain_max;
+                    $b = ($a + $c) / 2;
+                    $h = strtolower($d->himpunan);
+
+                    $degree = match ($h) {
+                        'kurang'       => $this->muTrapezoid($zFinal, $a - 10, $a, $b, $c),
+                        'baik sekali'  => $this->muTrapezoid($zFinal, $a, $b, $c, $c + 10),
+                        default        => $this->muTri($zFinal, $a, $b, $c),
+                    };
+
+                    return ['domain' => $d, 'degree' => $degree];
+                })
+                ->filter(fn($r) => $r['degree'] > 0)
                 ->sortByDesc('degree')
                 ->first()['domain'] ?? null;
 
-            $himpunan = $out?->himpunan;
-            $idHimpunan = $out?->id;
+            $hasilHimpunan = $finalOutput?->himpunan;
+            $idHimpunan = $finalOutput?->id;
 
             Defuzzifikasi::updateOrCreate([
-                'id_kontes'   => $kontesId,
-                'id_bonsai'   => $bonsaiId,
-                'id_juri'     => $juriId,
+                'id_kontes' => $kontesId,
+                'id_bonsai' => $bonsaiId,
+                'id_juri' => $juriId,
                 'id_kriteria' => $idKriteria,
             ], [
                 'hasil_defuzzifikasi' => $zFinal,
-                'hasil_himpunan'       => $himpunan,
-                'id_hasil_himpunan'    => $idHimpunan,
+                'hasil_himpunan' => $hasilHimpunan,
+                'id_hasil_himpunan' => $idHimpunan,
             ]);
 
-            $sumZ += $zFinal;
-            $countK++;
+            $totalZ += $zFinal;
+            $jumlahKriteria++;
         }
 
-        return $countK > 0 ? round($sumZ / $countK, 2) : 0;
+        return $jumlahKriteria > 0 ? round($totalZ / $jumlahKriteria, 2) : 0;
     }
 
     public function hitungRekapAkhir(int $bonsaiId, int $kontesId): ?float
@@ -139,36 +186,35 @@ class FuzzyMamDaniService
         $data = Defuzzifikasi::where('id_bonsai', $bonsaiId)
             ->where('id_kontes', $kontesId)
             ->get();
+
         if ($data->isEmpty()) return null;
 
-        $rata = $data
-            ->groupBy('id_kriteria')
-            ->map(function ($g) use ($bonsaiId, $kontesId) {
-                $avg = round($g->avg('hasil_defuzzifikasi'), 2);
-                $himp = $g->groupBy('hasil_himpunan')->sortByDesc(fn($c) => $c->count())->keys()->first();
-                $idHimp = $g->firstWhere('hasil_himpunan', $himp)?->id_hasil_himpunan;
+        $rataPerKriteria = $data->groupBy('id_kriteria')->map(function ($group) {
+            $avg = round($group->avg('hasil_defuzzifikasi'), 2);
+            $topHimpunan = $group->groupBy('hasil_himpunan')->sortByDesc(fn($g) => $g->count())->keys()->first();
+            $idHimpunan = $group->firstWhere('hasil_himpunan', $topHimpunan)?->id_hasil_himpunan;
 
-                Hasil::updateOrCreate([
-                    'id_bonsai'   => $bonsaiId,
-                    'id_kontes'   => $kontesId,
-                    'id_kriteria' => $g->first()->id_kriteria,
-                ], [
-                    'hasil_defuzzifikasi' => $avg,
-                    'hasil_himpunan'       => $himp,
-                    'id_hasil_himpunan'    => $idHimp,
-                ]);
+            Hasil::updateOrCreate([
+                'id_kontes'   => $group->first()->id_kontes,
+                'id_bonsai'   => $group->first()->id_bonsai,
+                'id_kriteria' => $group->first()->id_kriteria,
+            ], [
+                'rata_defuzzifikasi' => $avg,
+                'rata_himpunan'      => $topHimpunan,
+                'id_rata_himpunan'   => $idHimpunan,
+            ]);
 
-                return $avg;
-            });
+            return $avg;
+        });
 
-        $total = round($rata->sum(), 2);
+        $total = round($rataPerKriteria->sum(), 2);
+        $total = min($total, 360);
 
-        $avgskor = round($rata->avg(), 2);
-        $himpAkhir = match (true) {
-            $avgskor >= 85 => 'Baik Sekali',
-            $avgskor >= 65 => 'Baik',
-            $avgskor >= 45 => 'Cukup',
-            default        => 'Kurang',
+        $himpunan = match (true) {
+            $total >= 321 => 'Baik Sekali',
+            $total >= 281 => 'Baik',
+            $total >= 241 => 'Cukup',
+            default       => 'Kurang',
         };
 
         RekapNilai::updateOrCreate([
@@ -176,7 +222,7 @@ class FuzzyMamDaniService
             'id_bonsai' => $bonsaiId,
         ], [
             'skor_akhir'     => $total,
-            'himpunan_akhir' => $himpAkhir,
+            'himpunan_akhir' => $himpunan,
         ]);
 
         return $total;

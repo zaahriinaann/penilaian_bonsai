@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             HelperKriteriaSeeder::class,
             // PenilaianSeeder::class,
             PendaftaranKontesSeeder::class,
-            FuzzyRuleSeeder::class,
+            //FuzzyRuleSeeder::class,
             // helperDomainSeeder::class,
         ]);
     }
