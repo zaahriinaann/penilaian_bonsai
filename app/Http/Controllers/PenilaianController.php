@@ -16,9 +16,6 @@ use Illuminate\Support\Str;
 
 class PenilaianController extends Controller
 {
-    /*--------------------------------------------------------------
-     |  LIST
-     |--------------------------------------------------------------*/
     public function index()
     {
         $penilaians = Penilaian::all();
@@ -34,10 +31,9 @@ class PenilaianController extends Controller
             ]);
         }
 
-        /* ── Merapikan data utk ditampilkan ── */
-        $kategori       = [];   // [kriteria => [sub1,sub2]]
-        $penilaianGroup = [];   // [slug_sub][himpunan] => [min,max]
-        $himpunanRange  = [];   // [himpunan] => [min,max]
+        $kategori       = [];
+        $penilaianGroup = [];
+        $himpunanRange  = [];
 
         foreach ($penilaians as $row) {
             $kategori[$row->kriteria][$row->sub_kriteria] = true;
@@ -49,6 +45,7 @@ class PenilaianController extends Controller
             ];
             $himpunanRange[$row->himpunan] = [$row->min, $row->max];
         }
+
         foreach ($kategori as $k => $subs) $kategori[$k] = array_keys($subs);
 
         return view('admin.penilaian.index', [
@@ -60,9 +57,6 @@ class PenilaianController extends Controller
         ]);
     }
 
-    /*--------------------------------------------------------------
-     |  STORE  (tambah sub‑kriteria & domain input)
-     |--------------------------------------------------------------*/
     public function store(Request $r)
     {
         $kriteriaId   = $r->input('kriteria');
@@ -73,37 +67,37 @@ class PenilaianController extends Controller
 
         $krit = HelperKriteria::findOrFail($kriteriaId);
 
-        /* 1. pastikan sub‑kriteria & himpunan ada di helper */
         $sub  = HelperSubKriteria::ValidateSubKriteria([
-            'id'         => $krit->id,
-            'kriteria'   => $krit->kriteria,
+            'id'           => $krit->id,
+            'kriteria'     => $krit->kriteria,
             'sub_kriteria' => $subKriteria,
         ]);
-        $himp = HelperHimpunan::ValidateHimpunan($sub['data'], $himpunanList);
-        $dom  = HelperDomain::ValidateDomain($himp['data'], $minList, $maxList); // INPUT
 
-        /* 2. simpan ke tabel penilaian */
+        $himp = HelperHimpunan::ValidateHimpunan($sub['data'], $himpunanList);
+        $dom  = HelperDomain::ValidateDomain($himp['data'], $minList, $maxList);
+
         $rows = collect($dom['data'])->map(function ($d) {
             return [
-                'kriteria'    => $d['kriteria'],
+                'kriteria'     => $d['kriteria'],
                 'sub_kriteria' => $d['sub_kriteria'],
-                'himpunan'    => $d['himpunan'],
-                'min'         => $d['domain_min'],
-                'max'         => $d['domain_max'],
-                'created_at'  => now(),
+                'himpunan'     => $d['himpunan'],
+                'min'          => $d['domain_min'],
+                'max'          => $d['domain_max'],
+                'created_at'   => now(),
             ];
         })->toArray();
+
         Penilaian::insert($rows);
 
-        /* 3. ── AUTO‑GENERATE DOMAIN OUTPUT (sekali per kriteria) ── */
         $outExists = HelperDomain::where('id_kriteria', $krit->id)
             ->whereNull('id_sub_kriteria')
             ->exists();
+
         if (!$outExists) {
             $default = [
-                ['Kurang',      50, 65],
-                ['Cukup',       55, 75],
-                ['Baik',        65, 85],
+                ['Kurang', 50, 65],
+                ['Cukup', 55, 75],
+                ['Baik', 65, 85],
                 ['Baik Sekali', 75, 90],
             ];
 
@@ -125,17 +119,13 @@ class PenilaianController extends Controller
         return back()->with('success', 'Data penilaian & domain berhasil disimpan!');
     }
 
-    /*--------------------------------------------------------------
-     |  UPDATE  (edit min–max)
-     |--------------------------------------------------------------*/
     public function update(Request $r, Penilaian $penilaian)
     {
         $kriteria    = $r->input('kategori');
         $subKriteria = $r->input('sub_kriteria');
         $slug        = $r->input('slug');
-        $dat         = $r->input($slug, []);   // [himpunan][min/max]
+        $dat         = $r->input($slug, []);
 
-        /* Ambil record terkait + info ID helper */
         $list = DB::table('penilaian')
             ->join('helper_sub_kriteria', function ($j) {
                 $j->on('penilaian.kriteria', '=', 'helper_sub_kriteria.kriteria')
@@ -154,10 +144,10 @@ class PenilaianController extends Controller
                 'helper_himpunan.id_himpunan'
             )->get();
 
-        if ($list->isEmpty())
+        if ($list->isEmpty()) {
             return back()->with('error', 'Data penilaian tidak ditemukan!');
+        }
 
-        /* 1. update tabel penilaian */
         foreach ($list as $row) {
             DB::table('penilaian')->where('id', $row->id)->update([
                 'min' => $dat[$row->himpunan]['min'] ?? $row->min,
@@ -165,7 +155,6 @@ class PenilaianController extends Controller
             ]);
         }
 
-        /* 2. sync helper_domain input */
         $helperFormat = $list->map(function ($r) {
             return [
                 'id_kriteria'     => $r->id_kriteria,
@@ -183,12 +172,19 @@ class PenilaianController extends Controller
             collect($dat)->pluck('max')->values()->toArray()
         );
 
+        foreach ($helperFormat as $item) {
+            HelperDomain::where('id_kriteria', $item['id_kriteria'])
+                ->where('id_sub_kriteria', $item['id_sub_kriteria'])
+                ->where('id_himpunan', $item['id_himpunan'])
+                ->update([
+                    'domain_min' => $dat[$item['himpunan']]['min'] ?? null,
+                    'domain_max' => $dat[$item['himpunan']]['max'] ?? null,
+                ]);
+        }
+
         return back()->with('success', 'Domain & penilaian berhasil diperbarui!');
     }
 
-    /*--------------------------------------------------------------
-     |  DESTROY  (hapus)
-     |--------------------------------------------------------------*/
     public function destroy(Request $r, Penilaian $penilaian)
     {
         $kriteria    = $r->input('kriteria');
@@ -206,13 +202,52 @@ class PenilaianController extends Controller
             return back()->with('error', 'Parameter penghapusan tidak lengkap!');
         }
 
-        $deleted = $q->delete();
+        $toDelete = $q->get();
 
-        /* bersihkan helper_domain input yg kena */
-        if ($subKriteria) {
-            HelperDomain::where('sub_kriteria', $subKriteria)
-                ->where('kriteria', $kriteria)
+        if ($toDelete->isEmpty()) {
+            return back()->with('warning', 'Tidak ada data yang dihapus.');
+        }
+
+        // Ambil ID untuk hapus dari helper_domain (input)
+        $refIds = DB::table('penilaian')
+            ->join('helper_sub_kriteria', function ($j) {
+                $j->on('penilaian.kriteria', '=', 'helper_sub_kriteria.kriteria')
+                    ->on('penilaian.sub_kriteria', '=', 'helper_sub_kriteria.sub_kriteria');
+            })
+            ->join('helper_himpunan', function ($j) {
+                $j->on('helper_sub_kriteria.id_sub_kriteria', '=', 'helper_himpunan.id_sub_kriteria')
+                    ->on('penilaian.himpunan', '=', 'helper_himpunan.himpunan');
+            })
+            ->whereIn('penilaian.id', $toDelete->pluck('id'))
+            ->select(
+                'helper_sub_kriteria.id_kriteria',
+                'helper_sub_kriteria.id_sub_kriteria',
+                'helper_himpunan.id_himpunan'
+            )->get();
+
+        foreach ($refIds as $ref) {
+            HelperDomain::where('id_kriteria', $ref->id_kriteria)
+                ->where('id_sub_kriteria', $ref->id_sub_kriteria)
+                ->where('id_himpunan', $ref->id_himpunan)
                 ->delete();
+        }
+
+        // Hapus dari penilaian
+        $deleted = Penilaian::whereIn('id', $toDelete->pluck('id'))->delete();
+
+        // ✅ CEK & HAPUS SEMUA OUTPUT YANG TIDAK PUNYA INPUT (orphaned outputs)
+        $outputDomains = HelperDomain::whereNull('id_sub_kriteria')->get();
+
+        foreach ($outputDomains->groupBy('id_kriteria') as $idKriteria => $rows) {
+            $hasInput = HelperDomain::where('id_kriteria', $idKriteria)
+                ->whereNotNull('id_sub_kriteria')
+                ->exists();
+
+            if (!$hasInput) {
+                HelperDomain::where('id_kriteria', $idKriteria)
+                    ->whereNull('id_sub_kriteria')
+                    ->delete();
+            }
         }
 
         return back()->with(
@@ -224,7 +259,6 @@ class PenilaianController extends Controller
     public function autoGenerate()
     {
         app(AutoGenerateFuzzyRuleService::class)->generate();
-
         return redirect()->back()->with('success', 'Fuzzy rules berhasil di-generate!');
     }
 }

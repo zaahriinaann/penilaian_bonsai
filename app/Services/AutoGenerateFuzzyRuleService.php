@@ -27,26 +27,46 @@ class AutoGenerateFuzzyRuleService
     public function generate(): void
     {
         DB::transaction(function () {
-            $kriterias = HelperKriteria::with('subKriterias')->get();
+            // ✅ HAPUS RULE orphan: kriteria yang sudah tidak ada di helper_domain
+            $aktifKriteriaIds = DB::table('helper_domain')
+                ->select('id_kriteria')
+                ->distinct()
+                ->pluck('id_kriteria')
+                ->toArray();
+
+            $orphanRuleIds = FuzzyRule::whereNotIn('id_kriteria', $aktifKriteriaIds)->pluck('id');
+            if ($orphanRuleIds->isNotEmpty()) {
+                FuzzyRuleDetail::whereIn('fuzzy_rule_id', $orphanRuleIds)->delete();
+                FuzzyRule::whereIn('id', $orphanRuleIds)->delete();
+            }
+
+            // 🔁 Lanjut generate fuzzy_rules berdasarkan helper_domain
+            $kriterias = HelperKriteria::all();
 
             foreach ($kriterias as $kriteria) {
-                $subs = $kriteria->subKriterias;
-                if ($subs->isEmpty()) continue;
+                // Ambil sub_kriteria dari helper_domain saja
+                $subNames = DB::table('helper_domain')
+                    ->where('id_kriteria', $kriteria->id)
+                    ->whereNotNull('sub_kriteria')
+                    ->distinct()
+                    ->pluck('sub_kriteria')
+                    ->values()
+                    ->toArray();
 
-                $subCount = $subs->count();
+                if (empty($subNames)) continue;
 
-                // Bersihkan rule lama
-                $ruleIds = FuzzyRule::where('id_kriteria', $kriteria->id)->pluck('id');
-                if ($ruleIds->isNotEmpty()) {
-                    FuzzyRuleDetail::whereIn('fuzzy_rule_id', $ruleIds)->delete();
-                    FuzzyRule::whereIn('id', $ruleIds)->delete();
+                // Bersihkan rule lama utk kriteria ini
+                $existingRuleIds = FuzzyRule::where('id_kriteria', $kriteria->id)->pluck('id');
+                if ($existingRuleIds->isNotEmpty()) {
+                    FuzzyRuleDetail::whereIn('fuzzy_rule_id', $existingRuleIds)->delete();
+                    FuzzyRule::whereIn('id', $existingRuleIds)->delete();
                 }
 
                 $generatedCombos = [];
 
-                // Simpan 10 rule dasar dulu
+                // Simpan 10 rule dasar
                 foreach ($this->baseRules as [$inputs, $output]) {
-                    $sliced = array_slice($inputs, 0, $subCount);
+                    $sliced = array_slice($inputs, 0, count($subNames));
                     $key = implode('|', $sliced);
                     $generatedCombos[$key] = true;
 
@@ -61,19 +81,14 @@ class AutoGenerateFuzzyRuleService
                     foreach ($sliced as $i => $himpunan) {
                         FuzzyRuleDetail::create([
                             'fuzzy_rule_id' => $rule->id,
-                            'input_variable' => $subs[$i]->sub_kriteria,
+                            'input_variable' => $subNames[$i],
                             'himpunan' => $himpunan,
                         ]);
                     }
                 }
 
-                // Generate kombinasi tambahan otomatis
-                $this->generateCombinations(
-                    $subs->pluck('sub_kriteria')->all(),
-                    $subCount,
-                    $kriteria->id,
-                    $generatedCombos
-                );
+                // Kombinasi tambahan
+                $this->generateCombinations($subNames, count($subNames), $kriteria->id, $generatedCombos);
             }
         });
     }
@@ -89,7 +104,6 @@ class AutoGenerateFuzzyRuleService
             $output = $this->inferOutputFromInputs($combo);
             if (!$output) continue;
 
-            // Simpan rule baru
             $rule = FuzzyRule::create([
                 'id_kriteria' => $kriteriaId,
                 'id_sub_kriteria' => null,
@@ -132,16 +146,14 @@ class AutoGenerateFuzzyRuleService
         $top = array_keys($counts)[0];
         $maxCount = $counts[$top];
 
-        // Jika semua sama (jumlahnya sama dengan panjang input)
         if ($maxCount === count($inputs)) {
             return $top;
         }
 
-        // Jika mayoritas (minimal > floor(n / 2))
         if ($maxCount > floor(count($inputs) / 2)) {
             return $top;
         }
 
-        return null; // Tidak bisa diputuskan → skip
+        return null;
     }
 }

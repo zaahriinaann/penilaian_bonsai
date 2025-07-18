@@ -10,11 +10,11 @@ class FuzzyRuleController extends Controller
 {
     public function index()
     {
-        $rules = FuzzyRule::with(['kriteria', 'details'])->get();
+        // ✅ Ambil 10 rule per halaman dan eager load relasinya
+        $rules = FuzzyRule::with(['kriteria', 'details'])->paginate(10);
 
         return view('admin.penilaian.fuzzyrule', compact('rules'));
     }
-
 
     public function autoGenerate(Request $request)
     {
