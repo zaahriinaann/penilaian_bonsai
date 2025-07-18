@@ -72,6 +72,10 @@
             <th>Skor Akhir</th>
             <td><strong>{{ number_format($detail['skor_akhir'], 2) }}</strong></td>
         </tr>
+        <tr>
+            <th>Himpunan Akhir</th>
+            <td><strong>{{ $detail['himpunan_akhir'] }}</strong></td>
+        </tr>
     </table>
 
     <h4 class="kategori">Detail per Kategori:</h4>
@@ -79,8 +83,8 @@
         <thead>
             <tr>
                 <th>Kriteria</th>
-                <th>Rata-rata Defuzzifikasi</th>
-                <th>Mayoritas Himpunan</th>
+                <th>Nilai</th>
+                <th>Himpunan</th>
             </tr>
         </thead>
         <tbody>
