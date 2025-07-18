@@ -17,7 +17,7 @@
     </div>
 
     {{-- Kartu 3: Kontes Aktif Saat Ini --}}
-    <div class="row px-4 pb-4">
+    <div class="row px-4 pb-4 d-none">
         <div class="col-12">
             <div class="card h-100 shadow-sm">
                 <div class="card-header bg-success text-white align-items-center">
