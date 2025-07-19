@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rekap_nilais', function (Blueprint $table) {
+        Schema::create('helper_sub_kriteria', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('id_kriteria')->unsigned();
+            $table->string('kriteria');
+            $table->bigInteger('id_sub_kriteria')->unsigned();
+            $table->string('sub_kriteria');
             $table->timestamps();
         });
     }
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rekap_nilais');
+        Schema::dropIfExists('helper_sub_kriteria');
     }
 };

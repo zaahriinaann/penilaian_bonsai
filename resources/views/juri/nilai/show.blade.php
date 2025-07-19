@@ -1,73 +1,235 @@
 @extends('layouts.app')
 
-@section('title', 'Form Penilaian')
+@section('title', 'Hasil Penilaian Saya')
 
 @section('content')
-    <div class="container">
-        {{-- <h3 class="mb-4">📝 Form Penilaian Bonsai</h3> --}}
+    <div class="container py-4">
 
+        {{-- Informasi Bonsai --}}
         <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-secondary  rounded-top-4 align-items-center">
+                <strong>Hasil Penilaian Bonsai - {{ $bonsai->nama_pohon }}</strong>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">📌 Informasi Bonsai</h5>
-                <table class="table table-bordered">
-                    <tr>
-                        <th style="width: 30%">Nama Pemilik</th>
-                        <td>{{ $bonsai->user->name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Nama Bonsai</th>
-                        <td>{{ $bonsai->nama_pohon }}</td>
-                    </tr>
-                    <tr>
-                        <th>Jenis</th>
-                        <td>{{ $bonsai->jenis }}</td>
-                    </tr>
-                    <tr>
-                        <th>Asal</th>
-                        <td>{{ $bonsai->asal }}</td>
-                    </tr>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <strong>Nomor Juri:</strong> {{ $pendaftaran->nomor_juri ?? '-' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>No Daftar:</strong> {{ $pendaftaran->nomor_pendaftaran ?? '-' }}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <strong>Ukuran Bonsai:</strong> {{ $bonsai->ukuran_2 }} ({{ $bonsai->ukuran }})
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Pemilik:</strong> {{ $bonsai->user->name }}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6"><strong>Kelas:</strong> {{ $bonsai->kelas }}</div>
+                    <div class="col-md-6"><strong>No Hp:</strong> {{ $bonsai->user->no_hp }}</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Nilai Awal Dikelompokkan --}}
+        <div class="card mb-4">
+            <div class="card-header rounded-top-4 align-items-center">
+                <strong>Nilai Awal yang Diinput</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Kriteria</th>
+                            <th>Sub Kriteria</th>
+                            <th>Nilai Awal</th>
+                            <th>Himpunan</th>
+                            <th>µ (Derajat Keanggotaan)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $grouped = $nilaiAwal->groupBy('kriteria');
+                            $num = 1;
+                        @endphp
+
+                        @foreach ($grouped as $kriteria => $subList)
+                            @php
+                                $subGrouped = $subList->groupBy('sub_kriteria');
+                                $rowspanKriteria = $subGrouped->reduce(fn($carry, $g) => $carry + $g->count(), 0);
+                                $printedKriteria = false;
+                            @endphp
+
+                            @foreach ($subGrouped as $sub => $items)
+                                @php $printedSub = false; @endphp
+                                @foreach ($items as $index => $item)
+                                    <tr>
+                                        @if (!$printedKriteria)
+                                            <td rowspan="{{ $rowspanKriteria }}">{{ $num++ }}</td>
+                                            <td rowspan="{{ $rowspanKriteria }}">{{ $kriteria }}</td>
+                                            @php $printedKriteria = true; @endphp
+                                        @endif
+
+                                        @if (!$printedSub)
+                                            <td rowspan="{{ $items->count() }}">{{ $sub }}</td>
+                                            <td rowspan="{{ $items->count() }}">{{ $item->nilai_awal }}</td>
+                                            @php $printedSub = true; @endphp
+                                        @endif
+
+                                        <td>{{ $item->himpunan }}</td>
+                                        <td>{{ $item->derajat_anggota }}</td>
+                                    </tr>
+                                @endforeach
+                            @endforeach
+                        @endforeach
+                    </tbody>
                 </table>
             </div>
         </div>
 
-        <form action="{{ $nilaiTersimpan->isNotEmpty() ? route('nilai.update', $bonsai->id) : route('nilai.store') }}"
-            method="POST">
-            @csrf
-            @if ($nilaiTersimpan->isNotEmpty())
-                @method('PUT')
-            @endif
+        {{-- Hasil Defuzzifikasi --}}
+        <div class="card shadow-sm rounded-4 mt-4">
+            <div class="card-header bg-secondary text-white rounded-top-4">
+                <strong>Hasil Defuzzifikasi</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%">#</th>
+                            <th>Kriteria</th>
+                            <th>Himpunan</th>
+                            <th>Skor Defuzzifikasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($defuzzifikasiPerKriteria as $index => $item)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $item->nama_kriteria }}</td>
+                                <td>{{ $item->hasil_himpunan }}</td>
+                                <td><strong>{{ $item->hasil_defuzzifikasi }}</strong></td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center">Belum ada hasil defuzzifikasi.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                <hr>
+                <h5 class="mt-4">🔥 Rule Inferensi Aktif</h5>
 
-            <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
+                @php use Illuminate\Support\Str; @endphp
 
-            @foreach ($penilaians as $kriteria => $subGroups)
-                <div class="card mb-4 border-0 shadow rounded-4">
-                    <div class="card-header bg-primary text-white fw-bold">
-                        {{ $kriteria }}
+                @forelse($ruleAktif as $idKriteria => $rules)
+                    <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <ol class="mt-2">
+                            @foreach ($rules as $index => $hasil)
+                                @php
+                                    $details = $hasil->rule->details;
+
+                                    // Format: If KO Baik Sekali and RA Baik Sekali and Pn Baik Sekali
+                                    $antecedents = $details
+                                        ->map(fn($d) => $d->input_variable . ' ' . $d->himpunan)
+                                        ->implode(' and ');
+
+                                    // Format: μKOBaikSekali[x]; μRABaikSekali[y]; ...
+                                    $symbols = $details
+                                        ->map(function ($d) {
+                                            $abbr = implode(
+                                                '',
+                                                array_map(
+                                                    fn($word) => substr($word, 0, 1),
+                                                    explode(' ', $d->input_variable),
+                                                ),
+                                            );
+                                            return 'μ' . strtoupper($abbr) . $d->himpunan;
+                                        })
+                                        ->implode('; ');
+
+                                    // Ambil nilai derajat dari nilai awal
+                                    $values = $details
+                                        ->map(function ($d) use ($nilaiAwal) {
+                                            $match = $nilaiAwal->firstWhere('sub_kriteria', $d->input_variable);
+                                            return $match ? round($match->derajat_anggota, 2) : '0';
+                                        })
+                                        ->implode('; ');
+
+                                    $alpha = round($hasil->alpha, 3);
+                                    $z = round($hasil->z_value, 2);
+                                @endphp
+
+                                <li class="mb-2">
+                                    <strong>Rule {{ $index + 1 }}:</strong>
+                                    If {{ $antecedents }} then Penampilan
+                                    <strong>{{ $hasil->rule->output_himpunan }}</strong><br>
+                                    a-predikat{{ $index + 1 }} = {{ $symbols }} = Min ({{ $values }}) =
+                                    <strong>{{ $alpha }}</strong><br>
+                                    z = <strong>{{ $z }}</strong>
+                                </li>
+                            @endforeach
+                        </ol>
                     </div>
-                    <div class="card-body">
-                        @foreach ($subGroups as $subKriteria => $himpunans)
-                            @php
-                                $item = $himpunans->first(); // ambil satu entri saja (karena hanya beda himpunan)
-                                $nilai = $nilaiTersimpan[$item->id]->d_keanggotaan ?? '';
-                            @endphp
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <strong>{{ $subKriteria }}</strong>
-                                </label>
-                                <input type="number" name="nilai[{{ $item->id }}]" class="form-control" step="0.01"
-                                    value="{{ $nilai }}" required>
-                            </div>
-                        @endforeach
+                @empty
+                    <p class="text-muted">Tidak ada rule aktif untuk bonsai ini.</p>
+                @endforelse
+                <hr>
+                <h5 class="mt-4">🧠 Proses Agregasi & Defuzzifikasi</h5>
+
+                @forelse($hasilAgregasi as $idKriteria => $items)
+                    @php
+                        $sumAlphaZ = 0;
+                        $sumAlpha = 0;
+                    @endphp
+
+                    <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <ol class="mt-2">
+                            @foreach ($items as $i => $item)
+                                @php
+                                    $alpha = round($item->alpha, 3);
+                                    $z = round($item->z_value, 2);
+                                    $product = round($alpha * $z, 2);
+                                    $sumAlphaZ += $product;
+                                    $sumAlpha += $alpha;
+                                @endphp
+                                <li>
+                                    Rule z{{ $i + 1 }} = {{ $z }}, α{{ $i + 1 }} =
+                                    {{ $alpha }}
+                                    → α{{ $i + 1 }} × z{{ $i + 1 }} = <strong>{{ $product }}</strong>
+                                </li>
+                            @endforeach
+                        </ol>
+
+                        <div class="mt-2">
+                            ∑(α × z) = <strong>{{ round($sumAlphaZ, 2) }}</strong>,
+                            ∑α = <strong>{{ round($sumAlpha, 3) }}</strong><br>
+                            z_final =
+                            <strong>
+                                {{ $sumAlpha > 0 ? round($sumAlphaZ / $sumAlpha, 2) : '0.00' }}
+                            </strong>
+                        </div>
                     </div>
-                </div>
-            @endforeach
+                @empty
+                    <p class="text-muted">Tidak ada proses agregasi ditemukan.</p>
+                @endforelse
+
+            </div>
+        </div>
 
 
+        {{-- Tombol Kembali --}}
+        <div class="text-end mt-4">
+            <a href="{{ route('nilai.index') }}" class="btn btn-secondary rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
+            </a>
+        </div>
 
-
-            <button type="submit" class="btn btn-success px-4 py-2 rounded-3 shadow">
-                {{ $nilaiTersimpan->isNotEmpty() ? '💾 Perbarui Nilai' : '💾 Simpan Nilai' }}
-            </button>
-        </form>
     </div>
 @endsection

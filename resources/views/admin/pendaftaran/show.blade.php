@@ -70,7 +70,7 @@
                             <td>:</td>
                             <td>{{ $data->user->email }}</td>
 
-                            <th rowspan="1">Nama Pohon</th>
+                            <th rowspan="1">Gambar Pohon</th>
                             <td rowspan="1">:</td>
                             <td rowspan="1">
                                 <img class="rounded img-fluid w-25"

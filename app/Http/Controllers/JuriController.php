@@ -63,9 +63,8 @@ class JuriController extends Controller
                 $data['sertifikat'] = null; // Atau bisa diisi dengan default value jika tidak ada file
             }
 
-            $juri = Juri::create($data);
 
-            User::create([
+            $user = User::create([
                 'name'       => $data['nama_juri'],
                 'username'   => $data['username'],
                 'email'      => $data['email'],
@@ -74,6 +73,9 @@ class JuriController extends Controller
                 'role'       => 'juri',
             ]);
 
+            $data['user_id'] = $user->id;
+
+            $juri = Juri::create($data);
             Session::flash('message', "Juri dengan Nomor Induk: ({$juri->no_induk_juri}) berhasil disimpan.");
             return redirect()->back();
         } catch (\Exception $e) {
@@ -225,6 +227,13 @@ class JuriController extends Controller
             $juri->update([
                 'slug' => $juri->slug . '-deleted-' . uniqid(),
                 'username' => $juri->username . '-deleted-' . uniqid()
+            ]);
+
+            $user->update([
+                'name' => $juri->nama_juri . ' (Deleted)',
+                'username' => $juri->username . '-deleted-' . uniqid(),
+                'email' => $juri->email . '.deleted',
+                'role' => 'deleted',
             ]);
 
             $user->delete();

@@ -28,4 +28,9 @@ class PendaftaranKontes extends Model
     {
         return $this->belongsTo(Bonsai::class);
     }
+
+    public function juri()
+    {
+        return $this->belongsTo(Juri::class, 'id_juri');
+    }
 }

@@ -18,12 +18,6 @@ $dropdown = [
                 'role' => ['admin'],
             ],
             [
-                'judul' => 'Kelola Kriteria Penilaian',
-                'description' => 'Anda dapat mengelola penilaian bonsai pada kontes, serta menambahkan dan mengubah penilaian baru.',
-                'link' => '/master/penilaian',
-                'role' => ['admin'],
-            ],
-            [
                 'judul' => 'Kelola Peserta',
                 'description' => 'Anda dapat mengelola peserta, serta menambahkan dan mengubah akun.',
                 'link' => '/master/peserta',
@@ -33,6 +27,18 @@ $dropdown = [
                 'judul' => 'Kelola Bonsai',
                 'description' => 'Anda dapat mengelola bonsai milik peserta, serta menambahkan dan mengubahnya.',
                 'link' => '/master/bonsai',
+                'role' => ['admin'],
+            ],
+            [
+                'judul' => 'Kelola Kriteria Penilaian',
+                'description' => 'Anda dapat mengelola penilaian bonsai pada kontes, serta menambahkan dan mengubah penilaian baru.',
+                'link' => '/master/penilaian',
+                'role' => ['admin'],
+            ],
+            [
+                'judul' => 'Fuzzy Rules',
+                'description' => 'Anda dapat melihat rule fuzzy yang terbentuk otomatis dari kriteria dan subkriteria.',
+                'link' => '/admin/penilaian/fuzzy-rules',
                 'role' => ['admin'],
             ],
         ],
@@ -50,9 +56,15 @@ $dropdown = [
                 'role' => ['admin'],
             ],
             [
+                'judul' => 'Penilaian',
+                'description' => 'Juri dapat melakukan penilaian pada kontes yang sedang berlangsung.',
+                'link' => '/admin/nilai',
+                'role' => ['admin'],
+            ],
+            [
                 'judul' => 'Rekap Nilai',
-                'description' => 'Anda dapat melihat rekap nilai dari bonsai milik peserta yang telah dinilai oleh juri pada kontes yang sedang berlangsung.',
-                'link' => '/kontes/rekap-nilai',
+                'description' => 'Anda dapat melihat rekap nilai dari bonsai milik peserta yang telah dinilai oleh semua juri pada kontes yang sedang berlangsung.',
+                'link' => '/rekap-nilai',
                 'role' => ['admin'],
             ],
         ],
@@ -63,15 +75,8 @@ $dropdown = [
     [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Khusus Admin',
-        'submenu' => [
-            [
-                'judul' => 'Riwayat Penilaian',
-                'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
-                'link' => '/kontes/pendaftaran',
-                'role' => ['admin'],
-            ],
-        ],
-        'link' => '#',
+        'submenu' => [],
+        'link' => '/admin/riwayat',
         'role' => ['admin'],
     ],
 
@@ -101,7 +106,7 @@ $dropdown = [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
         'submenu' => [],
-        'link' => '/riwayat',
+        'link' => '/juri/riwayat',
         'role' => ['juri'],
     ],
 ];

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('juri', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('slug')->unique();
             $table->string('no_induk_juri')->nullable();
             $table->string('nama_juri');

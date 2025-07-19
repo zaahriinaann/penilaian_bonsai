@@ -18,4 +18,14 @@ class Kontes extends Model
     {
         return $this->hasMany(PendaftaranKontes::class);
     }
+
+    public function juri()
+    {
+        return $this->belongsToMany(User::class, 'kontes_juri', 'kontes_id', 'juri_id');
+    }
+
+    public function bonsai()
+    {
+        return $this->belongsToMany(Bonsai::class, 'pendaftaran_kontes', 'kontes_id', 'bonsai_id');
+    }
 }
