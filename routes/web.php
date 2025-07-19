@@ -28,7 +28,7 @@ Auth::routes();
 
 // ==================== Authenticated Routes ====================
 Route::middleware(['auth', 'web'])->group(function () {
-
+    // update deploy
     // Dashboard & Akun
     Route::resource('home', HomeController::class);
     Route::resource('akun', AkunController::class);
