@@ -61,10 +61,22 @@ class FuzzyMamdaniService
         $jumlahKriteria = 0;
 
         foreach ($inputs as $idKriteria => $group) {
-            // ambil rules dan details
+            $jumlahSub = HelperDomain::where('id_kriteria', $idKriteria)
+                ->whereNotNull('id_sub_kriteria')
+                ->pluck('id_sub_kriteria')
+                ->unique()
+                ->count();
+
+            $ruleIdsValid = FuzzyRuleDetail::select('fuzzy_rule_id')
+                ->join('fuzzy_rules', 'fuzzy_rules.id', '=', 'fuzzy_rule_details.fuzzy_rule_id')
+                ->where('fuzzy_rules.id_kriteria', $idKriteria)
+                ->where('fuzzy_rules.is_active', 1)
+                ->groupBy('fuzzy_rule_id')
+                ->havingRaw('COUNT(*) = ?', [$jumlahSub])
+                ->pluck('fuzzy_rule_id');
+
             $rules = FuzzyRule::with('details')
-                ->where('id_kriteria', $idKriteria)
-                ->where('is_active', 1)
+                ->whereIn('id', $ruleIdsValid)
                 ->get();
 
             $outputDomains = HelperDomain::where('id_kriteria', $idKriteria)
@@ -73,7 +85,6 @@ class FuzzyMamdaniService
 
             if ($outputDomains->isEmpty() || $rules->isEmpty()) continue;
 
-            // kelompokkan input berdasarkan sub_kriteria → himpunan → derajat
             $inputMap = [];
             foreach ($group as $n) {
                 if ($n->derajat_anggota > 0) {
@@ -81,8 +92,7 @@ class FuzzyMamdaniService
                 }
             }
 
-            // inferensi: hitung alpha & z berdasarkan aturan
-            $inferensi = [];
+            $semuaInferensi = [];
 
             foreach ($rules as $rule) {
                 $alphas = [];
@@ -90,57 +100,62 @@ class FuzzyMamdaniService
                 foreach ($rule->details as $d) {
                     $sub = $d->input_variable;
                     $himpunan = strtolower($d->himpunan);
-
                     $α = $inputMap[$sub][$himpunan] ?? 0;
                     $alphas[] = $α;
                 }
 
                 $minAlpha = min($alphas);
-                if ($minAlpha > 0) {
-                    // ambil domain output himpunan
-                    $outputDomain = $outputDomains->firstWhere('himpunan', $rule->output_himpunan);
-                    if (!$outputDomain) continue;
+                $outputDomain = $outputDomains->firstWhere('himpunan', $rule->output_himpunan);
+                if (!$outputDomain) continue;
 
-                    $a = $outputDomain->domain_min;
-                    $c = $outputDomain->domain_max;
-                    $b = ($a + $c) / 2;
+                $a = $outputDomain->domain_min;
+                $c = $outputDomain->domain_max;
+                $b = ($a + $c) / 2;
 
-                    $aCut = $a + $minAlpha * ($b - $a);
-                    $cCut = $c - $minAlpha * ($c - $b);
-                    $z = ($aCut + $b + $cCut) / 3;
+                $aCut = $a + $minAlpha * ($b - $a);
+                $cCut = $c - $minAlpha * ($c - $b);
+                $z = ($aCut + $b + $cCut) / 3;
 
-                    // Baru simpan ke hasil_fuzzy_rules
-                    HasilFuzzyRule::create([
-                        'id_kontes'     => $kontesId,
-                        'id_bonsai'     => $bonsaiId,
-                        'id_juri'       => $juriId,
-                        'id_kriteria'   => $idKriteria,
-                        'fuzzy_rule_id' => $rule->id,
-                        'alpha'         => $minAlpha,
-                        'z_value'       => $z,
-                    ]);
-
-                    $inferensi[] = [
-                        'z' => $z,
-                        'α' => $minAlpha,
-                        'himpunan' => $outputDomain->himpunan,
-                        'id_himpunan' => $outputDomain->id,
-                    ];
-                }
+                $semuaInferensi[] = [
+                    'rule_id' => $rule->id,
+                    'z' => $z,
+                    'α' => $minAlpha,
+                    'himpunan' => $outputDomain->himpunan,
+                    'id_himpunan' => $outputDomain->id,
+                ];
             }
 
-            if (empty($inferensi)) continue;
+            // Gunakan inferensi α > 0 kalau ada, kalau tidak: ambil 1 rule α terbesar (meski 0)
+            $inferensi = collect($semuaInferensi)
+                ->filter(fn($i) => $i['α'] > 0);
 
-            // agregasi defuzzifikasi dengan rata-rata tertimbang
+            if ($inferensi->isEmpty()) {
+                $inferensi = collect($semuaInferensi)
+                    ->sortByDesc('α')
+                    ->take(1);
+            }
+
+            if ($inferensi->isEmpty()) continue; // benar-benar tidak bisa proses apa-apa
+
+            // Hitung agregasi defuzzifikasi (z)
             $num = $den = 0;
             foreach ($inferensi as $inf) {
                 $num += $inf['z'] * $inf['α'];
                 $den += $inf['α'];
+
+                HasilFuzzyRule::create([
+                    'id_kontes'     => $kontesId,
+                    'id_bonsai'     => $bonsaiId,
+                    'id_juri'       => $juriId,
+                    'id_kriteria'   => $idKriteria,
+                    'fuzzy_rule_id' => $inf['rule_id'],
+                    'alpha'         => $inf['α'],
+                    'z_value'       => $inf['z'],
+                ]);
             }
 
-            $zFinal = $den ? round($num / $den, 2) : 0;
+            $zFinal = $den > 0 ? round($num / $den, 2) : round($inferensi->first()['z'], 2);
 
-            // cari output himpunan dari hasil defuzzifikasi
             $finalOutput = $outputDomains
                 ->map(function ($d) use ($zFinal) {
                     $a = $d->domain_min;
