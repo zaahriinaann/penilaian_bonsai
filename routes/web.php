@@ -55,12 +55,10 @@ Route::middleware(['auth', 'web'])->group(function () {
         // Route::get('rekap-khusus', [RekapNilaiController::class, 'khusus'])->name('rekap-khusus');
     });
 
-    // ==================== JURI ====================
+    // ==================== PENILAIAN JURI ====================
     Route::resource('nilai', NilaiController::class)->parameters(['nilai' => 'id']);
     Route::get('nilai/{id}/form', [NilaiController::class, 'formPenilaian'])->name('nilai.form');
     Route::get('nilai/{id}/hasil', [NilaiController::class, 'show'])->name('nilai.hasil');
-
-    Route::resource('riwayat', RiwayatController::class)->parameters(['riwayat' => 'id']);
 
     // ==================== REKAP NILAI LAINNYA ====================
     // Jangan buat resource 'rekap-nilai' di luar group 'kontes'!
@@ -68,7 +66,7 @@ Route::middleware(['auth', 'web'])->group(function () {
 
     Route::get('/rekap/{nama_pohon}/{nomor_juri}', [RekapNilaiController::class, 'show'])->name('rekap.show');
     Route::get('/rekap/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export');
-    Route::get('/rekap/cetak', [RekapNilaiController::class, 'cetak'])->name('rekap.cetak');
+    Route::get('/rekap-nilai/{id}/cetak-rekap', [RekapNilaiController::class, 'cetakRekapPerBonsai'])->name('rekap.cetak-per-bonsai');
 
     // ==================== FUZZY RULES ====================
     Route::prefix('admin/penilaian')->name('admin.penilaian.')->group(function () {

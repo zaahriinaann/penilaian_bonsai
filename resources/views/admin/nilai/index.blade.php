@@ -5,8 +5,8 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
-            <div class="card-header bg-primary text-white rounded-top-4">
-                <strong>🧑‍⚖️ Juri yang Aktif</strong>
+            <div class="card-header rounded-top-4 align-items-center">
+                <h3>Daftar Juri yang Aktif</h3>
             </div>
             <div class="card-body table-responsive">
                 <table class="table table-bordered mb-0">

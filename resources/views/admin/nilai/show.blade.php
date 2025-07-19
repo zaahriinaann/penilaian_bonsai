@@ -5,8 +5,8 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
-            <div class="card-header bg-secondary text-white rounded-top-4">
-                <strong>Daftar Peserta yang Dinilai oleh {{ $juri->user->name }}</strong>
+            <div class="card-header rounded-top-4 align-items-center">
+                <h3>Daftar Peserta yang Dinilai oleh {{ $juri->user->name }}</h3>
             </div>
             <div class="card-body table-responsive">
                 @if ($pendaftarans->isEmpty())
