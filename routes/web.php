@@ -47,11 +47,10 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::resource('pendaftaran-peserta', PendaftaranKontesController::class);
         Route::get('get-bonsai-peserta/{id}', [PendaftaranKontesController::class, 'getBonsaiPeserta']);
 
-        // Resource rekap-nilai diberi prefix name supaya nama route-nya unik
+        // Resource rekap-nilai (nama route otomatis prefiks 'kontes.')
         Route::resource('rekap-nilai', RekapNilaiController::class);
 
-        // Kalau ada route custom di bawah ini, pastikan namanya beda!
-        // Misal:
+        // Contoh route custom lain (jika perlu)
         // Route::get('rekap-khusus', [RekapNilaiController::class, 'khusus'])->name('rekap-khusus');
     });
 
@@ -61,9 +60,7 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::get('nilai/{id}/hasil', [NilaiController::class, 'show'])->name('nilai.hasil');
 
     // ==================== REKAP NILAI LAINNYA ====================
-    // Jangan buat resource 'rekap-nilai' di luar group 'kontes'!
-    // Route::resource('rekap-nilai', RekapNilaiController::class); <-- HAPUS/BATALKAN!
-
+    // Semua nama route harus beda dan jelas!
     Route::get('/rekap/{nama_pohon}/{nomor_juri}', [RekapNilaiController::class, 'show'])->name('rekap.show');
     Route::get('/rekap/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export');
     Route::get('/rekap-nilai/{id}/cetak-rekap', [RekapNilaiController::class, 'cetakRekapPerBonsai'])->name('rekap.cetak-per-bonsai');
@@ -75,6 +72,7 @@ Route::middleware(['auth', 'web'])->group(function () {
     });
 
     // ==================== RIWAYAT PENILAIAN (Opsional) ====================
+    // Kalau mau pakai, pastikan prefix dan name unik
     // Route::prefix('riwayat')->name('riwayat.')->group(function () {
     //     Route::get('/', [RiwayatController::class, 'index'])->name('index');
     //     Route::get('/{kontes}', [RiwayatController::class, 'show'])->name('show');
