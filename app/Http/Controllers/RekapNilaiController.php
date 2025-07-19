@@ -168,10 +168,11 @@ class RekapNilaiController extends Controller
             $kategori = [];
 
             foreach ($hasil as $idKriteria => $list) {
-                $rata2 = $list->avg('hasil');
-                $mayoritas = $list->countBy('himpunan')->sortDesc()->keys()->first();
+                $first = $list->first();
 
-                // Ambil nama kriteria dari helper domain
+                $rata2 = $first->rata_defuzzifikasi ?? 0;
+                $mayoritas = $first->rata_himpunan ?? '—';
+
                 $kriteria = HelperDomain::where('id_kriteria', $idKriteria)
                     ->whereNull('id_sub_kriteria')
                     ->first();
