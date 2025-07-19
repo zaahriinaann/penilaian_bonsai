@@ -4,13 +4,11 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
-            <div class="card-header bg-dark text-white rounded-top-4">
-                <strong>📋 Kontes yang Pernah Dinilai</strong>
-            </div>
             <div class="card-body">
+                <h2 class="mb-5">Daftar Kontes yang Sudah Dinilai</h2>
 
                 {{-- Form Pencarian dan Filter Tahun --}}
-                <form method="GET" class="mb-4">
+                <form method="GET" class="py-5">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-4">
                             <label for="search" class="form-label">Cari Nama Kontes</label>

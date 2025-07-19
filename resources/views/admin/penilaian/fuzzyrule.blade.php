@@ -13,7 +13,7 @@
         </div>
 
         <div class="card-body">
-            <form action="{{ route('fuzzy-rules.auto-generate') }}" method="POST" class="mb-3">
+            <form action="{{ route('admin.penilaian.fuzzy-rules.auto-generate') }}" method="POST" class="mb-3">
                 @csrf
                 <button type="submit" class="btn btn-warning">
                     <i class="fa fa-cogs"></i> Generate Fuzzy Rules

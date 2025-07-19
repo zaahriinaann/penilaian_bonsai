@@ -14,7 +14,8 @@ use App\Models\HelperKriteria;
 use App\Models\HelperDomain;
 use App\Models\HelperSubKriteria;
 use App\Models\Juri;
-use App\Services\FuzzyMamDaniService;
+use App\Services\d;
+use App\Services\FuzzyMamdaniService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +47,7 @@ class NilaiController extends Controller
         return view('juri.nilai.nilai', compact('bonsai', 'domains'));
     }
 
-    public function store(Request $request, FuzzyMamDaniService $fuzzy)
+    public function store(Request $request, FuzzyMamdaniService $fuzzy)
     {
         $request->validate([
             'bonsai_id' => 'required',

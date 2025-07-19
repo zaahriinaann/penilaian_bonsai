@@ -44,7 +44,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <img class="rounded"
-                                        src="{{ $item->foto ? asset('images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
+                                        src="{{ $item->foto ? asset('assets/images/bonsai/' . $item->foto) : asset('assets/media/avatars/blank.png') }}"
                                         alt="Foto Bonsai" style="width: 75px; height: 75px; object-fit: cover;">
                                 </td>
                                 <td>{{ $item->no_induk_pohon }}</td>
@@ -85,7 +85,7 @@
 
                                         <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
                                             data-id="{{ $item->id }}"
-                                            data-route="{{ route('bonsai.destroy', $item->slug) }}">
+                                            data-route="{{ route('master.bonsai.destroy', $item->slug) }}">
                                             <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                     </div>
                                 </td>
@@ -106,7 +106,7 @@
                     <h1 class="modal-title fs-5" id="kt_modal_create_bonsai">Data Bonsai Peserta</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="form-create-bonsai" action="{{ route('bonsai.store') }}" enctype="multipart/form-data"
+                <form id="form-create-bonsai" action="{{ route('master.bonsai.store') }}" enctype="multipart/form-data"
                     method="POST">
                     @csrf
                     @method('POST')
@@ -143,7 +143,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-12 mb-3 d-none">
                                 <label for="kelas" class="form-label">Kelas</label>
                                 <select name="kelas" id="kelas" class="form-select form-control" required>
                                     <option selected disabled>Pilih kelas</option>
@@ -240,7 +240,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-12 mb-3">
+                                <div class="col-md-12 mb-3 d-none">
                                     <label for="kelas" class="form-label">kelas</label>
                                     <select name="kelas" id="edit_kelas"
                                         class="form-select form-control text-capitalize" required>
@@ -293,7 +293,7 @@
 
                                     <div class="mt-2">
                                         <label for="" class="form-label">Foto Lama</label>
-                                        <img src="{{ asset('images/bonsai/' . $item->foto) }}" alt="Foto Bonsai"
+                                        <img src="{{ asset('assets/images/bonsai/' . $item->foto) }}" alt="Foto Bonsai"
                                             class="img-fluid">
                                     </div>
                                 </div>

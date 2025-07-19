@@ -31,7 +31,7 @@ class KontesSeeder extends Seeder
                     'nama_kontes' => "Kontes Bonsai {$tahun}-{$i}",
                     'slug' => Str::slug("Kontes Bonsai {$tahun}-{$i}"),
                     'tempat_kontes' => ['Cirebon', 'Bandung', 'Jakarta', 'Surabaya', 'Yogyakarta'][$tahun % 5],
-                    'tingkat_kontes' => ['Lokal', 'Regional', 'Nasional'][$i % 3],
+                    'tingkat_kontes' => ['Pemula', 'Madya', 'Utama'][$i % 3],
                     'link_gmaps' => 'https://maps.google.com?q=' . $tahun,
                     'tanggal_mulai_kontes' => $start,
                     'tanggal_selesai_kontes' => $end,

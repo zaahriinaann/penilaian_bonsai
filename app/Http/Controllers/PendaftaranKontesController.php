@@ -25,9 +25,20 @@ class PendaftaranKontesController extends Controller
 
     public function index()
     {
-        $peserta = User::where('role', 'anggota')->get();
-        $pendaftaran = PendaftaranKontes::all();
+        $kelasKontes = $this->kontes->tingkat_kontes; // atau $this->kontes->kelas_id
 
+        // Hanya ambil user yang punya bonsai dengan kelas sama dengan kontes
+        $peserta = User::where('role', 'anggota')
+            ->whereHas('bonsai', function ($query) use ($kelasKontes) {
+                $query->where('kelas', $kelasKontes);
+            })
+            ->with(['bonsai' => function ($query) use ($kelasKontes) {
+                $query->where('kelas', $kelasKontes); // opsional: hanya ambil bonsai dengan kelas itu saja
+            }])
+            ->get();
+
+            // dd($peserta);
+        $pendaftaran = PendaftaranKontes::all();
         return view('admin.pendaftaran.index', compact('peserta', 'pendaftaran'));
     }
 
@@ -48,15 +59,16 @@ class PendaftaranKontesController extends Controller
             $request->validate([
                 'user_id' => 'required',
                 'bonsai_id' => 'required',
-                'kelas' => 'required',
             ]);
 
             if (!$this->kontes) {
                 return redirect()->back()->with('error', 'Tidak ada kontes yang sedang aktif.');
             }
 
+
             $data = $request->all();
             $data['kontes_id'] = $this->kontes->id;
+            $data['kelas'] = $this->kontes->tingkat_kontes;
 
             // Cek duplikat pendaftaran
             $exists = PendaftaranKontes::where('kontes_id', $this->kontes->id)
@@ -71,16 +83,15 @@ class PendaftaranKontesController extends Controller
             // Tentukan nomor juri dan nomor pendaftaran
             $lastPendaftaran = PendaftaranKontes::where('kontes_id', $this->kontes->id)->latest()->first();
             $lastKelas = PendaftaranKontes::where('kontes_id', $this->kontes->id)
-                ->where('kelas', $data['kelas'])
                 ->latest()
                 ->first();
 
             if ($lastPendaftaran) {
-                $data['nomor_pendaftaran'] = $lastKelas ? $lastKelas->nomor_pendaftaran + 1 : $lastPendaftaran->nomor_pendaftaran + 1;
-                $data['nomor_juri'] = $lastKelas ? $lastKelas->nomor_juri + 1 : 1;
+                $data['nomor_pendaftaran'] = "P" . $lastKelas ? (int)$lastKelas->nomor_pendaftaran + 1 : (int)$lastPendaftaran->nomor_pendaftaran + 1;
+                $data['nomor_juri'] = "J" . $lastKelas ? (int)$lastKelas->nomor_juri + 1 : 1;
             } else {
-                $data['nomor_pendaftaran'] = 1;
-                $data['nomor_juri'] = 1;
+                $data['nomor_pendaftaran'] = "P" . 1;
+                $data['nomor_juri'] = "J" . 1;
             }
 
             PendaftaranKontes::create($data);
@@ -123,7 +134,7 @@ class PendaftaranKontesController extends Controller
     {
         try {
             $pendaftaran = PendaftaranKontes::findOrFail($id);
-            $pendaftaran->delete(); // Soft delete\
+            $pendaftaran->delete(); // Soft delete
 
             return response()->json([
                 'message' => "Kontes {$pendaftaran->nama_kontes} berhasil dihapus."

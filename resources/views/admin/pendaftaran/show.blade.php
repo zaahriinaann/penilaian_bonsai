@@ -74,7 +74,7 @@
                             <td rowspan="1">:</td>
                             <td rowspan="1">
                                 <img class="rounded img-fluid w-25"
-                                    src="{{ asset('images/bonsai/' . $data->bonsai->foto) }}"
+                                    src="{{ asset('assets/images/bonsai/' . $data->bonsai->foto) }}"
                                     alt="{{ $data->bonsai->foto }}">
                             </td>
                         </tr>

@@ -138,9 +138,9 @@ class KontesController extends Controller
             $kontes->update($data);
 
             Session::flash('message', "Kontes {$kontes->nama_kontes} berhasil diperbarui.");
-            return redirect()->route('kontes.index');
+            return redirect()->back();
         } catch (\Exception $e) {
-            // Logging optional: Log::error($e);
+            Log::error($e->getMessage());
             Session::flash('error', "Terdapat kesalahan saat memperbarui data, silakan hubungi admin atau coba lagi.");
             return redirect()->back()->withInput();
         }
@@ -179,7 +179,7 @@ class KontesController extends Controller
 
         $image = $request->file('poster_kontes');
         $imageName = time() . '.' . $image->getClientOriginalExtension();
-        $destinationPath = public_path('images/kontes');
+        $destinationPath = public_path('assets/images/kontes');
 
         // Buat folder jika belum ada
         if (!file_exists($destinationPath)) {

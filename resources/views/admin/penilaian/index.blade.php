@@ -7,7 +7,7 @@
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
             Tambah Kriteria
         </button>
-        <form action="{{ route('fuzzy-rules.auto-generate') }}" method="POST">
+        <form action="{{ route('admin.penilaian.fuzzy-rules.auto-generate') }}" method="POST">
             @csrf
             <button type="submit" class="btn btn-sm btn-warning">
                 <i class="fa fa-cogs"></i> Generate Fuzzy Rules
@@ -222,7 +222,7 @@
                     <h1 class="modal-title fs-5" id="kt_modal_create_kriteria">Data Kriteria</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('penilaian.store') }}" enctype="multipart/form-data" method="POST">
+                <form action="{{ route('master.penilaian.store') }}" enctype="multipart/form-data" method="POST">
                     @csrf
                     @method('POST')
                     <input type="hidden" name="add_kriteria" value="1">

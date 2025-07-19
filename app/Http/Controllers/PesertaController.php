@@ -44,7 +44,7 @@ class PesertaController extends Controller
         // Simpan user
         User::create($data);
 
-        return redirect()->route('peserta.index')->with('success', 'Peserta berhasil ditambahkan.');
+        return redirect()->back()->with('success', 'Peserta berhasil ditambahkan.');
     }
 
 
@@ -107,7 +107,7 @@ class PesertaController extends Controller
 
 
             // Berikan pesan sukses setelah update
-            Session::flash('message', "Juri dengan Nomor Induk: ({$user->username}) berhasil diperbarui.");
+            Session::flash('message', "Peserta dengan Nomor Induk: ({$user->username}) berhasil diperbarui.");
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan
@@ -153,7 +153,7 @@ class PesertaController extends Controller
         if ($request->hasFile('foto') && $typeInput) {
             $image = $request->file('foto');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $destinationPath = public_path('images/peserta');
+            $destinationPath = public_path('assets/images/peserta');
 
             // Buat folder jika belum ada (opsional)
             if (!file_exists($destinationPath)) {

@@ -155,7 +155,7 @@ class JuriController extends Controller
             if ($request->hasFile('foto')) {
                 $fotoLama = $request->input('foto_lama');
                 if (!empty($fotoLama)) {
-                    $oldPath = public_path('images/juri/' . $fotoLama);
+                    $oldPath = public_path('assets/images/juri/' . $fotoLama);
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
                     }
@@ -163,7 +163,7 @@ class JuriController extends Controller
 
                 $foto = $request->file('foto');
                 $fotoName = time() . '_foto.' . $foto->getClientOriginalExtension();
-                $foto->move(public_path('images/juri'), $fotoName);
+                $foto->move(public_path('assets/images/juri'), $fotoName);
                 $data['foto'] = $fotoName;
             } else {
                 $data['foto'] = $request->input('foto_lama'); // penting ini
@@ -258,7 +258,7 @@ class JuriController extends Controller
 
         $imageName = null;
 
-        $destinationPath = public_path('images/juri');
+        $destinationPath = public_path('assets/images/juri');
 
         // Buat folder jika belum ada
         if (!file_exists($destinationPath)) {
