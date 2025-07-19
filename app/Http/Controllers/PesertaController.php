@@ -107,7 +107,7 @@ class PesertaController extends Controller
 
 
             // Berikan pesan sukses setelah update
-            Session::flash('message', "Juri dengan Nomor Induk: ({$user->username}) berhasil diperbarui.");
+            Session::flash('message', "Peserta dengan Nomor Induk: ({$user->username}) berhasil diperbarui.");
             return redirect()->back();
         } catch (\Exception $e) {
             // Tangani error jika terjadi kesalahan saat menyimpan

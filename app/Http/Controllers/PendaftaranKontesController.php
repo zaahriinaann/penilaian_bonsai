@@ -134,7 +134,7 @@ class PendaftaranKontesController extends Controller
     {
         try {
             $pendaftaran = PendaftaranKontes::findOrFail($id);
-            $pendaftaran->delete(); // Soft delete\
+            $pendaftaran->delete(); // Soft delete
 
             return response()->json([
                 'message' => "Kontes {$pendaftaran->nama_kontes} berhasil dihapus."
