@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\{Nilai, HelperDomain, Defuzzifikasi, Hasil, RekapNilai, FuzzyRule, FuzzyRuleDetail, HasilFuzzyRule};
 
-class FuzzyMamDaniService
+class FuzzyMamdaniService
 {
     private function muTri(float $x, float $a, float $b, float $c): float
     {
