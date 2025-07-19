@@ -18,56 +18,66 @@ class RekapNilaiController extends Controller
 {
     public function index(RekapNilai $rekap)
     {
-        $rekapData = $rekap->with('bonsai.user')->get()->map(function ($item) {
-            $bonsai = $item->bonsai;
-            $pendaftaran = PendaftaranKontes::where('bonsai_id', $item->id_bonsai)->first();
-            if (!$pendaftaran) return null;
+        $kontesAktif = Kontes::where('status', '1')->first();
 
-            $kategori = Defuzzifikasi::where('id_bonsai', $item->id_bonsai)
-                ->get()
-                ->groupBy('id_kriteria')
-                ->mapWithKeys(function ($group, $id_kriteria) {
-                    $namaKriteria = HelperKriteria::find($id_kriteria)?->kriteria ?? 'Tanpa Nama';
-                    return [
-                        $namaKriteria => $group->map(function ($d) {
-                            return [
-                                'hasil' => $d->hasil_defuzzifikasi,
-                                'himpunan' => $d->hasil_himpunan,
-                                'juri_id' => $d->id_juri,
-                            ];
-                        })->all()
-                    ];
-                })->toArray();
+        if (!$kontesAktif) {
+            return view('juri.rekap.index', [
+                'rekapSorted' => collect(),
+                'bestTen' => collect(),
+                'kontes' => null,
+                'message' => 'Tidak ada kontes aktif.'
+            ]);
+        }
 
-            return [
-                'id' => $bonsai->id,
-                'kontes_id' => $pendaftaran->kontes_id,
-                'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran,
-                'nomor_juri' => $pendaftaran->nomor_juri,
-                'nama_pohon' => $bonsai->nama_pohon,
-                'pemilik' => $bonsai->user->name ?? '-',
-                'skor_akhir' => $item->skor_akhir,
-                'himpunan_akhir' => $item->himpunan_akhir,
-                'kategori' => $kategori,
-            ];
-        })->filter()->sortByDesc('skor_akhir')->values();
+        $rekapData = $rekap->with('bonsai.user')
+            ->where('id_kontes', $kontesAktif->id) // ✅ FILTER berdasarkan kontes aktif
+            ->get()
+            ->map(function ($item) {
+                $bonsai = $item->bonsai;
+                $pendaftaran = PendaftaranKontes::where('bonsai_id', $item->id_bonsai)->first();
+                if (!$pendaftaran) return null;
+
+                $kategori = Defuzzifikasi::where('id_bonsai', $item->id_bonsai)
+                    ->get()
+                    ->groupBy('id_kriteria')
+                    ->mapWithKeys(function ($group, $id_kriteria) {
+                        $namaKriteria = HelperKriteria::find($id_kriteria)?->kriteria ?? 'Tanpa Nama';
+                        return [
+                            $namaKriteria => $group->map(function ($d) {
+                                return [
+                                    'hasil' => $d->hasil_defuzzifikasi,
+                                    'himpunan' => $d->hasil_himpunan,
+                                    'juri_id' => $d->id_juri,
+                                ];
+                            })->all()
+                        ];
+                    })->toArray();
+
+                return [
+                    'id' => $bonsai->id,
+                    'kontes_id' => $pendaftaran->kontes_id,
+                    'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran,
+                    'nomor_juri' => $pendaftaran->nomor_juri,
+                    'nama_pohon' => $bonsai->nama_pohon,
+                    'pemilik' => $bonsai->user->name ?? '-',
+                    'skor_akhir' => $item->skor_akhir,
+                    'himpunan_akhir' => $item->himpunan_akhir,
+                    'kategori' => $kategori,
+                ];
+            })
+            ->filter()
+            ->sortByDesc('skor_akhir')
+            ->values();
 
         $bestTen = $rekapData->take(10);
-
-        // Ambil salah satu kontes dari data (ambil kontes pertama saja)
-        $first = $rekapData->first();
-        $kontes = null;
-
-        if ($first && isset($first['kontes_id'])) {
-            $kontes = Kontes::find($first['kontes_id']);
-        }
 
         return view('juri.rekap.index', [
             'rekapSorted' => $rekapData,
             'bestTen' => $bestTen,
-            'kontes' => $kontes, // ini dia yang ditambahkan
+            'kontes' => $kontesAktif, // langsung pakai kontes aktif
         ]);
     }
+
 
     public function show($nama_pohon, $nomor_juri)
     {
