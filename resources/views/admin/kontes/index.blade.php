@@ -62,7 +62,7 @@
                                 <td>{{ $item->jumlah_peserta }} Peserta/Bonsai</td>
                                 {{-- <td>Rp{{ number_format($item->harga_tiket_kontes, 0, ',', '.') }}</td> --}}
                                 <td>
-                                    <form action="{{ route('kontes.update', $item->slug) }}" method="POST">
+                                    <form action="{{ route('master.kontes.update', $item->slug) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <button class="btn btn-sm btn-primary w-100" type="submit" name="setActive">
@@ -88,7 +88,7 @@
                                         {{-- <form action="{{ route('kontes'. $item->id) }}" method="D"></form> --}}
                                         <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
                                             data-id="{{ $item->id }}"
-                                            data-route="{{ route('kontes.destroy', $item->slug) }}">
+                                            data-route="{{ route('master.kontes.destroy', $item->slug) }}">
                                             <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                     </div>
                                 </td>
@@ -109,7 +109,7 @@
                     <h1 class="modal-title fs-5" id="kt_modal_create_kontes">Data Kontes Bonsai</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('kontes.store') }}" enctype="multipart/form-data" method="POST">
+                <form action="{{ route('master.kontes.store') }}" enctype="multipart/form-data" method="POST">
                     @csrf
                     @method('POST')
                     <div class="modal-body">
