@@ -2,6 +2,12 @@
 
 @section('title', 'Detail Nilai Bonsai')
 
+@section('button-toolbar')
+    <a href="{{ route('rekap.cetak-per-bonsai', $detail['id']) }}" class="btn btn-danger btn-sm" target="_blank">
+        Cetak
+    </a>
+@endsection
+
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">

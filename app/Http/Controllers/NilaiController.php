@@ -8,6 +8,7 @@ use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
 use App\Models\Defuzzifikasi;
+use App\Models\Hasil;
 use App\Models\HasilFuzzyRule;
 use App\Models\HelperKriteria;
 use App\Models\HelperDomain;
@@ -155,7 +156,6 @@ class NilaiController extends Controller
         ));
     }
 
-
     public function edit($id)
     {
         $bonsai = Bonsai::with('user')->findOrFail($id);
@@ -197,8 +197,6 @@ class NilaiController extends Controller
 
         return view('juri.nilai.edit', compact('bonsai', 'data'));
     }
-
-
 
     public function update(Request $request, FuzzyMamDaniService $fuzzy, $bonsaiId)
     {
@@ -253,7 +251,6 @@ class NilaiController extends Controller
             ->with('success', 'Nilai berhasil diperbarui. Skor juri: ' . $hasilJuri . ' | Rata²: ' . $hasilTotal);
     }
 
-
     public function destroy(Nilai $nilai)
     {
         // belum digunakan
@@ -269,7 +266,6 @@ class NilaiController extends Controller
 
         return view('admin.nilai.index', compact('juriAktif'));
     }
-
 
     public function showAdmin($juriId)
     {
@@ -398,7 +394,6 @@ class NilaiController extends Controller
         return view('admin.riwayat.juri', compact('kontes', 'juriList'));
     }
 
-
     public function riwayatPeserta(Request $request, $kontesId, $juriId)
     {
         if (Auth::user()->role !== 'admin') abort(403);
@@ -426,7 +421,6 @@ class NilaiController extends Controller
 
         return view('admin.riwayat.peserta', compact('kontes', 'juri', 'pendaftarans'));
     }
-
 
     public function riwayatDetail($kontesId, $juriId, $bonsaiId)
     {
@@ -488,37 +482,62 @@ class NilaiController extends Controller
         ));
     }
 
-    public function cetakLaporan($kontesId, $juriId)
+    public function cetakLaporan($kontesId)
     {
         $kontes = Kontes::findOrFail($kontesId);
-        $juri = Juri::with('user')->findOrFail($juriId);
-
-        $nilaiBonsai = Nilai::where('id_kontes', $kontesId)
-            ->where('id_juri', $juriId)
-            ->get()
-            ->groupBy('id_bonsai');
+        $rekapNilai = RekapNilai::where('id_kontes', $kontesId)->get();
 
         $rekapData = [];
 
-        foreach ($nilaiBonsai as $idBonsai => $group) {
-            $rekap = RekapNilai::where('id_kontes', $kontesId)
-                ->where('id_bonsai', $idBonsai)
+        foreach ($rekapNilai as $rekap) {
+            $bonsai = $rekap->bonsai;
+
+            $pendaftaran = PendaftaranKontes::where('kontes_id', $kontesId)
+                ->where('bonsai_id', $bonsai->id)
                 ->first();
 
-            if ($rekap) {
+            $hasil = Hasil::where('id_kontes', $kontesId)
+                ->where('id_bonsai', $bonsai->id)
+                ->get()
+                ->groupBy('id_kriteria');
+
+            $kategori = [];
+
+            foreach ($hasil as $idKriteria => $list) {
+                // Ambil hanya satu record per kriteria (karena nilai sudah rata-rata)
+                $first = $list->first();
+
+                $kriteria = HelperDomain::where('id_kriteria', $idKriteria)
+                    ->whereNull('id_sub_kriteria')
+                    ->first();
+
+                $kategori[] = [
+                    'nama_kriteria' => $kriteria->kriteria ?? '—',
+                    'rata2' => round($first->rata_defuzzifikasi, 2),
+                    'himpunan' => $first->rata_himpunan,
+                ];
+            }
+
+            if ($bonsai && $pendaftaran) {
                 $rekapData[] = [
-                    'nama_pohon' => $group->first()->bonsai->nama_pohon ?? '—',
-                    'pemilik' => $group->first()->bonsai->user->name ?? '—',
+                    'nama_pohon' => $bonsai->nama_pohon,
+                    'kelas' => $bonsai->kelas,
+                    'pemilik' => $bonsai->user->name,
+                    'nomor_juri' => $pendaftaran->nomor_juri,
+                    'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran,
                     'skor_akhir' => $rekap->skor_akhir,
                     'himpunan_akhir' => $rekap->himpunan_akhir,
+                    'kategori' => $kategori,
                 ];
             }
         }
 
-        $pdf = Pdf::loadView('admin.riwayat.cetak', compact('kontes', 'juri', 'rekapData'));
+
+        $pdf = Pdf::loadView('admin.riwayat.cetak', compact('kontes', 'rekapData'))
+            ->setPaper('A4', 'portrait');
+
         return $pdf->stream('laporan-rekap-nilai.pdf');
     }
-
 
     public function riwayatJuriIndex(Request $request)
     {
@@ -540,8 +559,6 @@ class NilaiController extends Controller
 
         return view('juri.riwayat.index', compact('kontesList'));
     }
-
-
 
     public function riwayatJuriPeserta(Request $request, $kontesId)
     {

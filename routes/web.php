@@ -50,39 +50,36 @@ Route::middleware(['auth', 'web'])->group(function () {
     // RIWAYAT PENILAIAN ADMIN
     Route::prefix('admin/riwayat')->name('admin.riwayat.')->group(function () {
         Route::get('/', [NilaiController::class, 'riwayatIndex'])->name('index');
-        Route::get('/{kontes}/{juri}/cetak', [NilaiController::class, 'cetakLaporan'])->name('cetak'); // ⬅️ Pindahkan ke atas!
+        Route::get('/{kontes}/cetak', [NilaiController::class, 'cetakLaporan'])->name('cetak');
         Route::get('/{kontes}', [NilaiController::class, 'riwayatJuri'])->name('juri');
         Route::get('/{kontes}/{juri}', [NilaiController::class, 'riwayatPeserta'])->name('peserta');
         Route::get('/{kontes}/{juri}/{bonsai}', [NilaiController::class, 'riwayatDetail'])->name('detail');
     });
 
-
+    // ==================== RIWAYAT PENILAIAN JURI ====================
     Route::prefix('juri/riwayat')->name('juri.riwayat.')->group(function () {
         Route::get('/', [NilaiController::class, 'riwayatJuriIndex'])->name('index');
         Route::get('/{kontes}', [NilaiController::class, 'riwayatJuriPeserta'])->name('peserta');
         Route::get('/{kontes}/{bonsai}', [NilaiController::class, 'riwayatJuriDetail'])->name('detail');
     });
 
-
-    // ==================== KONTESTAN ====================
+    // ==================== PENDAFTARAN KONTESTAN ====================
     Route::prefix('kontes')->group(function () {
         Route::resource('pendaftaran-peserta', PendaftaranKontesController::class);
         Route::get('get-bonsai-peserta/{id}', [PendaftaranKontesController::class, 'getBonsaiPeserta']);
-        Route::resource('rekap-nilai', RekapNilaiController::class);
     });
 
-    // ==================== JURI ====================
+    // ==================== PENILAIAN JURI ====================
     Route::resource('nilai', NilaiController::class)->parameters(['nilai' => 'id']);
     Route::get('nilai/{id}/form', [NilaiController::class, 'formPenilaian'])->name('nilai.form');
     Route::get('nilai/{id}/hasil', [NilaiController::class, 'show'])->name('nilai.hasil');
 
-    Route::resource('riwayat', RiwayatController::class)->parameters(['riwayat' => 'id']);
-
     // ==================== REKAP NILAI ====================
     Route::resource('rekap-nilai', RekapNilaiController::class);
+    Route::get('/rekap/cetak/{kontesId}', [RekapNilaiController::class, 'cetakLaporan'])->name('rekap.cetak');
     Route::get('/rekap/{nama_pohon}/{nomor_juri}', [RekapNilaiController::class, 'show'])->name('rekap.show');
     Route::get('/rekap/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export');
-    Route::get('/rekap/cetak', [RekapNilaiController::class, 'cetak'])->name('rekap.cetak');
+    Route::get('/rekap-nilai/{id}/cetak-rekap', [RekapNilaiController::class, 'cetakRekapPerBonsai'])->name('rekap.cetak-per-bonsai');
 
     // ==================== FUZZY RULES ====================
     Route::prefix('admin/penilaian')->group(function () {
@@ -90,7 +87,7 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::post('fuzzy-rules/auto-generate', [FuzzyRuleController::class, 'autoGenerate'])->name('fuzzy-rules.auto-generate');
     });
 
-    // ==================== RIWAYAT PENILAIAN ====================
+    // ==================== RIWAYAT PENILAIAN BIASA ====================
     Route::prefix('riwayat')->name('riwayat.')->group(function () {
         Route::get('/', [RiwayatController::class, 'index'])->name('index');
         Route::get('/{kontes}', [RiwayatController::class, 'show'])->name('show');

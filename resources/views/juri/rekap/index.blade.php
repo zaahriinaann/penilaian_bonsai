@@ -3,9 +3,8 @@
 @section('title', 'Rekap Nilai Bonsai')
 
 @section('button-toolbar')
-    <a href="{{ route('rekap.cetak') }}" class="btn btn-sm btn-danger">
-        <i class="fas fa-print"></i>
-        Export Laporan PDF
+    <a href="{{ route('rekap.cetak', $kontes->id) }}" target="_blank" class="btn btn-danger btn-sm rounded-pill">
+        <i class="fas fa-print"></i> Cetak Laporan Rekap
     </a>
 @endsection
 
@@ -81,8 +80,10 @@
                                 <td>
                                     <a href="{{ route('rekap.show', ['nama_pohon' => urlencode($b['nama_pohon']), 'nomor_juri' => $b['nomor_juri']]) }}"
                                         class="btn btn-sm btn-info">Detail</a>
-                                    <a href="{{ route('rekap.export', ['nama_pohon' => urlencode($b['nama_pohon'])]) }}"
-                                        class="btn btn-sm btn-danger">PDF</a>
+                                    <a href="{{ route('rekap.cetak-per-bonsai', $b['id']) }}" class="btn btn-danger btn-sm"
+                                        target="_blank">
+                                        PDF
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
