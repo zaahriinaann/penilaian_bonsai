@@ -3,8 +3,8 @@
 /public/build
 /public/hot
 /public/storage
-/public/images
-/public/sertifikat
+/public/assets/images
+/public/assets/sertifikat
 /storage/*.key
 /storage/pail
 /vendor
