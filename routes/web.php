@@ -34,7 +34,7 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::resource('akun', AkunController::class);
 
     // ==================== ADMIN ====================
-    Route::prefix('master')->group(function () {
+    Route::prefix('master')->name('master.')->group(function () {
         Route::resource('kontes', KontesController::class)->parameters(['kontes' => 'slug']);
         Route::resource('juri', JuriController::class)->parameters(['juri' => 'slug']);
         Route::resource('bonsai', BonsaiController::class)->parameters(['bonsai' => 'slug']);
@@ -42,33 +42,17 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::resource('peserta', PesertaController::class)->parameters(['peserta' => 'id']);
     });
 
-    // PENILAIAN ROLE ADMIN
-    Route::get('/admin/nilai', [NilaiController::class, 'indexAdmin'])->name('admin.nilai.index');
-    Route::get('/admin/nilai/{juriId}', [NilaiController::class, 'showAdmin'])->name('admin.nilai.show');
-    Route::get('/admin/nilai/{juriId}/bonsai/{bonsaiId}', [NilaiController::class, 'detailAdmin'])->name('admin.nilai.detail');
-
-    // RIWAYAT PENILAIAN ADMIN
-    Route::prefix('admin/riwayat')->name('admin.riwayat.')->group(function () {
-        Route::get('/', [NilaiController::class, 'riwayatIndex'])->name('index');
-        Route::get('/{kontes}/{juri}/cetak', [NilaiController::class, 'cetakLaporan'])->name('cetak'); // ⬅️ Pindahkan ke atas!
-        Route::get('/{kontes}', [NilaiController::class, 'riwayatJuri'])->name('juri');
-        Route::get('/{kontes}/{juri}', [NilaiController::class, 'riwayatPeserta'])->name('peserta');
-        Route::get('/{kontes}/{juri}/{bonsai}', [NilaiController::class, 'riwayatDetail'])->name('detail');
-    });
-
-
-    Route::prefix('juri/riwayat')->name('juri.riwayat.')->group(function () {
-        Route::get('/', [NilaiController::class, 'riwayatJuriIndex'])->name('index');
-        Route::get('/{kontes}', [NilaiController::class, 'riwayatJuriPeserta'])->name('peserta');
-        Route::get('/{kontes}/{bonsai}', [NilaiController::class, 'riwayatJuriDetail'])->name('detail');
-    });
-
-
     // ==================== KONTESTAN ====================
-    Route::prefix('kontes')->group(function () {
+    Route::prefix('kontes')->name('kontes.')->group(function () {
         Route::resource('pendaftaran-peserta', PendaftaranKontesController::class);
         Route::get('get-bonsai-peserta/{id}', [PendaftaranKontesController::class, 'getBonsaiPeserta']);
+
+        // Resource rekap-nilai diberi prefix name supaya nama route-nya unik
         Route::resource('rekap-nilai', RekapNilaiController::class);
+
+        // Kalau ada route custom di bawah ini, pastikan namanya beda!
+        // Misal:
+        // Route::get('rekap-khusus', [RekapNilaiController::class, 'khusus'])->name('rekap-khusus');
     });
 
     // ==================== JURI ====================
@@ -78,22 +62,24 @@ Route::middleware(['auth', 'web'])->group(function () {
 
     Route::resource('riwayat', RiwayatController::class)->parameters(['riwayat' => 'id']);
 
-    // ==================== REKAP NILAI ====================
-    Route::resource('rekap-nilai', RekapNilaiController::class);
+    // ==================== REKAP NILAI LAINNYA ====================
+    // Jangan buat resource 'rekap-nilai' di luar group 'kontes'!
+    // Route::resource('rekap-nilai', RekapNilaiController::class); <-- HAPUS/BATALKAN!
+
     Route::get('/rekap/{nama_pohon}/{nomor_juri}', [RekapNilaiController::class, 'show'])->name('rekap.show');
     Route::get('/rekap/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('rekap.export');
     Route::get('/rekap/cetak', [RekapNilaiController::class, 'cetak'])->name('rekap.cetak');
 
     // ==================== FUZZY RULES ====================
-    Route::prefix('admin/penilaian')->group(function () {
+    Route::prefix('admin/penilaian')->name('admin.penilaian.')->group(function () {
         Route::get('fuzzy-rules', [FuzzyRuleController::class, 'index'])->name('fuzzy-rules.index');
         Route::post('fuzzy-rules/auto-generate', [FuzzyRuleController::class, 'autoGenerate'])->name('fuzzy-rules.auto-generate');
     });
 
-    // ==================== RIWAYAT PENILAIAN ====================
-    Route::prefix('riwayat')->name('riwayat.')->group(function () {
-        Route::get('/', [RiwayatController::class, 'index'])->name('index');
-        Route::get('/{kontes}', [RiwayatController::class, 'show'])->name('show');
-        Route::get('/{kontes}/{bonsai}', [RiwayatController::class, 'detail'])->name('detail');
-    });
+    // ==================== RIWAYAT PENILAIAN (Opsional) ====================
+    // Route::prefix('riwayat')->name('riwayat.')->group(function () {
+    //     Route::get('/', [RiwayatController::class, 'index'])->name('index');
+    //     Route::get('/{kontes}', [RiwayatController::class, 'show'])->name('show');
+    //     Route::get('/{kontes}/{bonsai}', [RiwayatController::class, 'detail'])->name('detail');
+    // });
 });

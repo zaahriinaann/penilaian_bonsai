@@ -47,7 +47,7 @@
                                 </td>
                                 <td>
                                     <a class="text-dark fw-bold"
-                                        href="{{ route('kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
+                                        href="{{ route('master.kontes.show', $item->slug) }}">{{ $item->nama_kontes }}</a>
                                 </td>
                                 <td class="text-capitalize">{{ $item->tingkat_kontes }}</td>
                                 <td class="text-capitalize">{{ $item->tempat_kontes }}
