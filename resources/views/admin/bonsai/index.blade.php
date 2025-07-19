@@ -85,7 +85,7 @@
 
                                         <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
                                             data-id="{{ $item->id }}"
-                                            data-route="{{ route('bonsai.destroy', $item->slug) }}">
+                                            data-route="{{ route('master.bonsai.destroy', $item->slug) }}">
                                             <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                     </div>
                                 </td>
@@ -106,7 +106,7 @@
                     <h1 class="modal-title fs-5" id="kt_modal_create_bonsai">Data Bonsai Peserta</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="form-create-bonsai" action="{{ route('bonsai.store') }}" enctype="multipart/form-data"
+                <form id="form-create-bonsai" action="{{ route('master.bonsai.store') }}" enctype="multipart/form-data"
                     method="POST">
                     @csrf
                     @method('POST')

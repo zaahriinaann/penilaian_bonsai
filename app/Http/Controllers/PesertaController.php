@@ -44,7 +44,7 @@ class PesertaController extends Controller
         // Simpan user
         User::create($data);
 
-        return redirect()->route('peserta.index')->with('success', 'Peserta berhasil ditambahkan.');
+        return redirect()->back()->with('success', 'Peserta berhasil ditambahkan.');
     }
 
 

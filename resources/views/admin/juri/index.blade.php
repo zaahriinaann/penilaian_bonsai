@@ -76,7 +76,7 @@
                                     </button>
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
                                         data-id="{{ $item->id }}"
-                                        data-route="{{ route('juri.destroy', $item->slug) }}">
+                                        data-route="{{ route('master.juri.destroy', $item->slug) }}">
                                         <i class="bi bi-trash-fill m-0 p-0"></i></button>
                                 </div>
                             </td>
@@ -96,7 +96,7 @@
                     <h1 class="modal-title fs-5" id="kt_modal_create_juri">Data Juri Kontes</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('juri.store') }}" enctype="multipart/form-data" method="POST">
+                <form action="{{ route('master.juri.store') }}" enctype="multipart/form-data" method="POST">
                     @csrf
                     @method('POST')
                     <div class="modal-body">

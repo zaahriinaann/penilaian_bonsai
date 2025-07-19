@@ -8,7 +8,7 @@
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
             Tambah Kriteria
         </button>
-        <form action="{{ route('fuzzy-rules.auto-generate') }}" method="POST">
+        <form action="{{ route('admin.penilaian.fuzzy-rules.auto-generate') }}" method="POST">
             @csrf
             <button type="submit" class="btn btn-sm btn-warning">
                 <i class="fa fa-cogs"></i> Generate Fuzzy Rules
@@ -74,7 +74,7 @@
                             <div id="{{ $collapseId }}" class="accordion-collapse collapse text-capitalize"
                                 data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    <form method="POST" action="{{ route('penilaian.update', $slug) }}"
+                                    <form method="POST" action="{{ route('master.penilaian.update', $slug) }}"
                                         id="form-{{ $collapseId }}">
                                         @csrf
                                         @method('PUT')
@@ -199,7 +199,7 @@
                     <h1 class="modal-title fs-5" id="kt_modal_create_kriteria">Data Kriteria</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('penilaian.store') }}" enctype="multipart/form-data" method="POST">
+                <form action="{{ route('master.penilaian.store') }}" enctype="multipart/form-data" method="POST">
                     @csrf
                     @method('POST')
                     <input type="hidden" name="add_kriteria" value="1">
@@ -274,7 +274,7 @@
                             {{ $namaKategori }}</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form action="{{ route('penilaian.store') }}" enctype="multipart/form-data" method="POST"
+                    <form action="{{ route('master.penilaian.store') }}" enctype="multipart/form-data" method="POST"
                         id="form-create-{{ $namaKategori }}">
                         @csrf
                         @method('POST')
@@ -325,7 +325,7 @@
         </div>
     @endforeach
 
-    <form action="{{ route('penilaian.destroy', true) }}" method="POST" id="form-delete-all">
+    <form action="{{ route('master.penilaian.destroy', true) }}" method="POST" id="form-delete-all">
         @csrf
         @method('DELETE')
         <input type="hidden" name="sub_kriteria">
