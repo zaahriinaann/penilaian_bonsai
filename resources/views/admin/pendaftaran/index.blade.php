@@ -33,19 +33,19 @@
                                 <td>{{ $item->bonsai->nama_pohon }} - {{ $item->bonsai->no_induk_pohon }} - {{ $item->kelas }}</td>
                                 <td>{{ $item->user->name }}</td>
                                 <td>
-                                    <a href="{{ route('pendaftaran-peserta.show', $item->id) }}"
+                                    <a href="{{ route('kontes.pendaftaran-peserta.show', $item->id) }}"
                                         class="btn btn-sm btn-primary">Detail</a>
                                     {{-- <button class="btn btn-sm btn-warning btn-edit" data-bs-toggle="modal"
                                         data-bs-target="#kt_modal_edit_pendaftaran" title="Edit data"
                                         data-id="{{ $item->id }}" data-nama="{{ $item->user->name }}"
                                         data-user-id="{{ $item->user_id }}" data-bonsai-id="{{ $item->bonsai_id }}"
                                         data-kelas="{{ $item->kelas }}"
-                                        data-action="{{ route('pendaftaran-peserta.update', $item->id) }}">
+                                        data-action="{{ route('kontes.pendaftaran-peserta.update', $item->id) }}">
                                         Edit
                                     </button> --}}
                                     <button class="btn btn-sm btn-danger btn-delete" title="Hapus data"
                                         data-id="{{ $item->id }}"
-                                        data-route="{{ route('pendaftaran-peserta.destroy', $item->id) }}">Hapus</button>
+                                        data-route="{{ route('kontes.pendaftaran-peserta.destroy', $item->id) }}">Hapus</button>
                                 </td>
                             </tr>
                         @endforeach

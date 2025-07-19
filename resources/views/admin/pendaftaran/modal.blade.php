@@ -6,7 +6,7 @@
                 <h1 class="modal-title fs-5" id="kt_modal_create_pendaftaran">Data Pendaftaran Peserta Kontes</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('pendaftaran-peserta.store') }}" enctype="multipart/form-data" method="POST">
+            <form action="{{ route('kontes.pendaftaran-peserta.store') }}" enctype="multipart/form-data" method="POST">
                 @csrf
                 @method('POST')
                 <div class="modal-body">
@@ -57,7 +57,7 @@
                 <h1 class="modal-title fs-5" id="kt_modal_edit_pendaftaran">Edit Data Pendaftaran Peserta Kontes</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('pendaftaran-peserta.store') }}" enctype="multipart/form-data" method="POST">
+            <form action="{{ route('kontes.pendaftaran-peserta.store') }}" enctype="multipart/form-data" method="POST">
                 @csrf
                 @method('POST')
                 <div class="modal-body">
