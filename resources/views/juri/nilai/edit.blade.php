@@ -27,7 +27,7 @@
                 Tidak ada data penilaian yang tersedia untuk bonsai ini.
             </div>
         @else
-            <form action="{{ route('nilai.update', $bonsai->id) }}" method="POST">
+            <form action="{{ route('juri.nilai.update', $bonsai->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
