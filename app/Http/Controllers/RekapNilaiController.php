@@ -11,7 +11,6 @@ use App\Models\Kontes;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
-use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
 
 class RekapNilaiController extends Controller
@@ -30,7 +29,7 @@ class RekapNilaiController extends Controller
         }
 
         $rekapData = $rekap->with('bonsai.user')
-            ->where('id_kontes', $kontesAktif->id) // ✅ FILTER berdasarkan kontes aktif
+            ->where('id_kontes', $kontesAktif->id)
             ->get()
             ->map(function ($item) {
                 $bonsai = $item->bonsai;
@@ -59,6 +58,8 @@ class RekapNilaiController extends Controller
                     'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran,
                     'nomor_juri' => $pendaftaran->nomor_juri,
                     'nama_pohon' => $bonsai->nama_pohon,
+                    'kelas' => $bonsai->kelas,
+                    'ukuran_2' => $bonsai->ukuran_2,
                     'pemilik' => $bonsai->user->name ?? '-',
                     'skor_akhir' => $item->skor_akhir,
                     'himpunan_akhir' => $item->himpunan_akhir,
@@ -71,27 +72,66 @@ class RekapNilaiController extends Controller
 
         $bestTen = $rekapData->take(10);
 
-        return view('juri.rekap.index', [
+        return view('rekap.index', [
             'rekapSorted' => $rekapData,
             'bestTen' => $bestTen,
-            'kontes' => $kontesAktif, // langsung pakai kontes aktif
+            'kontes' => $kontesAktif,
         ]);
     }
 
-
-    public function show($nama_pohon, $nomor_juri)
+    public function show($id)
     {
-        $rekapData = $this->index(new RekapNilai())->getData()['rekapSorted'];
+        $bonsai = Bonsai::with('user')->findOrFail($id);
 
-        $detail = $rekapData->first(function ($item) use ($nama_pohon, $nomor_juri) {
-            return $item['nama_pohon'] === urldecode($nama_pohon) && $item['nomor_juri'] == $nomor_juri;
-        });
-
-        if (!$detail) {
-            abort(404, 'Data tidak ditemukan');
+        $rekap = RekapNilai::where('id_bonsai', $id)->latest()->first();
+        if (!$rekap) {
+            abort(404, 'Rekap nilai tidak ditemukan.');
         }
 
-        return view('juri.rekap.show', compact('detail'));
+        $pendaftaran = PendaftaranKontes::where('bonsai_id', $id)
+            ->where('kontes_id', $rekap->id_kontes)
+            ->first();
+
+        $hasil = Hasil::where('id_bonsai', $id)
+            ->where('id_kontes', $rekap->id_kontes)
+            ->get()
+            ->groupBy('id_kriteria');
+
+        $kategori = [];
+
+        foreach ($hasil as $idKriteria => $list) {
+            $first = $list->first();
+
+            $kriteria = HelperDomain::where('id_kriteria', $idKriteria)
+                ->whereNull('id_sub_kriteria')
+                ->first();
+
+            $kategori[] = [
+                'nama_kriteria' => $kriteria->kriteria ?? '—',
+                'rata_defuzzifikasi' => round($first->rata_defuzzifikasi, 2),
+                'rata_himpunan' => $first->rata_himpunan,
+            ];
+        }
+
+        $detail = [
+            'id' => $bonsai->id,
+            'nama_pohon' => $bonsai->nama_pohon,
+            'kelas' => $bonsai->kelas,
+            'ukuran_2' => $bonsai->ukuran_2,
+            'pemilik' => $bonsai->user->name,
+            'nomor_juri' => $pendaftaran->nomor_juri ?? '—',
+            'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran ?? '—',
+            'skor_akhir' => $rekap->skor_akhir,
+            'himpunan_akhir' => $rekap->himpunan_akhir,
+            'kategori' => collect($kategori)->mapWithKeys(function ($item) {
+                return [$item['nama_kriteria'] => [
+                    'rata_defuzzifikasi' => $item['rata_defuzzifikasi'],
+                    'rata_himpunan' => $item['rata_himpunan'],
+                ]];
+            })->toArray(),
+        ];
+
+        return view('rekap.show', compact('detail'));
     }
 
     public function cetakRekapPerBonsai($id)
@@ -132,6 +172,7 @@ class RekapNilaiController extends Controller
             'id' => $bonsai->id,
             'nama_pohon' => $bonsai->nama_pohon,
             'kelas' => $bonsai->kelas,
+            'ukuran_2' => $bonsai->ukuran_2,
             'pemilik' => $bonsai->user->name,
             'nomor_juri' => $pendaftaran->nomor_juri ?? '—',
             'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran ?? '—',
@@ -140,7 +181,7 @@ class RekapNilaiController extends Controller
             'kategori' => $kategori,
         ];
 
-        $pdf = FacadePdf::loadView('juri.rekap.cetak_per_bonsai', compact('detail'))
+        $pdf = FacadePdf::loadView('rekap.cetak_per_bonsai', compact('detail'))
             ->setPaper('A4', 'portrait');
 
         return $pdf->stream('rekap-bonsai-' . $bonsai->id . '.pdf');
@@ -198,7 +239,7 @@ class RekapNilaiController extends Controller
             }
         }
 
-        $pdf = FacadePdf::loadView('admin.riwayat.cetak', compact('kontes', 'rekapData'))
+        $pdf = FacadePdf::loadView('rekap.cetak_laporan', compact('kontes', 'rekapData'))
             ->setPaper('A4', 'portrait');
 
         return $pdf->stream('laporan-rekap-nilai.pdf');

@@ -66,8 +66,8 @@
             <td>{{ $detail['nama_pohon'] }}</td>
         </tr>
         <tr>
-            <th>Kelas</th>
-            <td>{{ $detail['kelas'] }}</td>
+            <th>Kelas/Ukuran</th>
+            <td>{{ $detail['kelas'] }} / {{ $detail['ukuran_2'] }}</td>
         </tr>
         <tr>
             <th>Pemilik</th>
@@ -91,6 +91,7 @@
         </tr>
     </table>
 
+    <br>
     <h4>Detail Per Kategori</h4>
     <table>
         <thead>

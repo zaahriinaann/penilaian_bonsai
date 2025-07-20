@@ -4,7 +4,7 @@
 
 @section('button-toolbar')
     @if (isset($kontes))
-        <a href="{{ route('rekap.cetak', $kontes->id) }}" target="_blank" class="btn btn-danger btn-sm rounded-pill">
+        <a href="{{ route('rekap.cetak-laporan', $kontes->id) }}" target="_blank" class="btn btn-danger btn-sm">
             <i class="fas fa-print"></i> Cetak Laporan Rekap
         </a>
     @endif
@@ -44,8 +44,10 @@
                                     <td>{{ number_format($b['skor_akhir'], 2) }}</td>
                                     <td>{{ $b['himpunan_akhir'] }}</td>
                                     <td>
-                                        <a href="{{ route('rekap.show', ['nama_pohon' => urlencode($b['nama_pohon']), 'nomor_juri' => $b['nomor_juri']]) }}"
-                                            class="btn btn-sm btn-info">Detail</a>
+                                        <a href="{{ route('rekap.show', $b['id']) }}" class="btn btn-sm btn-info">Detail
+                                            Rekap</a>
+                                        <a href="{{ route('rekap.cetak-per-bonsai', $b['id']) }}"
+                                            class="btn btn-danger btn-sm" target="_blank">Cetak Rekap</a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -88,10 +90,10 @@
                                     <td>{{ number_format($b['skor_akhir'], 2) }}</td>
                                     <td>{{ $b['himpunan_akhir'] }}</td>
                                     <td>
-                                        <a href="{{ route('rekap.show', ['nama_pohon' => urlencode($b['nama_pohon']), 'nomor_juri' => $b['nomor_juri']]) }}"
-                                            class="btn btn-sm btn-info">Detail</a>
+                                        <a href="{{ route('rekap.show', $b['id']) }}" class="btn btn-sm btn-info">Detail
+                                            Rekap</a>
                                         <a href="{{ route('rekap.cetak-per-bonsai', $b['id']) }}"
-                                            class="btn btn-danger btn-sm" target="_blank">PDF</a>
+                                            class="btn btn-danger btn-sm" target="_blank">Cetak Rekap</a>
                                     </td>
                                 </tr>
                             @endforeach

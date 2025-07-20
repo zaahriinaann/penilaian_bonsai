@@ -226,7 +226,7 @@
 
         {{-- Tombol Kembali --}}
         <div class="text-end mt-4">
-            <a href="{{ route('nilai.index') }}" class="btn btn-secondary rounded-pill">
+            <a href="{{ route('juri.nilai.index') }}" class="btn btn-secondary rounded-pill">
                 <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
             </a>
         </div>

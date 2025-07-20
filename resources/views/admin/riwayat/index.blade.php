@@ -4,11 +4,12 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
+            <div class="card-header align-items-center">
+                <h3>Daftar Kontes</h3>
+            </div>
             <div class="card-body">
-                <h2 class="mb-5">Daftar Kontes yang Sudah Dinilai</h2>
-
                 {{-- Form Pencarian dan Filter --}}
-                <form method="GET" class="py-4">
+                <form method="GET" class="mb-3">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-4">
                             <label for="search" class="form-label">Cari Nama Kontes / Tahun</label>
@@ -40,6 +41,7 @@
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>#</th>
                                 <th>Nama Kontes</th>
                                 <th>Periode</th>
                                 <th>Aksi</th>
@@ -48,12 +50,13 @@
                         <tbody>
                             @forelse ($kontesList as $kontes)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $kontes->nama_kontes }}</td>
                                     <td>{{ $kontes->tanggal_mulai_kontes }} s/d {{ $kontes->tanggal_selesai_kontes }}</td>
                                     <td>
                                         <a href="{{ route('admin.riwayat.juri', $kontes->id) }}"
                                             class="btn btn-sm btn-outline-primary">
-                                            📑 Daftar Juri
+                                            <i class="fas fa-list"></i> Daftar Juri
                                         </a>
                                     </td>
                                 </tr>
@@ -66,6 +69,10 @@
                     </table>
                 </div>
 
+                {{-- Pagination --}}
+                <div class="mt-3">
+                    {{ $kontesList->withQueryString()->links() }}
+                </div>
             </div>
         </div>
     </div>

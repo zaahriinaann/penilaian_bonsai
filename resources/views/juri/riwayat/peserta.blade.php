@@ -4,8 +4,8 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
-            <div class="card-header bg-dark text-white rounded-top-4">
-                <strong>📋 Peserta Dinilai pada {{ $kontes->nama_kontes }}</strong>
+            <div class="card-header align-items-center">
+                <h3>Peserta Dinilai pada {{ $kontes->nama_kontes }}</h3>
             </div>
             <div class="card-body">
                 <form method="GET" class="mb-3">
@@ -42,9 +42,14 @@
                                     <td>{{ $item->user->name }}</td>
                                     <td>{{ $item->bonsai->nama_pohon }}</td>
                                     <td>
-                                        <a href="{{ route('juri.riwayat.detail', [$kontes->id, $item->bonsai_id]) }}"
+                                        <a href="{{ route('juri.nilai.show', $item->bonsai_id) }}"
                                             class="btn btn-sm btn-outline-success">
-                                            🔍 Lihat Nilai
+                                            <i class="fas fa-search"></i> Lihat Nilai
+                                        </a>
+                                        <a href="{{ route('rekap.show', $item->bonsai_id) }}"
+                                            class="btn btn-sm btn-outline-info">
+                                            <i class="fas bi-file-bar-graph-fill"></i>
+                                            Lihat Nilai Rekap
                                         </a>
                                     </td>
                                 </tr>

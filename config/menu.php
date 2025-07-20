@@ -76,7 +76,7 @@ $dropdown = [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Khusus Admin',
         'submenu' => [],
-        'link' => '/admin/riwayat',
+        'link' => '/admin/riwayat/kontes',
         'role' => ['admin'],
     ],
 
@@ -89,7 +89,7 @@ $dropdown = [
             [
                 'judul' => 'Penilaian',
                 'description' => 'Juri dapat melakukan penilaian pada kontes yang sedang berlangsung.',
-                'link' => '/nilai',
+                'link' => '/juri/nilai',
                 'role' => ['juri'],
             ],
             [
@@ -106,7 +106,7 @@ $dropdown = [
         'menu' => 'Riwayat Penilaian',
         'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
         'submenu' => [],
-        'link' => '/juri/riwayat',
+        'link' => '/juri/riwayat/kontes',
         'role' => ['juri'],
     ],
 ];

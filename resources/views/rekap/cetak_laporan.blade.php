@@ -36,6 +36,7 @@
 
         .bonsai-box {
             margin-bottom: 40px;
+            page-break-after: always;
         }
 
         table {
@@ -54,6 +55,11 @@
         td.left {
             text-align: left;
         }
+
+        /* Hilangkan page break terakhir */
+        .bonsai-box:last-child {
+            page-break-after: avoid;
+        }
     </style>
 </head>
 
@@ -65,7 +71,8 @@
         <small>Cabang Cirebon</small>
     </div>
 
-    <h4>Laporan Rekap Nilai Bonsai</h4>
+    <h3>Laporan Rekap Nilai Bonsai</h3>
+    <hr>
     <p><strong>Kontes:</strong> {{ $kontes->nama_kontes }}</p>
 
     @foreach ($rekapData as $i => $item)
@@ -131,6 +138,11 @@
                     <td><strong>{{ $item['himpunan_akhir'] }}</strong></td>
                 </tr>
             </table>
+
+            <div style="width: 100%; text-align: center; margin-top: 10px;">
+                <img src="{{ public_path('assets/media/logos/logo-ppbi-small-nobg.png') }}" alt="Logo PPBI"
+                    style="width: 50px; height: auto;">
+            </div>
         </div>
     @endforeach
 

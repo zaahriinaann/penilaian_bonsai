@@ -2,27 +2,29 @@
 
 @section('title', 'Detail Penilaian Juri')
 
+@section('button-toolbar')
+    {{-- Tombol Rekap Nilai di Atas --}}
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('rekap.show', [$bonsai->nama_pohon, $pendaftaran->nomor_juri]) }}" class="btn btn-primary ">
+            <i class="fas fa-eye"></i> Lihat Rekap Nilai
+        </a>
+    </div>
+@endsection
+
 @section('content')
     <div class="container py-4">
-        {{-- Tombol Rekap Nilai di Atas --}}
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{{ route('rekap.show', [$bonsai->nama_pohon, $pendaftaran->nomor_juri]) }}" class="btn btn-primary ">
-                📊 Lihat Rekap Nilai
-            </a>
-        </div>
         {{-- Informasi Bonsai --}}
         <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-secondary text-white rounded-top-4 align-items-center">
+            <div class="card-header bg-secondary rounded-top-4 align-items-center">
                 <strong>Penilaian oleh: {{ $juri->user->name }}</strong><br>
-                <small>Nomor Juri: {{ $pendaftaran->nomor_juri ?? '-' }}</small>
             </div>
             <div class="card-body">
                 <div class="row mb-2">
                     <div class="col-md-6">
-                        <strong>No Daftar:</strong> {{ $pendaftaran->nomor_pendaftaran ?? '-' }}
+                        <strong>Nomor Juri:</strong> {{ $pendaftaran->nomor_juri ?? '-' }}
                     </div>
                     <div class="col-md-6">
-                        <strong>Nama Pemilik:</strong> {{ $bonsai->user->name }}
+                        <strong>No Daftar:</strong> {{ $pendaftaran->nomor_pendaftaran ?? '-' }}
                     </div>
                 </div>
                 <div class="row mb-2">
@@ -30,13 +32,12 @@
                         <strong>Ukuran Bonsai:</strong> {{ $bonsai->ukuran_2 }} ({{ $bonsai->ukuran }})
                     </div>
                     <div class="col-md-6">
-                        <strong>Kelas:</strong> {{ $bonsai->kelas }}
+                        <strong>Pemilik:</strong> {{ $bonsai->user->name }}
                     </div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6">
-                        <strong>No HP:</strong> {{ $bonsai->user->no_hp }}
-                    </div>
+                    <div class="col-md-6"><strong>Kelas:</strong> {{ $bonsai->kelas }}</div>
+                    <div class="col-md-6"><strong>No Hp:</strong> {{ $bonsai->user->no_hp }}</div>
                 </div>
             </div>
         </div>
@@ -96,7 +97,7 @@
 
         {{-- Defuzzifikasi --}}
         <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-secondary text-white rounded-top-4">
+            <div class="card-header rounded-top-4 align-items-center">
                 <strong>Hasil Defuzzifikasi</strong>
             </div>
             <div class="card-body table-responsive">
@@ -129,7 +130,7 @@
 
         {{-- Rule Aktif --}}
         <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-light rounded-top-4">
+            <div class="card-header rounded-top-4 align-items-center">
                 <strong>🔥 Rule Inferensi Aktif</strong>
             </div>
             <div class="card-body">
@@ -180,7 +181,7 @@
 
         {{-- Agregasi --}}
         <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-light rounded-top-4">
+            <div class="card-header rounded-top-4 align-items-center">
                 <strong>🧠 Proses Agregasi & Defuzzifikasi</strong>
             </div>
             <div class="card-body">
