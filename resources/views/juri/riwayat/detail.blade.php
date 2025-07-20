@@ -1,14 +1,18 @@
 @extends('layouts.app')
 @section('title', 'Detail Nilai Saya')
 
+@section('button-toolbar')
+    {{-- Tombol Rekap Nilai di Atas --}}
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('rekap.show', $bonsai->id, Auth::id()) }}" class="btn btn-sm btn-info">Detail</a>
+        {{-- <a href="{{ route('riwayat.rekap', $bonsai->id) }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-eye"></i> Lihat Rekap Nilai
+        </a> --}}
+    </div>
+@endsection
+
 @section('content')
     <div class="container py-4">
-        {{-- Tombol Rekap Nilai di Atas --}}
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{{ route('rekap.show', [$bonsai->nama_pohon, $pendaftaran->nomor_juri]) }}" class="btn btn-primary">
-                📊 Lihat Rekap Nilai
-            </a>
-        </div>
         <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-header bg-secondary  rounded-top-4 align-items-center">
                 <strong>Hasil Penilaian Bonsai - {{ $bonsai->nama_pohon }}</strong>
@@ -38,6 +42,10 @@
         </div>
 
         {{-- Nilai Awal --}}
+        @php
+            $grouped = $nilaiAwal->groupBy('kriteria');
+            $num = 1;
+        @endphp
         <div class="card mb-4">
             <div class="card-header rounded-top-4 align-items-center">
                 <strong>Nilai Awal yang Diinput</strong>
@@ -55,10 +63,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $grouped = $nilaiAwal->groupBy('kriteria');
-                            $num = 1;
-                        @endphp
                         @foreach ($grouped as $kriteria => $subList)
                             @php
                                 $subGrouped = $subList->groupBy('sub_kriteria');
@@ -92,7 +96,7 @@
 
         {{-- Defuzzifikasi --}}
         <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-secondary text-white rounded-top-4">
+            <div class="card-header rounded-top-4 align-items-center">
                 <strong>Hasil Defuzzifikasi</strong>
             </div>
             <div class="card-body table-responsive">
@@ -122,4 +126,5 @@
                 </table>
             </div>
         </div>
-    @endsection
+    </div>
+@endsection

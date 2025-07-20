@@ -62,13 +62,13 @@
                                     @endif
                                 </td>
                                 <td class="text-nowrap">
-                                    <a href="{{ $sudahDinilai ? route('nilai.edit', $item->bonsai_id) : route('nilai.form', $item->bonsai_id) }}"
+                                    <a href="{{ $sudahDinilai ? route('juri.nilai.edit', $item->bonsai_id) : route('juri.nilai.form', $item->bonsai_id) }}"
                                         class="btn btn-sm {{ $sudahDinilai ? 'btn-warning' : 'btn-primary' }}">
                                         {{ $sudahDinilai ? 'Edit Nilai' : 'Nilai' }}
                                     </a>
 
                                     @if ($sudahDinilai)
-                                        <a href="{{ route('nilai.hasil', $item->bonsai_id) }}"
+                                        <a href="{{ route('juri.nilai.show', $item->bonsai_id) }}"
                                             class="btn btn-sm btn-info"><i class="bi bi-eye"></i>
                                             Lihat Nilai
                                         </a>

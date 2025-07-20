@@ -4,10 +4,11 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
-            <div class="card-header bg-secondary text-white rounded-top-4">
-                <strong>🧑‍⚖️ Juri dalam Kontes: {{ $kontes->nama_kontes }}</strong>
+            <div class="card-header align-items-center">
+                <h3>Daftar Juri dalam Kontes: {{ $kontes->nama_kontes }}</h3>
             </div>
             <div class="card-body">
+                {{-- Form Filter --}}
                 <form method="GET" class="mb-3">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-4">
@@ -25,10 +26,12 @@
                     </div>
                 </form>
 
+                {{-- Tabel Juri --}}
                 <div class="table-responsive">
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>#</th>
                                 <th>Nama Juri</th>
                                 <th>Email</th>
                                 <th>Aksi</th>
@@ -37,12 +40,13 @@
                         <tbody>
                             @forelse ($juriList as $juri)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $juri->user->name }}</td>
                                     <td>{{ $juri->user->email }}</td>
                                     <td>
                                         <a href="{{ route('admin.riwayat.peserta', [$kontes->id, $juri->id]) }}"
                                             class="btn btn-sm btn-outline-info">
-                                            👁️ Lihat Peserta
+                                            <i class="bi bi-people-fill"></i> Lihat Peserta
                                         </a>
                                     </td>
                                 </tr>
@@ -53,6 +57,11 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Pagination --}}
+                <div class="mt-3">
+                    {{ $juriList->withQueryString()->links() }}
                 </div>
             </div>
         </div>

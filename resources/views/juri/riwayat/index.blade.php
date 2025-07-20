@@ -4,11 +4,12 @@
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
+            <div class="card-header align-items-center">
+                <h3>Daftar Kontes</h3>
+            </div>
             <div class="card-body">
-                <h2 class="mb-5">Daftar Kontes yang Sudah Dinilai</h2>
-
                 {{-- Form Pencarian dan Filter Tahun --}}
-                <form method="GET" class="py-5">
+                <form method="GET" class="mb-3">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-4">
                             <label for="search" class="form-label">Cari Nama Kontes</label>
@@ -53,7 +54,7 @@
                                     <td>
                                         <a href="{{ route('juri.riwayat.peserta', $kontes->id) }}"
                                             class="btn btn-sm btn-outline-primary">
-                                            👥 Lihat Peserta
+                                            <i class="bi bi-people-fill"></i> Lihat Peserta
                                         </a>
                                     </td>
                                 </tr>

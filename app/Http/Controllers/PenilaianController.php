@@ -119,6 +119,11 @@ class PenilaianController extends Controller
         return back()->with('success', 'Data penilaian & domain berhasil disimpan!');
     }
 
+    public function show()
+    {
+        //
+    }
+
     public function update(Request $r, Penilaian $penilaian)
     {
         $kriteria    = $r->input('kategori');
