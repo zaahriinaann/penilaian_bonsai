@@ -8,10 +8,30 @@ use App\Models\Bonsai;
 use App\Models\Nilai;
 use App\Models\PendaftaranKontes;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     public function index()
+    {
+        $role = Auth::user()->role;
+
+        if ($role == 'admin') {
+            return $this->dashboardAdmin();
+        }
+
+        if ($role == 'juri') {
+            return $this->dashboardJuri();
+        }
+
+        if ($role == 'anggota') {
+            return $this->dashboardAnggota();
+        }
+
+        abort(403, 'Role tidak dikenali');
+    }
+
+    public function dashboardAdmin()
     {
         // 1. KARTU TOTAL
         $dataRender = [
@@ -106,5 +126,76 @@ class HomeController extends Controller
             'prediksiMeja'   => $prediksiMeja,
             'rataKenaikan'   => round($rataKenaikan, 2),
         ]);
+    }
+
+    public function dashboardJuri()
+    {
+        $user = Auth::user();
+        $juri = $user->juri; // relasi ke model Juri
+
+        if (!$juri) {
+            abort(403, 'User ini belum terdaftar sebagai juri.');
+        }
+
+        $idJuri = $juri->id;
+
+        // Total kontes diikuti
+        $totalKontes = Nilai::where('id_juri', $idJuri)
+            ->distinct('id_kontes')
+            ->count('id_kontes');
+
+        // Total bonsai dinilai
+        $bonsaiDinilai = Nilai::where('id_juri', $idJuri)
+            ->distinct('id_bonsai')
+            ->count('id_bonsai');
+
+        // Kontes aktif & bonsai belum dinilai
+        $kontesAktif = Kontes::where('status', 1)->first();
+        $bonsaiBelumDinilai = 0;
+
+        if ($kontesAktif) {
+            $totalBonsai = PendaftaranKontes::where('kontes_id', $kontesAktif->id)->count();
+
+            $sudahDinilai = Nilai::where('id_kontes', $kontesAktif->id)
+                ->where('id_juri', $idJuri)
+                ->distinct('id_bonsai')
+                ->count('id_bonsai');
+
+            $bonsaiBelumDinilai = $totalBonsai - $sudahDinilai;
+        }
+
+        // Grafik per tahun (5 tahun terakhir)
+        $tahun = range(now()->year - 4, now()->year);
+        $dataPenilaian = collect($tahun)->map(function ($th) use ($idJuri) {
+            return Nilai::where('id_juri', $idJuri)
+                ->whereYear('created_at', $th)
+                ->distinct('id_bonsai')
+                ->count('id_bonsai');
+        });
+
+        // Kontes yang pernah dinilai
+        $kontesIdPernahDinilai = Nilai::where('id_juri', $idJuri)
+            ->distinct('id_kontes')
+            ->pluck('id_kontes');
+
+        $kontesDiikuti = Kontes::whereIn('id', $kontesIdPernahDinilai)
+            ->orderByDesc('tanggal_mulai_kontes')
+            ->get();
+
+        return view('dashboard.juri', compact(
+            'totalKontes',
+            'bonsaiDinilai',
+            'bonsaiBelumDinilai',
+            'kontesAktif',
+            'tahun',
+            'dataPenilaian',
+            'kontesDiikuti'
+        ));
+    }
+
+    public function dashboardAnggota()
+    {
+        // isi dashboard anggota
+        return view('dashboard.anggota');
     }
 }

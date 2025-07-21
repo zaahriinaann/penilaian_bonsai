@@ -79,7 +79,7 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::prefix('riwayat')->name('riwayat.')->group(function () {
             Route::get('/kontes', [RiwayatController::class, 'riwayatJuriIndex'])->name('index');
             Route::get('/{kontes}/peserta', [RiwayatController::class, 'riwayatJuriPeserta'])->name('peserta');
-            Route::get('/{kontes}/peserta/nilai-rekap/{bonsai}', [RiwayatController::class, 'riwayatJuriDetail'])->name('detail');
+            Route::get('/{kontes}/peserta/detail/{bonsai}', [RiwayatController::class, 'riwayatJuriDetail'])->name('detail');
         });
     });
 

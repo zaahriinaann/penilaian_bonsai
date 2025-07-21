@@ -25,12 +25,12 @@ class NilaiController extends Controller
     public function index()
     {
         $kontes = Kontes::where('status', 1)->first();
-        $pendaftarans = [];
+        $pendaftarans = collect(); // default empty collection
 
         if ($kontes) {
             $pendaftarans = PendaftaranKontes::with(['user', 'bonsai'])
                 ->where('kontes_id', $kontes->id)
-                ->get();
+                ->paginate(10); // PAGINATION
         }
 
         return view('juri.nilai.index', compact('pendaftarans', 'kontes'));

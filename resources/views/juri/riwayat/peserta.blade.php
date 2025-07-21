@@ -42,10 +42,11 @@
                                     <td>{{ $item->user->name }}</td>
                                     <td>{{ $item->bonsai->nama_pohon }}</td>
                                     <td>
-                                        <a href="{{ route('juri.nilai.show', $item->bonsai_id) }}"
+                                        <a href="{{ route('juri.riwayat.detail', [$kontes->id, $item->bonsai_id]) }}"
                                             class="btn btn-sm btn-outline-success">
                                             <i class="fas fa-search"></i> Lihat Nilai
                                         </a>
+
                                         <a href="{{ route('rekap.show', $item->bonsai_id) }}"
                                             class="btn btn-sm btn-outline-info">
                                             <i class="fas bi-file-bar-graph-fill"></i>

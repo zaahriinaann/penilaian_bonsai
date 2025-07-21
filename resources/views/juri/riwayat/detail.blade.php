@@ -1,21 +1,14 @@
 @extends('layouts.app')
-@section('title', 'Detail Nilai Saya')
 
-@section('button-toolbar')
-    {{-- Tombol Rekap Nilai di Atas --}}
-    <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('rekap.show', $bonsai->id, Auth::id()) }}" class="btn btn-sm btn-info">Detail</a>
-        {{-- <a href="{{ route('riwayat.rekap', $bonsai->id) }}" class="btn btn-primary btn-sm">
-            <i class="fas fa-eye"></i> Lihat Rekap Nilai
-        </a> --}}
-    </div>
-@endsection
+@section('title', 'Detail Penilaian Juri')
+
 
 @section('content')
     <div class="container py-4">
+        {{-- Informasi Bonsai --}}
         <div class="card shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-secondary  rounded-top-4 align-items-center">
-                <strong>Hasil Penilaian Bonsai - {{ $bonsai->nama_pohon }}</strong>
+            <div class="card-header bg-secondary rounded-top-4 align-items-center">
+                <strong>Penilaian oleh: {{ $juri->user->name }}</strong><br>
             </div>
             <div class="card-body">
                 <div class="row mb-2">
@@ -125,6 +118,104 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        {{-- Rule Aktif --}}
+        <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-header rounded-top-4 align-items-center">
+                <strong>🔥 Rule Inferensi Aktif</strong>
+            </div>
+            <div class="card-body">
+                @forelse($ruleAktif as $idKriteria => $rules)
+                    <div class="mb-4 p-3 border rounded bg-light">
+                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <ol class="mt-2">
+                            @foreach ($rules as $index => $hasil)
+                                @php
+                                    $details = $hasil->rule->details;
+                                    $antecedents = $details
+                                        ->map(fn($d) => $d->input_variable . ' ' . $d->himpunan)
+                                        ->implode(' and ');
+                                    $symbols = $details
+                                        ->map(function ($d) {
+                                            $abbr = implode(
+                                                '',
+                                                array_map(fn($w) => substr($w, 0, 1), explode(' ', $d->input_variable)),
+                                            );
+                                            return 'μ' . strtoupper($abbr) . $d->himpunan;
+                                        })
+                                        ->implode('; ');
+                                    $values = $details
+                                        ->map(function ($d) use ($nilaiAwal) {
+                                            $match = $nilaiAwal->firstWhere('sub_kriteria', $d->input_variable);
+                                            return $match ? round($match->derajat_anggota, 2) : '0';
+                                        })
+                                        ->implode('; ');
+                                    $alpha = round($hasil->alpha, 3);
+                                    $z = round($hasil->z_value, 2);
+                                @endphp
+                                <li class="mb-2">
+                                    <strong>Rule {{ $index + 1 }}:</strong>
+                                    If {{ $antecedents }} then Penampilan
+                                    <strong>{{ $hasil->rule->output_himpunan }}</strong><br>
+                                    a-predikat{{ $index + 1 }} = {{ $symbols }} = Min ({{ $values }}) =
+                                    <strong>{{ $alpha }}</strong><br>
+                                    z = <strong>{{ $z }}</strong>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
+                @empty
+                    <p class="text-muted">Tidak ada rule aktif untuk bonsai ini.</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Agregasi --}}
+        <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-header rounded-top-4 align-items-center">
+                <strong>🧠 Proses Agregasi & Defuzzifikasi</strong>
+            </div>
+            <div class="card-body">
+                @forelse($hasilAgregasi as $idKriteria => $items)
+                    @php
+                        $sumAlphaZ = 0;
+                        $sumAlpha = 0;
+                    @endphp
+                    <div class="mb-4 p-3 border rounded bg-light">
+                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <ol class="mt-2">
+                            @foreach ($items as $i => $item)
+                                @php
+                                    $alpha = round($item->alpha, 3);
+                                    $z = round($item->z_value, 2);
+                                    $product = round($alpha * $z, 2);
+                                    $sumAlphaZ += $product;
+                                    $sumAlpha += $alpha;
+                                @endphp
+                                <li>
+                                    Rule z{{ $i + 1 }} = {{ $z }}, α{{ $i + 1 }} =
+                                    {{ $alpha }} → α × z = <strong>{{ $product }}</strong>
+                                </li>
+                            @endforeach
+                        </ol>
+                        <div class="mt-2">
+                            ∑(α × z) = <strong>{{ round($sumAlphaZ, 2) }}</strong>,
+                            ∑α = <strong>{{ round($sumAlpha, 3) }}</strong><br>
+                            z_final = <strong>{{ $sumAlpha > 0 ? round($sumAlphaZ / $sumAlpha, 2) : '0.00' }}</strong>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted">Tidak ada proses agregasi ditemukan.</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Tombol Kembali --}}
+        <div class="text-end mt-4">
+            <a href="{{ route('juri.riwayat.peserta', [$kontes->id, $juri->id]) }}" class="btn btn-secondary rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar Peserta
+            </a>
         </div>
     </div>
 @endsection

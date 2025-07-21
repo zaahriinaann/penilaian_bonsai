@@ -371,15 +371,20 @@ class RiwayatController extends Controller
 
     public function riwayatJuriDetail($kontesId, $bonsaiId)
     {
-        $juri = Juri::where('user_id', Auth::id())->firstOrFail();
+        // Ambil juri yang sedang login
+        $juri = Juri::with('user')->where('user_id', Auth::id())->firstOrFail();
+
+        // Ambil data kontes dan bonsai
         $kontes = Kontes::findOrFail($kontesId);
         $bonsai = Bonsai::with('user')->findOrFail($bonsaiId);
 
+        // Nilai awal (crisp) yang diberikan juri
         $nilaiAwal = Nilai::where('id_bonsai', $bonsaiId)
             ->where('id_juri', $juri->id)
             ->where('id_kontes', $kontesId)
             ->get();
 
+        // Defuzzifikasi per kriteria + ambil nama kriteria
         $defuzzifikasiPerKriteria = Defuzzifikasi::where('id_bonsai', $bonsaiId)
             ->where('id_juri', $juri->id)
             ->where('id_kontes', $kontesId)
@@ -393,10 +398,12 @@ class RiwayatController extends Controller
                 return $item;
             });
 
+        // Ambil data pendaftaran kontes
         $pendaftaran = PendaftaranKontes::where('bonsai_id', $bonsaiId)
             ->where('kontes_id', $kontesId)
             ->first();
 
+        // Ambil hasil aturan fuzzy yang dipakai (group by kriteria)
         $ruleAktif = HasilFuzzyRule::with(['rule.details'])
             ->where('id_kontes', $kontesId)
             ->where('id_bonsai', $bonsaiId)
@@ -404,18 +411,22 @@ class RiwayatController extends Controller
             ->get()
             ->groupBy('id_kriteria');
 
+        // Ambil hasil agregasi fuzzy (group by kriteria)
         $hasilAgregasi = HasilFuzzyRule::where('id_kontes', $kontesId)
             ->where('id_bonsai', $bonsaiId)
             ->where('id_juri', $juri->id)
             ->get()
             ->groupBy('id_kriteria');
 
+        // Ambil rekap nilai akhir
         $rekap = RekapNilai::where('id_kontes', $kontesId)
             ->where('id_bonsai', $bonsaiId)
             ->first();
 
+        // Kirim ke view juri.riwayat.detail
         return view('juri.riwayat.detail', compact(
             'kontes',
+            'juri',
             'bonsai',
             'nilaiAwal',
             'defuzzifikasiPerKriteria',

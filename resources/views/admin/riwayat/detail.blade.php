@@ -2,15 +2,6 @@
 
 @section('title', 'Detail Penilaian Juri')
 
-@section('button-toolbar')
-    {{-- Tombol Rekap Nilai di Atas --}}
-    <div class="d-flex justify-content-end mb-3">
-        <a href="{{ route('rekap.show', [$bonsai->nama_pohon, $pendaftaran->nomor_juri]) }}" class="btn btn-primary ">
-            <i class="fas fa-eye"></i> Lihat Rekap Nilai
-        </a>
-    </div>
-@endsection
-
 @section('content')
     <div class="container py-4">
         {{-- Informasi Bonsai --}}
