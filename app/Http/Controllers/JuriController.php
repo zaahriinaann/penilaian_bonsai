@@ -21,12 +21,27 @@ class JuriController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Juri $juri)
+    public function index(Request $request)
     {
-        $role = Auth::user()->role;
+        $search = $request->input('search');
+        $status = $request->input('status');
 
-        $dataRender = $juri::all();
-        return view('admin.juri.index', compact('dataRender'));
+        $dataRender = Juri::query()
+            ->when($search, function ($query, $search) {
+                $query->where('nama_juri', 'like', "%{$search}%")
+                    ->orWhere('no_induk_juri', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('no_telepon', 'like', "%{$search}%");
+            })
+            ->when($status, function ($query, $status) {
+                $query->where('status', $status);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.juri.index', compact('dataRender', 'search', 'status'));
     }
 
     /**

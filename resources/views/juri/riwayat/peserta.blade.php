@@ -29,6 +29,7 @@
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>#</th>
                                 <th>No Daftar</th>
                                 <th>Nama Peserta</th>
                                 <th>Bonsai</th>
@@ -38,15 +39,17 @@
                         <tbody>
                             @forelse ($pendaftarans as $item)
                                 <tr>
+                                    <td>{{ $pendaftarans->firstItem() + $loop->index }}</td>
                                     <td>{{ $item->nomor_pendaftaran }}</td>
                                     <td>{{ $item->user->name }}</td>
                                     <td>{{ $item->bonsai->nama_pohon }}</td>
                                     <td>
-                                        <a href="{{ route('juri.nilai.show', $item->bonsai_id) }}"
+                                        <a href="{{ route('juri.riwayat.detail', [$kontes->id, $item->bonsai_id]) }}"
                                             class="btn btn-sm btn-outline-success">
                                             <i class="fas fa-search"></i> Lihat Nilai
                                         </a>
-                                        <a href="{{ route('rekap.show', $item->bonsai_id) }}"
+
+                                        <a href="{{ route('rekap-nilai.show', $item->bonsai_id) }}"
                                             class="btn btn-sm btn-outline-info">
                                             <i class="fas bi-file-bar-graph-fill"></i>
                                             Lihat Nilai Rekap
@@ -55,12 +58,17 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">Tidak ada peserta ditemukan.</td>
+                                    <td colspan="5" class="text-center">Tidak ada peserta ditemukan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+
+                <div class="mt-3 d-flex justify-content-center">
+                    {{ $pendaftarans->appends(request()->query())->links() }}
+                </div>
+
             </div>
         </div>
     </div>

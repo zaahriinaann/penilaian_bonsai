@@ -109,6 +109,23 @@ $dropdown = [
         'link' => '/juri/riwayat/kontes',
         'role' => ['juri'],
     ],
+
+
+    // ====================ANGGOTA/PESERTA=========================
+    [
+        'menu' => 'Penilaian',
+        'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
+        'submenu' => [],
+        'link' => '/peserta/nilai',
+        'role' => ['anggota'],
+    ],
+    [
+        'menu' => 'Riwayat Penilaian',
+        'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
+        'submenu' => [],
+        'link' => '/peserta/riwayat/kontes',
+        'role' => ['anggota'],
+    ],
 ];
 
 return $dropdown;

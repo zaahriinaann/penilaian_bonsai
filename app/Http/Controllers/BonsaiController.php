@@ -24,13 +24,41 @@ class BonsaiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Bonsai $bonsai)
+    public function index(Request $request)
     {
-        $dataRender = $bonsai::all();
-        $user = User::where('role', 'anggota')->get();
+        // Tangkap keyword pencarian (atau null kalau kosong)
+        $search = $request->input('search');
+
+        // Query dasar: ambil Bonsai + relasi User, skip yang soft-deleted
+        $query = Bonsai::with('user')
+            ->whereNull('deleted_at');
+
+        // Jika ada keyword, tambahkan filter
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_pohon',     'like', "%{$search}%")
+                    ->orWhere('no_induk_pohon', 'like', "%{$search}%");
+            });
+        }
+
+        // Paginate, sertakan query string agar ?search=… tetap menempel di link pagination
+        $dataRender = $query->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        // Data pendukung untuk view
+        $user     = User::where('role', 'anggota')->get();
         $province = config('province.obj');
-        $kontes = $this->kontes;
-        return view('admin.bonsai.index', compact('dataRender', 'province', 'user', 'kontes'));
+        $kontes   = $this->kontes;
+
+        // Kirim juga variable $search agar input di form bisa ter-isi ulang
+        return view('admin.bonsai.index', compact(
+            'dataRender',
+            'user',
+            'province',
+            'kontes',
+            'search'
+        ));
     }
 
     /**
@@ -47,9 +75,20 @@ class BonsaiController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->all();
+            // Validasi input, termasuk kelas dan ukuran_1 numeric
+            $request->validate([
+                'peserta'           => 'required|exists:users,id',
+                'nama_pohon'        => 'required|string',
+                'ukuran_1'          => 'required|in:1,2,3',
+                'ukuran_2'          => 'required|numeric',
+                'format_ukuran'     => 'required|string',
+                'masa_pemeliharaan' => 'nullable|string',
+                'format_masa'       => 'nullable|string',
+                'kelas'             => 'required|string',
+                'foto'              => 'nullable|image',
+            ]);
 
-            $user = User::where('id', $data['peserta'])->firstOrFail();
+            $user = User::findOrFail($request->peserta);
 
             // Mapping ukuran_1 ke label
             $ukuranMap = [
@@ -57,45 +96,44 @@ class BonsaiController extends Controller
                 2 => 'Medium',
                 3 => 'Large'
             ];
-            $ukuranLabel = $ukuranMap[$data['ukuran_1']] ?? 'Unknown';
+            $ukuranLabel = $ukuranMap[$request->ukuran_1] ?? 'Unknown';
 
             // Gabungkan ukuran
-            $data['ukuran'] = "{$ukuranLabel} ( {$data['ukuran_2']} {$data['format_ukuran']} )";
+            $ukuranString = "{$ukuranLabel} ( {$request->ukuran_2} {$request->format_ukuran} )";
+
+            // Menyiapkan data
+            $data = [
+                'user_id'           => $user->id,
+                'nama_pohon'        => $request->nama_pohon,
+                'nama_lokal'        => $request->nama_lokal,
+                'nama_latin'        => $request->nama_latin,
+                'ukuran'            => $ukuranString,
+                'ukuran_1'          => $request->ukuran_1,
+                'ukuran_2'          => $request->ukuran_2,
+                'format_ukuran'     => $request->format_ukuran,
+                'masa_pemeliharaan' => $request->masa_pemeliharaan,
+                'format_masa'       => $request->format_masa,
+                'kelas'             => $request->kelas,
+            ];
 
             // Generate no_induk_pohon
             $data['no_induk_pohon'] = 'BONSAI' . date('Y') . random_int(1000, 9999);
 
             // Generate slug
-            $slugSource = "{$data['nama_pohon']}-{$user['username']}-{$ukuranLabel}-ppbi-{$user['cabang']}";
-            $data['slug'] = Str::slug($slugSource, '-');
+            $slugSource = "{$data['nama_pohon']}-{$user->username}-{$ukuranLabel}-ppbi-{$user->cabang}";
+            $data['slug'] = Str::slug($slugSource);
 
-            // Ganti nilai null dengan '-'
-            $data = Arr::map($data, fn($value) => $value ?? '-');
+            // Handle upload foto
+            if ($request->hasFile('foto')) {
+                $file = $request->file('foto');
+                $name = time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('assets/images/bonsai'), $name);
+                $data['foto'] = $name;
+            }
 
-            $data['foto'] = $this->handleImageUpload($request, 'store');
+            Bonsai::create($data);
 
-            // dd($data);
-            $data = [
-                'user_id' => $data['peserta'],
-                'slug' => $data['slug'],
-                'nama_pohon' => $data['nama_pohon'],
-                'nama_lokal' => $data['nama_lokal'],
-                'nama_latin' => $data['nama_latin'],
-                'ukuran' => $data['ukuran'],
-                'ukuran_1' => $data['ukuran_1'],
-                'ukuran_2' => $data['ukuran_2'],
-                'format_ukuran' => $data['format_ukuran'],
-                'no_induk_pohon' => $data['no_induk_pohon'],
-                'masa_pemeliharaan' => $data['masa_pemeliharaan'],
-                'format_masa' => $data['format_masa'],
-                'kelas' => $this->kontes->tingkat_kontes,
-                'foto' => $data['foto'],
-            ];
-
-            // Simpan data bonsai
-            $bonsai = Bonsai::create($data);
-
-            return back()->with('message', "Bonsai {$bonsai->nama_pohon} berhasil disimpan.");
+            return back()->with('message', 'Bonsai berhasil disimpan.');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -123,47 +161,66 @@ class BonsaiController extends Controller
     public function update(Request $request, $slug)
     {
         try {
-            // Ambil data bonsai berdasarkan slug
             $bonsai = Bonsai::where('slug', $slug)->firstOrFail();
-            $data = $request->all();
 
-            // dd($request->all());
-            // Mapping ukuran
+            $request->validate([
+                'nama_pohon'        => 'required|string',
+                'ukuran_1'          => 'required|in:1,2,3',
+                'ukuran_2'          => 'required|numeric',
+                'format_ukuran'     => 'required|string',
+                'masa_pemeliharaan' => 'nullable|string',
+                'format_masa'       => 'nullable|string',
+                'kelas'             => 'required|string',
+                'foto'              => 'nullable|image',
+            ]);
+
+            // Mapping ukuran_1 ke label
             $ukuranMap = [
                 1 => 'Small',
                 2 => 'Medium',
-                3 => 'Large',
+                3 => 'Large'
             ];
-            $ukuranLabel = $ukuranMap[$data['ukuran_1']] ?? 'Unknown';
-            $data['ukuran'] = "{$ukuranLabel} ( {$data['ukuran_2']} {$data['format_ukuran']} )";
+            $ukuranLabel = $ukuranMap[$request->ukuran_1] ?? 'Unknown';
 
-            // Slug baru (dibersihkan)
-            $slugBaru = strtolower(str_replace(' ', '-', $data['nama_pohon'] . '-' . $bonsai->pemilik . '-' . $ukuranLabel . '-ppbi-' . $bonsai->cabang));
-            $data['slug'] = preg_replace('/[^a-z0-9\-]/', '', $slugBaru);
-            $data['foto'] = $this->handleImageUpload($request, 'update');
+            // Gabungkan ukuran
+            $ukuranString = "{$ukuranLabel} ( {$request->ukuran_2} {$request->format_ukuran} )";
+
+            // Persiapkan data update
             $data = [
-                'slug' => $data['slug'],
-                'nama_pohon' => $data['nama_pohon'],
-                'nama_lokal' => $data['nama_lokal'],
-                'nama_latin' => $data['nama_latin'],
-                'ukuran' => $data['ukuran'],
-                'ukuran_1' => $data['ukuran_1'],
-                'ukuran_2' => $data['ukuran_2'],
-                'format_ukuran' => $data['format_ukuran'],
-                'masa_pemeliharaan' => $data['masa_pemeliharaan'],
-                'format_masa' => $data['format_masa'],
-                'kelas' => $this->kontes->tingkat_kontes,
-                'foto' => $data['foto'],
+                'nama_pohon'        => $request->nama_pohon,
+                'nama_lokal'        => $request->nama_lokal,
+                'nama_latin'        => $request->nama_latin,
+                'ukuran'            => $ukuranString,
+                'ukuran_1'          => $request->ukuran_1,
+                'ukuran_2'          => $request->ukuran_2,
+                'format_ukuran'     => $request->format_ukuran,
+                'masa_pemeliharaan' => $request->masa_pemeliharaan,
+                'format_masa'       => $request->format_masa,
+                'kelas'             => $request->kelas,
             ];
 
-            // dd($data);
+            // Generate slug baru (jika diperlukan)
+            $data['slug'] = Str::slug("{$data['nama_pohon']}-{$bonsai->user->username}-{$ukuranLabel}-ppbi-{$data['kelas']}");
+
+            // Handle foto baru
+            if ($request->hasFile('foto')) {
+                // Hapus foto lama jika ada
+                $old = public_path('assets/images/bonsai/' . $bonsai->foto);
+                if (file_exists($old)) unlink($old);
+
+                $file = $request->file('foto');
+                $name = time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('assets/images/bonsai'), $name);
+                $data['foto'] = $name;
+            }
+
             $bonsai->update($data);
 
-            Session::flash('message', "Bonsai {$bonsai->nama_pohon} berhasil diperbarui.");
-            return redirect()->back();
+            Session::flash('message', 'Bonsai berhasil diperbarui.');
+            return back();
         } catch (\Exception $e) {
-            Session::flash('error', 'Terjadi kesalahan saat memperbarui data bonsai: ' . $e->getMessage());
-            return redirect()->back()->withInput();
+            Session::flash('error', 'Gagal memperbarui: ' . $e->getMessage());
+            return back()->withInput();
         }
     }
 

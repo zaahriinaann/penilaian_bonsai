@@ -20,7 +20,7 @@
                             <label for="tahun" class="form-label">Filter Tahun</label>
                             <select name="tahun" id="tahun" class="form-select">
                                 <option value="">Semua Tahun</option>
-                                @foreach ($kontesList->pluck('tanggal_mulai_kontes')->map(fn($tgl) => \Carbon\Carbon::parse($tgl)->year)->unique() as $tahun)
+                                @foreach ($tahunList as $tahun)
                                     <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
                                         {{ $tahun }}
                                     </option>
@@ -41,6 +41,7 @@
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>#</th>
                                 <th>Nama Kontes</th>
                                 <th>Periode</th>
                                 <th>Aksi</th>
@@ -49,6 +50,7 @@
                         <tbody>
                             @forelse ($kontesList as $kontes)
                                 <tr>
+                                    <td>{{ $kontesList->firstItem() + $loop->index }}</td>
                                     <td>{{ $kontes->nama_kontes }}</td>
                                     <td>{{ $kontes->tanggal_mulai_kontes }} s/d {{ $kontes->tanggal_selesai_kontes }}</td>
                                     <td>
@@ -60,11 +62,16 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Belum ada kontes yang Anda nilai.</td>
+                                    <td colspan="4" class="text-center text-muted">Belum ada kontes yang Anda nilai.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Pagination --}}
+                <div class="mt-3 d-flex justify-content-center">
+                    {{ $kontesList->appends(request()->query())->links() }}
                 </div>
 
             </div>

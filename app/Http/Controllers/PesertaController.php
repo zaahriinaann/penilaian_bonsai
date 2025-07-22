@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Session;
 
@@ -12,12 +13,42 @@ class PesertaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $dataRender = User::where('role', 'anggota')->get();
+        $search = $request->input('search');
+
+        $query = User::where('role', 'anggota');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('no_anggota', 'like', "%{$search}%")
+                    ->orWhere('cabang', 'like', "%{$search}%")
+                    ->orWhere('no_hp', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+
+        $dataRender = $query->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
         $province = config('province.obj');
 
-        return view('admin.peserta.index', compact('dataRender', 'province'));
+        // → Tambahkan ini:
+        $cities = json_decode(
+            file_get_contents(resource_path('js/regencies.json')),
+            true
+        );
+
+        return view('admin.peserta.index', compact(
+            'dataRender',
+            'province',
+            'search',
+            'cities'    // ← variabel baru
+        ));
     }
 
     /**
@@ -69,51 +100,61 @@ class PesertaController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // 1. Validasi
+        $validated = $request->validate([
+            'nama'       => 'required|string|max:255',
+            'username'   => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($id)
+            ],
+            'email'      => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($id)
+            ],
+            'no_anggota' => 'required|string|max:50',
+            'cabang'     => 'required|string|max:100',
+            'no_hp'      => 'required|string|max:20',
+            'alamat'     => 'required|string',
+            'password'   => 'nullable|string|min:6',
+            'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-        try {
-            //ambil data peserta yang akan diupdate
-            $user = User::find($id);
+        // 2. Cari user
+        $user = User::findOrFail($id);
 
-            // cek apakah user ditemukan
-            if (!$user) {
-                return response()->json([
-                    'message' => "Peserta tidak ditemukan."
-                ], 404);
-            }
+        // 3. Mapping & assign
+        $user->name       = $validated['nama'];
+        $user->username   = $validated['username'];
+        $user->email      = $validated['email'];
+        $user->no_anggota = $validated['no_anggota'];
+        $user->cabang     = $validated['cabang'];
+        $user->no_hp      = $validated['no_hp'];
+        $user->alamat     = $validated['alamat'];
 
-
-            // update data peserta
-            $data = $request->all();
-
-            // Jika password kosong, biarkan password sebelumnya
-            if (empty($data['password'])) {
-                unset($data['password']);  // Jangan update password jika tidak diubah
-            } else {
-                // Jika password ada, hash dan update
-                $data['password'] = bcrypt($data['password']);
-            }
-
-            // Upload gambar jika ada
-            if ($request->hasFile('foto')) {
-                $data['foto'] = $this->handleImageUpload($request, 'update');
-                unset($data['foto_lama']);
-            } else {
-                unset($data['foto_lama']);
-            }
-
-
-            // update data ke database
-            $user->update($data);
-
-
-            // Berikan pesan sukses setelah update
-            Session::flash('message', "Peserta dengan Nomor Induk: ({$user->username}) berhasil diperbarui.");
-            return redirect()->back();
-        } catch (\Exception $e) {
-            // Tangani error jika terjadi kesalahan saat menyimpan
-            Session::flash('error', "Gagal memperbarui data, silakan hubungi admin atau coba lagi.");
-            return redirect()->back()->withInput();
+        // 4. Jika password diubah
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
         }
+
+        // 5. Jika ada upload foto baru, hapus yang lama & simpan yang baru
+        if ($request->hasFile('foto')) {
+            // hapus file lama jika perlu
+            if ($user->foto && file_exists(public_path("assets/images/peserta/{$user->foto}"))) {
+                unlink(public_path("assets/images/peserta/{$user->foto}"));
+            }
+            // simpan yang baru
+            $user->foto = $this->handleImageUpload($request, 'update');
+        }
+
+        // 6. Simpan semua perubahan
+        $user->save();
+
+        // 7. Redirect dengan pesan sukses
+        return redirect()->back()->with('success', 'Peserta berhasil diperbarui.');
     }
 
     /**

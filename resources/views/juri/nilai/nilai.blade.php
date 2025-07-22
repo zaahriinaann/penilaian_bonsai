@@ -35,7 +35,7 @@
                 Tidak ada data penilaian yang tersedia untuk bonsai ini.
             </div>
         @else
-            <form action="{{ route('nilai.store') }}" method="POST">
+            <form action="{{ route('juri.nilai.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="bonsai_id" value="{{ $bonsai->id }}">
 
