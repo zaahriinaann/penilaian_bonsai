@@ -57,7 +57,7 @@ class User extends Authenticatable
 
     public function bonsai()
     {
-        return $this->hasMany(Bonsai::class, 'id');
+        return $this->hasMany(Bonsai::class, 'user_id', 'id');
     }
 
     public function juri()

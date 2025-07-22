@@ -40,4 +40,10 @@ class Defuzzifikasi extends Model
     {
         return $this->belongsTo(HelperDomain::class, 'id_hasil_himpunan');
     }
+
+    public function helperDomain()
+    {
+        return $this->belongsTo(HelperDomain::class, 'id_kriteria', 'id_kriteria')
+            ->whereNull('id_sub_kriteria');
+    }
 }

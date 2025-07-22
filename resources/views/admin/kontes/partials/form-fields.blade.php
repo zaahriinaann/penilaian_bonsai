@@ -48,7 +48,7 @@
 {{-- Tingkat Kontes --}}
 <div class="mb-3">
     <label for="{{ $prefix }}tingkat_kontes" class="form-label">
-        Tingkat Kontes <i class="bi bi-question-circle" title="Utama: min 20 | Madya: min 30"></i>
+        Tingkat/Kelas Kontes <i class="bi bi-question-circle" title="Utama: min 20 | Madya: min 30"></i>
     </label>
     <select name="{{ $prefix }}tingkat_kontes" id="{{ $prefix }}tingkat_kontes" class="form-select"
         required>

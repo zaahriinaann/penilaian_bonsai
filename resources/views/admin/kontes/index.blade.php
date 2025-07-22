@@ -46,7 +46,7 @@
                             <th>#</th>
                             <th>Poster</th>
                             <th>Nama Kontes</th>
-                            <th>Tingkat</th>
+                            <th>Tingkat/Kelas</th>
                             <th>Tempat</th>
                             <th>Tanggal</th>
                             <th>Peserta</th>
@@ -96,6 +96,13 @@
                                 </td>
                                 <td>
                                     <div class="d-flex flex-column flex-md-row gap-1">
+                                        {{-- Tombol Detail --}}
+                                        <a href="{{ route('master.kontes.show', $item->slug) }}"
+                                            class="btn btn-sm btn-info" title="Detail Kontes">
+                                            <i class="fas fa-info-circle"></i>
+                                        </a>
+
+                                        {{-- Tombol Edit --}}
                                         <button type="button" class="btn btn-sm btn-warning btn-edit"
                                             data-id="{{ $item->id }}" data-nama="{{ $item->nama_kontes }}"
                                             data-tempat="{{ $item->tempat_kontes }}" data-link="{{ $item->link_gmaps }}"
@@ -109,6 +116,7 @@
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
 
+                                        {{-- Tombol Hapus --}}
                                         <button class="btn btn-sm btn-danger btn-delete" data-id="{{ $item->id }}"
                                             data-route="{{ route('master.kontes.destroy', $item->slug) }}"
                                             title="Hapus data">
@@ -116,6 +124,7 @@
                                         </button>
                                     </div>
                                 </td>
+
                             </tr>
                         @endforeach
                     </tbody>
@@ -134,8 +143,6 @@
                     </div>
                 </div>
             @endif
-
-
 
         </div>
     </div>

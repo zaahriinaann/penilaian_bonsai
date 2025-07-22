@@ -3,7 +3,7 @@
 @section('title', 'Detail Nilai Akhir Bonsai')
 
 @section('button-toolbar')
-    <a href="{{ route('rekap.cetak-per-bonsai', $detail['id']) }}" class="btn btn-danger btn-sm" target="_blank">
+    <a href="{{ route('rekap-nilai.cetak-per-bonsai', $detail['id']) }}" class="btn btn-danger btn-sm" target="_blank">
         <i class="fas fa-print"></i> Cetak
     </a>
 @endsection
@@ -61,8 +61,6 @@
                     <div class="alert alert-warning">Data kategori tidak ditemukan.</div>
                 @endforelse
 
-                {{-- Tombol kembali opsional --}}
-                {{-- <a href="{{ route('rekap.index') }}" class="btn btn-secondary mt-3">← Kembali</a> --}}
             </div>
         </div>
     </div>

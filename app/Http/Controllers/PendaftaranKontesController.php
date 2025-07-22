@@ -23,22 +23,48 @@ class PendaftaranKontesController extends Controller
         $this->kontes = Kontes::where('status', 1)->first();
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $kelasKontes = $this->kontes->tingkat_kontes; // atau $this->kontes->kelas_id
+        $kelasKontes = $this->kontes->tingkat_kontes;
 
-        // Hanya ambil user yang punya bonsai dengan kelas sama dengan kontes
+        // Ambil daftar peserta untuk modal create
         $peserta = User::where('role', 'anggota')
             ->whereHas('bonsai', function ($query) use ($kelasKontes) {
                 $query->where('kelas', $kelasKontes);
             })
             ->with(['bonsai' => function ($query) use ($kelasKontes) {
-                $query->where('kelas', $kelasKontes); // opsional: hanya ambil bonsai dengan kelas itu saja
+                $query->where('kelas', $kelasKontes);
             }])
             ->get();
 
-            // dd($peserta);
-        $pendaftaran = PendaftaranKontes::all();
+        // Keyword pencarian
+        $search = $request->input('search');
+
+        // Query dasar pendaftaran untuk kontes aktif
+        $pendaftaranQuery = PendaftaranKontes::with(['bonsai', 'user'])
+            ->where('kontes_id', $this->kontes->id);
+
+        // Filter berdasarkan nomor pendaftaran, nomor juri, nama bonsai, atau nama pemilik
+        if ($search) {
+            $pendaftaranQuery->where(function ($query) use ($search) {
+                $query->where('nomor_pendaftaran', 'like', "%{$search}%")
+                    ->orWhere('nomor_juri', 'like', "%{$search}%")
+                    ->orWhereHas('bonsai', function ($q) use ($search) {
+                        $q->where('nama_pohon', 'like', "%{$search}%")
+                            ->orWhere('no_induk_pohon', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Pagination + urutkan berdasarkan nomor pendaftaran
+        $pendaftaran = $pendaftaranQuery
+            ->orderBy('nomor_pendaftaran')
+            ->paginate(10)
+            ->withQueryString();
+
         return view('admin.pendaftaran.index', compact('peserta', 'pendaftaran'));
     }
 

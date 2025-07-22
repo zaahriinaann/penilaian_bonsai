@@ -11,6 +11,9 @@ use App\Models\Kontes;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class RekapNilaiController extends Controller
@@ -19,63 +22,91 @@ class RekapNilaiController extends Controller
     {
         $kontesAktif = Kontes::where('status', '1')->first();
 
-        if (!$kontesAktif) {
-            return view('juri.rekap.index', [
-                'rekapSorted' => collect(),
+        // Jika tidak ada kontes aktif, buat paginator kosong dan tampilkan view
+        if (! $kontesAktif) {
+            $perPage = 10;
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $paginated = new LengthAwarePaginator(
+                [], // items
+                0,  // total
+                $perPage,
+                $currentPage,
+                [
+                    'path'  => LengthAwarePaginator::resolveCurrentPath(),
+                    'query' => request()->query(),
+                ]
+            );
+
+            return view('rekap-nilai.index', [
+                'rekap'   => $paginated,
                 'bestTen' => collect(),
-                'kontes' => null,
-                'message' => 'Tidak ada kontes aktif.'
+                'kontes'  => null,
+                'message' => 'Tidak ada kontes aktif.',
             ]);
         }
 
-        $rekapData = $rekap->with('bonsai.user')
+        // Ambil parameter pencarian
+        $search = request('search');
+
+        // Ambil seluruh data dan map menjadi objek sederhana
+        $all = $rekap->with('bonsai.user')
             ->where('id_kontes', $kontesAktif->id)
             ->get()
             ->map(function ($item) {
                 $bonsai = $item->bonsai;
                 $pendaftaran = PendaftaranKontes::where('bonsai_id', $item->id_bonsai)->first();
-                if (!$pendaftaran) return null;
+                if (! $pendaftaran) {
+                    return null;
+                }
 
-                $kategori = Defuzzifikasi::where('id_bonsai', $item->id_bonsai)
-                    ->get()
-                    ->groupBy('id_kriteria')
-                    ->mapWithKeys(function ($group, $id_kriteria) {
-                        $namaKriteria = HelperKriteria::find($id_kriteria)?->kriteria ?? 'Tanpa Nama';
-                        return [
-                            $namaKriteria => $group->map(function ($d) {
-                                return [
-                                    'hasil' => $d->hasil_defuzzifikasi,
-                                    'himpunan' => $d->hasil_himpunan,
-                                    'juri_id' => $d->id_juri,
-                                ];
-                            })->all()
-                        ];
-                    })->toArray();
-
-                return [
-                    'id' => $bonsai->id,
-                    'kontes_id' => $pendaftaran->kontes_id,
+                return (object) [
+                    'id'                => $bonsai->id,
+                    'kontes_id'         => $pendaftaran->kontes_id,
                     'nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran,
-                    'nomor_juri' => $pendaftaran->nomor_juri,
-                    'nama_pohon' => $bonsai->nama_pohon,
-                    'kelas' => $bonsai->kelas,
-                    'ukuran_2' => $bonsai->ukuran_2,
-                    'pemilik' => $bonsai->user->name ?? '-',
-                    'skor_akhir' => $item->skor_akhir,
-                    'himpunan_akhir' => $item->himpunan_akhir,
-                    'kategori' => $kategori,
+                    'nomor_juri'        => $pendaftaran->nomor_juri,
+                    'nama_pohon'        => $bonsai->nama_pohon,
+                    'kelas'             => $bonsai->kelas,
+                    'pemilik'           => $bonsai->user->name ?? '-',
+                    'skor_akhir'        => $item->skor_akhir,
+                    'himpunan_akhir'    => $item->himpunan_akhir,
                 ];
             })
             ->filter()
             ->sortByDesc('skor_akhir')
             ->values();
 
-        $bestTen = $rekapData->take(10);
+        // Filter berdasarkan search jika ada
+        if ($search) {
+            $all = $all->filter(function ($b) use ($search) {
+                return Str::contains($b->nomor_pendaftaran, $search)
+                    || Str::contains($b->nomor_juri, $search)
+                    || Str::contains($b->nama_pohon, $search)
+                    || Str::contains($b->pemilik, $search);
+            })->values();
+        }
 
-        return view('rekap.index', [
-            'rekapSorted' => $rekapData,
+        // Pagination manual
+        $perPage = 10;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $items = $all->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $paginated = new LengthAwarePaginator(
+            $items,
+            $all->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path'  => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => request()->query(),
+            ]
+        );
+
+        // Top 10 terbaik tanpa filter
+        $bestTen = $all->take(10);
+
+        return view('rekap-nilai.index', [
+            'rekap'   => $paginated,
             'bestTen' => $bestTen,
-            'kontes' => $kontesAktif,
+            'kontes'  => $kontesAktif,
         ]);
     }
 
@@ -131,7 +162,7 @@ class RekapNilaiController extends Controller
             })->toArray(),
         ];
 
-        return view('rekap.show', compact('detail'));
+        return view('rekap-nilai.show', compact('detail'));
     }
 
     public function cetakRekapPerBonsai($id)
@@ -181,7 +212,7 @@ class RekapNilaiController extends Controller
             'kategori' => $kategori,
         ];
 
-        $pdf = FacadePdf::loadView('rekap.cetak_per_bonsai', compact('detail'))
+        $pdf = FacadePdf::loadView('rekap-nilai.cetak_per_bonsai', compact('detail'))
             ->setPaper('A4', 'portrait');
 
         return $pdf->stream('rekap-bonsai-' . $bonsai->id . '.pdf');
@@ -239,9 +270,83 @@ class RekapNilaiController extends Controller
             }
         }
 
-        $pdf = FacadePdf::loadView('rekap.cetak_laporan', compact('kontes', 'rekapData'))
+        $pdf = FacadePdf::loadView('rekap-nilai.cetak_laporan', compact('kontes', 'rekapData'))
             ->setPaper('A4', 'portrait');
 
         return $pdf->stream('laporan-rekap-nilai.pdf');
+    }
+
+    public function indexAnggota()
+    {
+        if (Auth::user()->role !== 'anggota') {
+            abort(403);
+        }
+
+        $kontesAktif = Kontes::where('status', 1)->first();
+
+        if (! $kontesAktif) {
+            $paginated = new LengthAwarePaginator([], 0, 10, 1, [
+                'path'  => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => request()->query(),
+            ]);
+
+            return view('peserta.nilai.index', [
+                'rekap'  => $paginated,
+                'kontes' => null,
+                'message' => 'Tidak ada kontes aktif.',
+            ]);
+        }
+
+        $search = request('search');
+
+        $pendaftarans = PendaftaranKontes::with(['bonsai.user', 'bonsai.rekapNilai'])
+            ->where('kontes_id', $kontesAktif->id)
+            ->where('user_id', Auth::id())
+            ->get()
+            ->map(function ($item) {
+                $rekap = optional($item->bonsai->rekapNilai);
+
+                return (object) [
+                    'id'                => $item->bonsai->id,
+                    'kontes_id'         => $item->kontes_id,
+                    'nomor_pendaftaran' => $item->nomor_pendaftaran,
+                    'nomor_juri'        => $item->nomor_juri,
+                    'nama_pohon'        => $item->bonsai->nama_pohon,
+                    'kelas'             => $item->bonsai->kelas,
+                    'pemilik'           => $item->bonsai->user->name ?? '-',
+                    'skor_akhir'        => $rekap->skor_akhir,
+                    'himpunan_akhir'    => $rekap->himpunan_akhir,
+                ];
+            });
+
+        // Filter pencarian
+        if ($search) {
+            $pendaftarans = $pendaftarans->filter(function ($item) use ($search) {
+                return Str::contains(Str::lower($item->nomor_pendaftaran), Str::lower($search))
+                    || Str::contains(Str::lower($item->nama_pohon), Str::lower($search))
+                    || Str::contains(Str::lower($item->pemilik), Str::lower($search));
+            })->values();
+        }
+
+        // Pagination manual
+        $perPage = 10;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $pagedItems = $pendaftarans->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $paginated = new LengthAwarePaginator(
+            $pagedItems,
+            $pendaftarans->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path'  => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => request()->query(),
+            ]
+        );
+
+        return view('peserta.nilai.index', [
+            'rekap'  => $paginated,
+            'kontes' => $kontesAktif,
+        ]);
     }
 }

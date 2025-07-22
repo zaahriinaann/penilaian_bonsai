@@ -15,6 +15,7 @@
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>#</th>
                                 <th>No Daftar</th>
                                 <th>Nama Peserta</th>
                                 <th>Bonsai</th>
@@ -24,6 +25,7 @@
                         <tbody>
                             @foreach ($pendaftarans as $item)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $item->nomor_pendaftaran }}</td>
                                     <td>{{ $item->user->name }}</td>
                                     <td>{{ $item->bonsai->nama_pohon }}</td>
@@ -31,6 +33,11 @@
                                         <a href="{{ route('admin.nilai.detail', [$juri->id, $item->bonsai_id]) }}"
                                             class="btn btn-sm btn-outline-info">
                                             <i class="bi bi-eye"></i> Lihat Nilai
+                                        </a>
+                                        <a href="{{ route('rekap-nilai.show', $item->bonsai->id) }}"
+                                            class="btn btn-sm btn-outline-info">
+                                            <i class="fas bi-file-bar-graph-fill"></i>
+                                            Lihat Nilai Rekap
                                         </a>
                                     </td>
                                 </tr>

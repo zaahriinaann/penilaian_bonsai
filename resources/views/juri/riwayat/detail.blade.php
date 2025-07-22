@@ -1,14 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Penilaian Juri')
-
+@section('title', 'Hasil Penilaian Saya')
 
 @section('content')
     <div class="container py-4">
         {{-- Informasi Bonsai --}}
         <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-header bg-secondary rounded-top-4 align-items-center">
-                <strong>Penilaian oleh: {{ $juri->user->name }}</strong><br>
+                <strong>Hasil Penilaian oleh: {{ Auth::user()->name }}</strong>
             </div>
             <div class="card-body">
                 <div class="row mb-2">
@@ -28,22 +27,26 @@
                     </div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-6"><strong>Kelas:</strong> {{ $bonsai->kelas }}</div>
-                    <div class="col-md-6"><strong>No Hp:</strong> {{ $bonsai->user->no_hp }}</div>
+                    <div class="col-md-6">
+                        <strong>Kelas:</strong> {{ $bonsai->kelas }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>No HP Pemilik:</strong> {{ $bonsai->user->no_hp }}
+                    </div>
                 </div>
             </div>
         </div>
 
-        {{-- Nilai Awal --}}
-        @php
-            $grouped = $nilaiAwal->groupBy('kriteria');
-            $num = 1;
-        @endphp
+        {{-- Nilai Awal yang Diinput --}}
         <div class="card mb-4">
             <div class="card-header rounded-top-4 align-items-center">
                 <strong>Nilai Awal yang Diinput</strong>
             </div>
             <div class="card-body table-responsive">
+                @php
+                    $grouped = $nilaiAwal->groupBy('kriteria');
+                    $num = 1;
+                @endphp
                 <table class="table table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
@@ -56,26 +59,28 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($grouped as $kriteria => $subList)
+                        @foreach ($grouped as $kriteria => $list)
                             @php
-                                $subGrouped = $subList->groupBy('sub_kriteria');
-                                $rowspanKriteria = $subGrouped->reduce(fn($carry, $g) => $carry + $g->count(), 0);
-                                $printedKriteria = false;
+                                $subGroups = $list->groupBy('sub_kriteria');
+                                $rowspan = $subGroups->sum->count();
+                                $firstK = true;
                             @endphp
-                            @foreach ($subGrouped as $sub => $items)
-                                @php $printedSub = false; @endphp
+                            @foreach ($subGroups as $sub => $items)
+                                @php $firstS = true; @endphp
                                 @foreach ($items as $item)
                                     <tr>
-                                        @if (!$printedKriteria)
-                                            <td rowspan="{{ $rowspanKriteria }}">{{ $num++ }}</td>
-                                            <td rowspan="{{ $rowspanKriteria }}">{{ $kriteria }}</td>
-                                            @php $printedKriteria = true; @endphp
+                                        @if ($firstK)
+                                            <td rowspan="{{ $rowspan }}">{{ $num++ }}</td>
+                                            <td rowspan="{{ $rowspan }}">{{ $kriteria }}</td>
+                                            @php $firstK = false; @endphp
                                         @endif
-                                        @if (!$printedSub)
+
+                                        @if ($firstS)
                                             <td rowspan="{{ $items->count() }}">{{ $sub }}</td>
                                             <td rowspan="{{ $items->count() }}">{{ $item->nilai_awal }}</td>
-                                            @php $printedSub = true; @endphp
+                                            @php $firstS = false; @endphp
                                         @endif
+
                                         <td>{{ $item->himpunan }}</td>
                                         <td>{{ $item->derajat_anggota }}</td>
                                     </tr>
@@ -87,7 +92,7 @@
             </div>
         </div>
 
-        {{-- Defuzzifikasi --}}
+        {{-- Hasil Defuzzifikasi --}}
         <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-header rounded-top-4 align-items-center">
                 <strong>Hasil Defuzzifikasi</strong>
@@ -98,68 +103,81 @@
                         <tr>
                             <th>#</th>
                             <th>Kriteria</th>
-                            <th>Himpunan</th>
+                            <th>Himpunan Akhir</th>
                             <th>Skor Defuzzifikasi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($defuzzifikasiPerKriteria as $index => $item)
+                        @foreach ($defuzzMap as $idK => $row)
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->nama_kriteria }}</td>
-                                <td>{{ $item->hasil_himpunan }}</td>
-                                <td><strong>{{ $item->hasil_defuzzifikasi }}</strong></td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $row->helperDomain->kriteria ?? 'Kriteria ' . $idK }}</td>
+                                <td>{{ $row->himpunan_akhir }}</td>
+                                <td><strong>{{ number_format($row->hasil_defuzzifikasi, 2) }}</strong></td>
                             </tr>
-                        @empty
+                        @endforeach
+                        @if ($defuzzMap->isEmpty())
                             <tr>
                                 <td colspan="4" class="text-center">Belum ada hasil defuzzifikasi.</td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- Rule Aktif --}}
+        {{-- Rule Inferensi Aktif --}}
         <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-header rounded-top-4 align-items-center">
                 <strong>🔥 Rule Inferensi Aktif</strong>
             </div>
             <div class="card-body">
+                @php use Illuminate\Support\Str; @endphp
+
                 @forelse($ruleAktif as $idKriteria => $rules)
                     <div class="mb-4 p-3 border rounded bg-light">
-                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        {{-- Nama Kriteria --}}
+                        <strong>
+                            {{ $defuzzMap[$idKriteria]->helperDomain->kriteria ?? 'Kriteria ' . $idKriteria }}
+                        </strong>
+
                         <ol class="mt-2">
                             @foreach ($rules as $index => $hasil)
                                 @php
                                     $details = $hasil->rule->details;
+                                    // Susun antecedents (If … and …)
                                     $antecedents = $details
-                                        ->map(fn($d) => $d->input_variable . ' ' . $d->himpunan)
+                                        ->map(fn($d) => "{$d->input_variable} {$d->himpunan}")
                                         ->implode(' and ');
+                                    // Susun simbol keanggotaan (μ…)
                                     $symbols = $details
-                                        ->map(function ($d) {
-                                            $abbr = implode(
-                                                '',
-                                                array_map(fn($w) => substr($w, 0, 1), explode(' ', $d->input_variable)),
-                                            );
-                                            return 'μ' . strtoupper($abbr) . $d->himpunan;
-                                        })
+                                        ->map(
+                                            fn($d) => 'μ' .
+                                                strtoupper(Str::substr($d->input_variable, 0, 1)) .
+                                                $d->himpunan,
+                                        )
                                         ->implode('; ');
+                                    // Ambil derajat keanggotaan penuh tanpa pembulatan
                                     $values = $details
-                                        ->map(function ($d) use ($nilaiAwal) {
-                                            $match = $nilaiAwal->firstWhere('sub_kriteria', $d->input_variable);
-                                            return $match ? round($match->derajat_anggota, 2) : '0';
-                                        })
+                                        ->map(
+                                            fn($d) => optional(
+                                                $nilaiAwal->firstWhere('sub_kriteria', $d->input_variable),
+                                            )->derajat_anggota ?? 0,
+                                        )
                                         ->implode('; ');
+                                    // alpha dan z dibulatkan
                                     $alpha = round($hasil->alpha, 3);
                                     $z = round($hasil->z_value, 2);
                                 @endphp
+
                                 <li class="mb-2">
-                                    <strong>Rule {{ $index + 1 }}:</strong>
-                                    If {{ $antecedents }} then Penampilan
+                                    <strong>Rule {{ $index + 1 }}:</strong><br>
+                                    If {{ $antecedents }} then
                                     <strong>{{ $hasil->rule->output_himpunan }}</strong><br>
-                                    a-predikat{{ $index + 1 }} = {{ $symbols }} = Min ({{ $values }}) =
+
+                                    a-predikat = {{ $symbols }} = Min({{ $values }}) =
                                     <strong>{{ $alpha }}</strong><br>
+
                                     z = <strong>{{ $z }}</strong>
                                 </li>
                             @endforeach
@@ -171,38 +189,39 @@
             </div>
         </div>
 
-        {{-- Agregasi --}}
+
+        {{-- Proses Agregasi --}}
         <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-header rounded-top-4 align-items-center">
                 <strong>🧠 Proses Agregasi & Defuzzifikasi</strong>
             </div>
             <div class="card-body">
-                @forelse($hasilAgregasi as $idKriteria => $items)
+                @forelse($hasilAgregasi as $idK => $items)
                     @php
-                        $sumAlphaZ = 0;
-                        $sumAlpha = 0;
+                        $sumAZ = 0;
+                        $sumA = 0;
                     @endphp
                     <div class="mb-4 p-3 border rounded bg-light">
-                        <strong>Kriteria ID: {{ $idKriteria }}</strong>
+                        <strong>
+                            {{ $defuzzMap[$idK]->helperDomain->kriteria ?? 'Kriteria ' . $idK }}
+                        </strong>
                         <ol class="mt-2">
-                            @foreach ($items as $i => $item)
+                            @foreach ($items as $i => $it)
                                 @php
-                                    $alpha = round($item->alpha, 3);
-                                    $z = round($item->z_value, 2);
-                                    $product = round($alpha * $z, 2);
-                                    $sumAlphaZ += $product;
-                                    $sumAlpha += $alpha;
+                                    $a = round($it->alpha, 3);
+                                    $z = round($it->z_value, 2);
+                                    $p = round($a * $z, 2);
+                                    $sumAZ += $p;
+                                    $sumA += $a;
                                 @endphp
-                                <li>
-                                    Rule z{{ $i + 1 }} = {{ $z }}, α{{ $i + 1 }} =
-                                    {{ $alpha }} → α × z = <strong>{{ $product }}</strong>
-                                </li>
+                                <li>α{{ $i + 1 }}×z{{ $i + 1 }} = {{ $a }}×{{ $z }}
+                                    = <strong>{{ $p }}</strong></li>
                             @endforeach
                         </ol>
                         <div class="mt-2">
-                            ∑(α × z) = <strong>{{ round($sumAlphaZ, 2) }}</strong>,
-                            ∑α = <strong>{{ round($sumAlpha, 3) }}</strong><br>
-                            z_final = <strong>{{ $sumAlpha > 0 ? round($sumAlphaZ / $sumAlpha, 2) : '0.00' }}</strong>
+                            ∑(α×z)=<strong>{{ round($sumAZ, 2) }}</strong>,
+                            ∑α=<strong>{{ round($sumA, 3) }}</strong><br>
+                            z_final=<strong>{{ number_format($defuzzMap[$idK]->hasil_defuzzifikasi, 2) }}</strong>
                         </div>
                     </div>
                 @empty
@@ -213,8 +232,8 @@
 
         {{-- Tombol Kembali --}}
         <div class="text-end mt-4">
-            <a href="{{ route('juri.riwayat.peserta', [$kontes->id, $juri->id]) }}" class="btn btn-secondary rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar Peserta
+            <a href="{{ route('juri.nilai.index') }}" class="btn btn-secondary rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
             </a>
         </div>
     </div>

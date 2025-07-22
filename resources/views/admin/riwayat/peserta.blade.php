@@ -4,7 +4,7 @@
 @section('button-toolbar')
     {{-- Tombol Cetak Laporan --}}
     <div class="mb-3 text-end">
-        <a href="{{ route('rekap.cetak-laporan', [$kontes->id]) }}" target="_blank" class="btn btn-danger">
+        <a href="{{ route('rekap-nilai.cetak-laporan', [$kontes->id]) }}" target="_blank" class="btn btn-danger">
             <i class="fas fa-print"></i> Cetak Laporan Rekap
         </a>
     </div>
@@ -59,7 +59,7 @@
                                             class="btn btn-sm btn-outline-success">
                                             <i class="fas fa-search"></i> Lihat Nilai
                                         </a>
-                                        <a href="{{ route('rekap.show', $item->bonsai->id) }}"
+                                        <a href="{{ route('rekap-nilai.show', $item->bonsai->id) }}"
                                             class="btn btn-sm btn-outline-info">
                                             <i class="fas bi-file-bar-graph-fill"></i>
                                             Lihat Nilai Rekap

@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Riwayat Kontes Dinilai')
+@section('title', 'Riwayat Kontes Diikuti')
 
 @section('content')
     <div class="container py-4">
         <div class="card shadow-sm rounded-4">
             <div class="card-header align-items-center">
-                <h3>Daftar Kontes</h3>
+                <h3>Daftar Kontes yang Pernah Anda Ikuti</h3>
             </div>
             <div class="card-body">
                 {{-- Form Pencarian dan Filter Tahun --}}
@@ -31,7 +31,7 @@
                             <button type="submit" class="btn btn-primary w-100">Filter</button>
                         </div>
                         <div class="col-md-2">
-                            <a href="{{ route('juri.riwayat.index') }}" class="btn btn-outline-secondary w-100">Reset</a>
+                            <a href="{{ route('peserta.riwayat.index') }}" class="btn btn-outline-secondary w-100">Reset</a>
                         </div>
                     </div>
                 </form>
@@ -54,15 +54,16 @@
                                     <td>{{ $kontes->nama_kontes }}</td>
                                     <td>{{ $kontes->tanggal_mulai_kontes }} s/d {{ $kontes->tanggal_selesai_kontes }}</td>
                                     <td>
-                                        <a href="{{ route('juri.riwayat.peserta', $kontes->id) }}"
+                                        <a href="{{ route('peserta.riwayat.bonsai', $kontes->id) }}"
                                             class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-people-fill"></i> Lihat Peserta
+                                            <i class="bi bi-collection"></i> Lihat Bonsai
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada kontes yang Anda nilai.</td>
+                                    <td colspan="4" class="text-center text-muted">Belum ada kontes yang pernah Anda
+                                        ikuti.</td>
                                 </tr>
                             @endforelse
                         </tbody>

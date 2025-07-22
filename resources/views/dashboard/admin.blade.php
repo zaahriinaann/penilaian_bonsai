@@ -61,6 +61,12 @@
                         <li class="list-group-item">Jumlah Bonsai Belum Dinilai: <strong>{{ $bonsaiBelum }}</strong>
                         </li>
                     </ul>
+                    <small class="text-muted d-block mt-2">
+                        • <em>Jumlah Bonsai Dinilai</em> dihitung sebagai banyaknya pohon bonsai yang sudah mendapatkan
+                        minimal satu nilai dari seluruh juri.<br>
+                        • <em>Jumlah Bonsai Belum Dinilai</em> adalah selisih total peserta kontes dengan jumlah bonsai
+                        yang telah dinilai.
+                    </small>
                 </div>
             </div>
         </div>
@@ -82,9 +88,7 @@
         </div>
     </div>
 
-
-
-    {{-- Top 3 Bonsai --}}
+    {{-- Top 3 Bonsai Terbaik --}}
     <div class="row px-4 pb-5">
         <div class="col-12">
             <div class="card shadow-sm">
@@ -92,96 +96,54 @@
                     Top 3 Bonsai Terbaik
                 </div>
                 <div class="card-body">
-                    <table class="table table-striped align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Nama Bonsai</th>
-                                <th>Jenis</th>
-                                <th>Pemilik</th>
-                                <th>Nilai Akhir</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>Bonsai A</td>
-                                <td>Serut</td>
-                                <td>Pak Budi</td>
-                                <td><span class="badge bg-success fs-6">90.2</span></td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Bonsai B</td>
-                                <td>Anting Putri</td>
-                                <td>Ibu Sari</td>
-                                <td><span class="badge bg-primary fs-6">88.5</span></td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Bonsai C</td>
-                                <td>Sancang</td>
-                                <td>Pak Didi</td>
-                                <td><span class="badge bg-info text-dark fs-6">87.3</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <small class="text-muted">* Berdasarkan akumulasi nilai semua juri</small>
+                    @if ($topBonsai->isEmpty())
+                        <p class="text-muted">Belum ada data rekap nilai untuk kontes ini.</p>
+                    @else
+                        <table class="table table-striped align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nomor Juri</th>
+                                    <th>Nomor Pendaftaran</th>
+                                    <th>Nama Pohon</th>
+                                    <th>Pemilik</th>
+                                    <th>Skor Akhir</th>
+                                    <th>Himpunan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($topBonsai as $i => $rekap)
+                                    @php
+                                        $pendaftaran = $rekap->bonsai->pendaftaranKontes;
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $i + 1 }}</td>
+                                        <td>{{ $pendaftaran->nomor_juri }}</td>
+                                        <td>{{ $pendaftaran->nomor_pendaftaran }}</td>
+                                        <td>{{ $rekap->bonsai->nama_pohon }}</td>
+                                        <td>{{ $pendaftaran->user->name }}</td>
+                                        <td>
+                                            <span
+                                                class="badge
+                                            @if ($i === 0) bg-success
+                                            @elseif($i === 1) bg-primary
+                                            @else bg-info text-dark @endif
+                                            fs-6">
+                                                {{ number_format($rekap->skor_akhir, 2) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $rekap->himpunan_akhir }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <small class="text-muted">* Berdasarkan akumulasi nilai semua juri</small>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Prediksi Slot Kontes Tahun Depan
-        @if ($prediksiSlot > 0)
-            <div class="row px-4 pb-4">
-                <div class="col-12">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-dark text-white align-items-center">
-                            Prediksi Slot Kontes Tahun Depan
-                        </div>
-                        <div class="card-body text-center">
-                            <p class="mb-2">
-                                Perkiraan berdasarkan tren 25% kenaikan dari tahun ini
-                            </p>
-                            <h3 class="text-primary mb-0">
-                                {{ $prediksiSlot }} Slot
-                            </h3>
-                            <small class="text-muted">*Data bersifat estimasi</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif --}}
-
-    {{-- Prediksi Kebutuhan Meja Tahun Depan
-        @if ($prediksiJumlahMeja > 0)
-            <div class="row px-4 pb-4">
-                <div class="col-12">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-dark text-white align-items-center">
-                            Prediksi Kebutuhan Meja Tahun Depan
-                        </div>
-                        <div class="card-body text-center">
-                            <p class="mb-2">
-                                Estimasi rata‑rata bonsai per kontes (5 th) + tren naik 25 %
-                            </p>
-                            <h5 class="text-muted mb-1">
-                                Perkiraan Bonsai: <strong>{{ $prediksiBonsai }}</strong> pohon
-                            </h5>
-                            <h3 class="text-primary mb-1">
-                                {{ $prediksiJumlahMeja }} Meja
-                            </h3>
-                            <small class="text-muted">
-                                *1 meja menampung maksimal {{ $kapasitasMeja }} bonsai
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif --}}
-
-    {{-- Prediksi Slot Kontes Tahun Depan --}}
     <div class="row px-4 pb-4">
         <div class="col-12">
             <div class="card h-100 shadow-sm">
@@ -254,117 +216,117 @@
 </div>
 
 @section('script')
-<script>
-    const tahun = {!! json_encode($tahun) !!};
-    const dataKontes = {!! json_encode($data_kontes) !!};
-    const dataPeserta = {!! json_encode($data_peserta) !!};
-    const dataBonsai = {!! json_encode($data_bonsai) !!};
-    const dataJuri = {!! json_encode($data_juri) !!};
+    <script>
+        const tahun = {!! json_encode($tahun) !!};
+        const dataKontes = {!! json_encode($data_kontes) !!};
+        const dataPeserta = {!! json_encode($data_peserta) !!};
+        const dataBonsai = {!! json_encode($data_bonsai) !!};
+        const dataJuri = {!! json_encode($data_juri) !!};
 
 
-    // Chart Kontes
-    new Chart(document.getElementById('chartKontes'), {
-        type: 'bar',
-        data: {
-            labels: tahun,
-            datasets: [{
-                label: 'Jumlah Kontes',
-                data: dataKontes,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    stepSize: 1
+        // Chart Kontes
+        new Chart(document.getElementById('chartKontes'), {
+            type: 'bar',
+            data: {
+                labels: tahun,
+                datasets: [{
+                    label: 'Jumlah Kontes',
+                    data: dataKontes,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stepSize: 1
+                    }
                 }
             }
-        }
-    });
+        });
 
-    // Chart Peserta
-    new Chart(document.getElementById('chartPeserta'), {
-        type: 'bar',
-        data: {
-            labels: tahun,
-            datasets: [{
-                label: 'Jumlah Peserta',
-                data: dataPeserta,
-                backgroundColor: 'rgba(40, 167, 69, 0.6)',
-                borderColor: 'rgba(40, 167, 69, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
+        // Chart Peserta
+        new Chart(document.getElementById('chartPeserta'), {
+            type: 'bar',
+            data: {
+                labels: tahun,
+                datasets: [{
+                    label: 'Jumlah Peserta',
+                    data: dataPeserta,
+                    backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
+        });
 
-    // Chart Bonsai
-    new Chart(document.getElementById('chartBonsai'), {
-        type: 'bar',
-        data: {
-            labels: tahun,
-            datasets: [{
-                label: 'Jumlah Bonsai',
-                data: dataBonsai,
-                backgroundColor: 'rgba(255, 193, 7, 0.6)',
-                borderColor: 'rgba(255, 193, 7, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    // Chart Bonsai vs Juri
-    new Chart(document.getElementById('chartBonsaiJuri'), {
-        type: 'bar',
-        data: {
-            labels: tahun,
-            datasets: [{
+        // Chart Bonsai
+        new Chart(document.getElementById('chartBonsai'), {
+            type: 'bar',
+            data: {
+                labels: tahun,
+                datasets: [{
                     label: 'Jumlah Bonsai',
                     data: dataBonsai,
                     backgroundColor: 'rgba(255, 193, 7, 0.6)',
                     borderColor: 'rgba(255, 193, 7, 1)',
                     borderWidth: 1
-                },
-                {
-                    label: 'Jumlah Juri',
-                    data: dataJuri,
-                    backgroundColor: 'rgba(0, 123, 255, 0.6)',
-                    borderColor: 'rgba(0, 123, 255, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
-</script>
+        });
+
+        // Chart Bonsai vs Juri
+        new Chart(document.getElementById('chartBonsaiJuri'), {
+            type: 'bar',
+            data: {
+                labels: tahun,
+                datasets: [{
+                        label: 'Jumlah Bonsai',
+                        data: dataBonsai,
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Jumlah Juri',
+                        data: dataJuri,
+                        backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 @endsection

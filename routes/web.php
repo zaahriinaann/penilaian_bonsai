@@ -83,9 +83,8 @@ Route::middleware(['auth', 'web'])->group(function () {
         });
     });
 
-    // ==================== REKAP NILAI (Hanya satu resource, sisanya custom) ====================
-    Route::resource('rekap-nilai', RekapNilaiController::class)->except(['create', 'store', 'update', 'destroy']); // hanya resource utama
-    Route::prefix('rekap-nilai')->name('rekap.')->group(function () {
+    Route::prefix('rekap-nilai')->name('rekap-nilai.')->group(function () {
+        Route::resource('/', RekapNilaiController::class)->except(['create', 'store', 'update', 'destroy']);
         Route::get('/{id}', [RekapNilaiController::class, 'show'])->name('show');
         Route::get('/cetak/{kontesId}', [RekapNilaiController::class, 'cetakLaporan'])->name('cetak-laporan');
         Route::get('/{id}/cetak-rekap', [RekapNilaiController::class, 'cetakRekapPerBonsai'])->name('cetak-per-bonsai');
@@ -99,4 +98,16 @@ Route::middleware(['auth', 'web'])->group(function () {
     //     Route::get('/{kontes}/{bonsai}', [RiwayatController::class, 'detail'])->name('detail');
     //     Route::get('/rekap-nilai/{id_bonsai}', [RiwayatController::class, 'rekap'])->name('rekap-nilai');
     // });
+
+    // ==================== [ANGGOTA/PESERTA] RIWAYAT ====================
+    Route::prefix('peserta')->name('peserta.')->group(function () {
+        // Daftar nilai bonsai anggota pada kontes aktif
+        Route::get('/nilai', [RekapNilaiController::class, 'indexAnggota'])->name('nilai.index');
+
+        // Riwayat kontes yang pernah diikuti anggota
+        Route::get('/riwayat/kontes', [RiwayatController::class, 'riwayatAnggotaIndex'])->name('riwayat.index');
+
+        // Daftar bonsai peserta dalam kontes tertentu
+        Route::get('/riwayat/kontes/{kontes}/bonsai', [RiwayatController::class, 'riwayatAnggotaBonsai'])->name('riwayat.bonsai');
+    });
 });
