@@ -46,6 +46,24 @@
         </div>
     </div>
 
+    {{-- Pengingat Generate Peringkat (Hanya untuk Admin) --}}
+    @if (auth()->user()->role === 'admin' && isset($kontesAktif))
+        @php
+            $pending = \App\Models\RekapNilai::where('id_kontes', $kontesAktif->id)->whereNull('peringkat')->count();
+        @endphp
+
+        @if ($pending > 0)
+            <div class="alert alert-warning mx-4 d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div>
+                    Terdapat <strong>{{ $pending }}</strong> peserta belum diperingkat.
+                    <a href="{{ route('rekap-nilai.index') }}" class="btn btn-sm btn-primary ms-3 py-1">
+                        <i class="bi bi-list-ol me-1"></i> Generate Peringkat
+                    </a>
+                </div>
+            </div>
+        @endif
+    @endif
 
     {{-- Statistik dan Aktivitas --}}
     <div class="row px-4 pb-4">
@@ -151,9 +169,9 @@
                     Prediksi Slot & Meja Tahun Depan
                 </div>
                 <div class="card-body text-center">
-                    <p class="mb-2">
+                    {{-- <p class="mb-2">
                         Berdasarkan tren kenaikan rata-rata <strong>{{ $rataKenaikan }}%</strong> dari 5 tahun terakhir
-                    </p>
+                    </p> --}}
                     <h4 class="text-primary mb-2">Prediksi Bonsai: {{ $prediksiBonsai }} pohon</h4>
                     <h4 class="text-success mb-0">Kebutuhan Meja: {{ $prediksiMeja }} meja</h4>
                     <small class="text-muted d-block mt-2">*1 meja dapat menampung 5 pohon bonsai</small>

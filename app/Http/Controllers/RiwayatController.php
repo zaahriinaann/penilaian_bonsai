@@ -123,26 +123,40 @@ class RiwayatController extends Controller
     {
         $query = Kontes::query();
 
-        // Filter berdasarkan input search (nama kontes atau tahun dari teks bebas)
+        // Filter nama kontes atau tahun bebas
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('nama_kontes', 'like', '%' . $search . '%')
-                    ->orWhereYear('tanggal_mulai_kontes', 'like', "%$search%")
-                    ->orWhereYear('tanggal_selesai_kontes', 'like', "%$search%");
+                $q->where('nama_kontes', 'like', "%{$search}%")
+                    ->orWhereYear('tanggal_mulai_kontes', $search)
+                    ->orWhereYear('tanggal_selesai_kontes', $search);
             });
         }
 
-        // Filter tahun spesifik dari dropdown
+        // Filter tahun spesifik
         if ($request->filled('tahun')) {
             $query->whereYear('tanggal_mulai_kontes', $request->tahun);
         }
 
-        // Gunakan paginate alih-alih get()
-        $kontesList = $query->orderByDesc('tanggal_mulai_kontes')
-            ->paginate(10) // Bisa diubah jumlah per halaman
-            ->withQueryString(); // Supaya filter & pencarian tetap saat pindah halaman
+        // Paginate
+        $kontesList = $query
+            ->orderByDesc('tanggal_mulai_kontes')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('admin.riwayat.index', compact('kontesList'));
+    }
+
+    public function riwayatAdminPeringkat($kontesId)
+    {
+        $kontes = Kontes::findOrFail($kontesId);
+
+        // Ambil data peringkat peserta
+        $rekapList = RekapNilai::with(['bonsai.pendaftaranKontes.user'])
+            ->where('id_kontes', $kontesId)
+            ->orderBy('peringkat')
+            ->get();
+
+        return view('admin.riwayat.peringkat', compact('kontes', 'rekapList'));
     }
 
     public function riwayatAdminJuri(Request $request, $kontesId)
@@ -354,6 +368,20 @@ class RiwayatController extends Controller
 
         return view('juri.riwayat.index', compact('kontesList', 'tahunList'));
     }
+
+    public function riwayatJuriPeringkat($kontesId)
+    {
+        $kontes = Kontes::findOrFail($kontesId);
+
+        $rekapList = RekapNilai::with(['bonsai.pendaftaranKontes.user'])
+            ->where('id_kontes', $kontesId)    // hanya id_kontes
+            ->orderBy('peringkat')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('juri.riwayat.peringkat', compact('kontes', 'rekapList'));
+    }
+
 
     public function riwayatJuriPeserta(Request $request, $kontesId)
     {

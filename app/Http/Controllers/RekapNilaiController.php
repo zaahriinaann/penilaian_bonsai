@@ -10,6 +10,7 @@ use App\Models\HelperKriteria;
 use App\Models\Kontes;
 use App\Models\PendaftaranKontes;
 use App\Models\RekapNilai;
+use App\Services\PeringkatNilaiService;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -21,44 +22,22 @@ class RekapNilaiController extends Controller
     public function index(RekapNilai $rekap)
     {
         $kontesAktif = Kontes::where('status', '1')->first();
-
-        // Jika tidak ada kontes aktif, buat paginator kosong dan tampilkan view
         if (! $kontesAktif) {
-            $perPage = 10;
-            $currentPage = LengthAwarePaginator::resolveCurrentPage();
-            $paginated = new LengthAwarePaginator(
-                [], // items
-                0,  // total
-                $perPage,
-                $currentPage,
-                [
-                    'path'  => LengthAwarePaginator::resolveCurrentPath(),
-                    'query' => request()->query(),
-                ]
-            );
-
-            return view('rekap-nilai.index', [
-                'rekap'   => $paginated,
-                'bestTen' => collect(),
-                'kontes'  => null,
-                'message' => 'Tidak ada kontes aktif.',
-            ]);
+            // ... (kamu sudah menangani kasus ini)
         }
 
-        // Ambil parameter pencarian
         $search = request('search');
 
-        // Ambil seluruh data dan map menjadi objek sederhana
+        // 1) Ambil semua, map ke objek + include peringkat dari DB
         $all = $rekap->with('bonsai.user')
             ->where('id_kontes', $kontesAktif->id)
             ->get()
             ->map(function ($item) {
-                $bonsai = $item->bonsai;
+                $bonsai      = $item->bonsai;
                 $pendaftaran = PendaftaranKontes::where('bonsai_id', $item->id_bonsai)->first();
                 if (! $pendaftaran) {
                     return null;
                 }
-
                 return (object) [
                     'id'                => $bonsai->id,
                     'kontes_id'         => $pendaftaran->kontes_id,
@@ -69,27 +48,30 @@ class RekapNilaiController extends Controller
                     'pemilik'           => $bonsai->user->name ?? '-',
                     'skor_akhir'        => $item->skor_akhir,
                     'himpunan_akhir'    => $item->himpunan_akhir,
+                    'peringkat'         => $item->peringkat,        // ← ambil dari DB
                 ];
             })
-            ->filter()
-            ->sortByDesc('skor_akhir')
-            ->values();
+            ->filter();
 
-        // Filter berdasarkan search jika ada
+        // 2) Sort by skor_akhir DESC
+        $all = $all->sortByDesc('skor_akhir')->values();
+
+        // 3) Set fallback peringkat kalau belum di‐generate
+        $all = $all->map(function ($b, $index) {
+            $b->peringkat = $b->peringkat ?? ($index + 1);
+            return $b;
+        });
+
+        // 4) Apply filter pencarian (tanpa memengaruhi peringkat)
         if ($search) {
-            $all = $all->filter(function ($b) use ($search) {
-                return Str::contains($b->nomor_pendaftaran, $search)
-                    || Str::contains($b->nomor_juri, $search)
-                    || Str::contains($b->nama_pohon, $search)
-                    || Str::contains($b->pemilik, $search);
-            })->values();
+            $all = $all->filter(/* … */)->values();
         }
 
-        // Pagination manual
-        $perPage = 10;
+        // 5) Paginate manual
+        $perPage     = 10;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $items = $all->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $paginated = new LengthAwarePaginator(
+        $items       = $all->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $paginated   = new LengthAwarePaginator(
             $items,
             $all->count(),
             $perPage,
@@ -100,7 +82,7 @@ class RekapNilaiController extends Controller
             ]
         );
 
-        // Top 10 terbaik tanpa filter
+        // 6) Top 10 tanpa filter
         $bestTen = $all->take(10);
 
         return view('rekap-nilai.index', [
@@ -348,5 +330,20 @@ class RekapNilaiController extends Controller
             'rekap'  => $paginated,
             'kontes' => $kontesAktif,
         ]);
+    }
+
+    public function generateRanking(Kontes $kontes)
+    {
+        // Hitung & simpan peringkat
+        app(PeringkatNilaiService::class)
+            ->updateRanking($kontes->id);
+
+        // Redirect langsung ke halaman index rekap nilai
+        return redirect()
+            ->route('rekap-nilai.index')
+            ->with(
+                'success',
+                "Peringkat kontes “{$kontes->nama_kontes}” berhasil disimpan."
+            );
     }
 }

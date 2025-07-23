@@ -131,32 +131,44 @@
             </div>
         </div>
 
-        {{-- Top 10 Bonsai --}}
+        {{-- Top 10 Bonsai Terbaik --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-secondary align-items-center">
                 <strong><i class="bi bi-trophy-fill me-1"></i> Top 10 Bonsai Terbaik</strong>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle text-nowrap">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Nama Bonsai</th>
-                                <th>Pemilik</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($bestTen as $i => $bonsai)
+                @if ($bestTen->isEmpty())
+                    <p class="text-muted mb-0">Belum ada peringkat untuk kontes aktif.</p>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle text-nowrap mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>{{ $i + 1 }}</td>
-                                    <td>{{ $bonsai->bonsai->nama_pohon }}</td>
-                                    <td>{{ $bonsai->bonsai->pendaftaranKontes->user->name }}</td>
+                                    <th>#</th>
+                                    <th>Peringkat</th>
+                                    <th>Nama Bonsai</th>
+                                    <th>Pemilik</th>
+                                    <th>Skor Akhir</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach ($bestTen as $item)
+                                    @php
+                                        $pd = $item->bonsai->pendaftaranKontes;
+                                        $owner = optional($pd->user)->name ?? '-';
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $item->peringkat }}</td>
+                                        <td>{{ $item->peringkat }}</td>
+                                        <td>{{ $item->bonsai->nama_pohon }}</td>
+                                        <td>{{ $owner }}</td>
+                                        <td>{{ number_format($item->skor_akhir, 2) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
 
