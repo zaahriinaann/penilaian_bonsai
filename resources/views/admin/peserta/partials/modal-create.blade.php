@@ -32,7 +32,6 @@
                             // Urutkan cities berdasarkan name
                             $cities = collect($cities)->sortBy('name')->values()->all();
                         @endphp
-
                         <div class="col-md-6">
                             <label for="cabang_input" class="form-label">Cabang</label>
                             <input list="citiesList" id="cabang_input" name="cabang" class="form-control"

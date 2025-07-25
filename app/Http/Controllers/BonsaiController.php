@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class BonsaiController extends Controller
@@ -278,5 +279,134 @@ class BonsaiController extends Controller
         }
 
         return null;
+    }
+
+    public function bonsaiSayaPeserta(Request $request)
+    {
+        $query = Bonsai::where('user_id', Auth::id())
+            ->whereNull('deleted_at');
+
+        // Jika ada keyword pencarian
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_pohon', 'like', '%' . $search . '%')
+                    ->orWhere('no_induk_pohon', 'like', '%' . $search . '%');
+            });
+        }
+
+        $bonsai = $query->latest()->paginate(10)->withQueryString();
+
+        return view('peserta.bonsai-saya.index', compact('bonsai'));
+    }
+
+    public function storeBonsaiPeserta(Request $request)
+    {
+        try {
+            $request->validate([
+                'nama_pohon'        => 'required|string',
+                'ukuran_1'          => 'required|in:1,2,3',
+                'ukuran_2'          => 'required|numeric',
+                'format_ukuran'     => 'required|string',
+                'masa_pemeliharaan' => 'nullable|string',
+                'format_masa'       => 'nullable|string',
+                'kelas'             => 'required|string',
+                'foto'              => 'nullable|image',
+            ]);
+
+            $user = Auth::user();
+
+            $ukuranLabel = [1 => 'Small', 2 => 'Medium', 3 => 'Large'][$request->ukuran_1] ?? 'Unknown';
+            $ukuranString = "{$ukuranLabel} ( {$request->ukuran_2} {$request->format_ukuran} )";
+
+            $data = [
+                'user_id'           => $user->id,
+                'nama_pohon'        => $request->nama_pohon,
+                'nama_lokal'        => $request->nama_lokal,
+                'nama_latin'        => $request->nama_latin,
+                'ukuran'            => $ukuranString,
+                'ukuran_1'          => $request->ukuran_1,
+                'ukuran_2'          => $request->ukuran_2,
+                'format_ukuran'     => $request->format_ukuran,
+                'masa_pemeliharaan' => $request->masa_pemeliharaan,
+                'format_masa'       => $request->format_masa,
+                'kelas'             => $request->kelas,
+                'no_induk_pohon'    => 'BONSAI' . date('Y') . random_int(1000, 9999),
+            ];
+
+            $data['slug'] = Str::slug("{$data['nama_pohon']}-{$user->username}-{$ukuranLabel}-ppbi-{$user->cabang}");
+
+            if ($request->hasFile('foto')) {
+                $data['foto'] = $this->handleImageUpload($request, 'store');
+            }
+
+            Bonsai::create($data);
+
+            return back()->with('message', 'Bonsai berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal menambah bonsai: ' . $e->getMessage());
+        }
+    }
+
+    public function updateBonsaiPeserta(Request $request, $slug)
+    {
+        try {
+            $bonsai = Bonsai::where('slug', $slug)->where('user_id', Auth::id())->firstOrFail();
+
+            $request->validate([
+                'nama_pohon'        => 'required|string',
+                'ukuran_1'          => 'required|in:1,2,3',
+                'ukuran_2'          => 'required|numeric',
+                'format_ukuran'     => 'required|string',
+                'masa_pemeliharaan' => 'nullable|string',
+                'format_masa'       => 'nullable|string',
+                'kelas'             => 'required|string',
+                'foto'              => 'nullable|image',
+            ]);
+
+            $ukuranLabel = [1 => 'Small', 2 => 'Medium', 3 => 'Large'][$request->ukuran_1] ?? 'Unknown';
+            $ukuranString = "{$ukuranLabel} ( {$request->ukuran_2} {$request->format_ukuran} )";
+
+            $data = [
+                'nama_pohon'        => $request->nama_pohon,
+                'nama_lokal'        => $request->nama_lokal,
+                'nama_latin'        => $request->nama_latin,
+                'ukuran'            => $ukuranString,
+                'ukuran_1'          => $request->ukuran_1,
+                'ukuran_2'          => $request->ukuran_2,
+                'format_ukuran'     => $request->format_ukuran,
+                'masa_pemeliharaan' => $request->masa_pemeliharaan,
+                'format_masa'       => $request->format_masa,
+                'kelas'             => $request->kelas,
+            ];
+
+            $data['slug'] = Str::slug("{$data['nama_pohon']}-" . Auth::user()->username . "-{$ukuranLabel}-ppbi-{$data['kelas']}");
+
+            if ($request->hasFile('foto')) {
+                $data['foto'] = $this->handleImageUpload($request, 'update');
+            }
+
+            $bonsai->update($data);
+
+            return back()->with('message', 'Bonsai berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal update bonsai: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyBonsaiPeserta($slug)
+    {
+        try {
+            $bonsai = Bonsai::where('slug', $slug)->where('user_id', Auth::id())->firstOrFail();
+
+            $bonsai->update(['slug' => $bonsai->slug . '-deleted-' . uniqid()]);
+            $bonsai->delete();
+
+            return response()->json(['message' => 'Bonsai berhasil dihapus.']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menghapus bonsai: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

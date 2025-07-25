@@ -17,11 +17,21 @@ use App\Http\Controllers\{
     RekapNilaiController,
     RiwayatController
 };
+use App\Http\Controllers\Auth\RegisterController;
 
 // ==================== Guest Routes ====================
+// untuk tamu (guest)
 Route::middleware('guest')->group(function () {
-    Route::view('/', 'auth.login');
-    Route::view('/register', 'auth.register');
+    // halaman login
+    Route::view('/', 'auth.login')->name('login');
+
+    // form registrasi (link <a href="{{ route('register') }}">)
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])
+        ->name('register');
+
+    // proses submit form registrasi
+    Route::post('/register', [RegisterController::class, 'register'])
+        ->name('register.submit');
 });
 
 Auth::routes();
@@ -135,5 +145,12 @@ Route::middleware(['auth', 'web'])->group(function () {
 
         // Daftar bonsai peserta dalam kontes tertentu
         Route::get('/riwayat/kontes/{kontes}/bonsai', [RiwayatController::class, 'riwayatAnggotaBonsai'])->name('riwayat.bonsai');
+
+        // Daftar bonsai milik anggota
+        Route::get('/bonsai-saya', [BonsaiController::class, 'bonsaiSayaPeserta'])->name('bonsaiSaya.index');
+
+        Route::post('/bonsai-saya', [BonsaiController::class, 'storeBonsaiPeserta'])->name('bonsaiSaya.store');
+        Route::put('/bonsai-saya/{slug}', [BonsaiController::class, 'updateBonsaiPeserta'])->name('bonsaiSaya.update');
+        Route::delete('/bonsai-saya/{slug}', [BonsaiController::class, 'destroyBonsaiPeserta'])->name('bonsaiSaya.destroy');
     });
 });

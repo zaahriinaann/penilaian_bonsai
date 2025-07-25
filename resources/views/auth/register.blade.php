@@ -2,188 +2,164 @@
 
 @section('content')
     <div id="kt_content_container" class="d-flex flex-column-fluid align-items-center justify-content-center py-5">
-        {{-- KUNCI UTAMA: max-width dan m-auto --}}
-        <div class="card m-auto shadow-lg" style="max-width: 550px;"> {{-- Meningkatkan max-width sedikit dan menambahkan shadow --}}
-            <form method="POST" action="{{ route('register') }}">
+        <div class="card shadow-lg" style="max-width: 400px; width: 100%;">
+            <form method="POST" action="{{ route('register') }}" class="p-4">
                 @csrf
-                <div class="card-body p-5 p-md-5">
-                    <div class="text-center mb-5 mt-3">
-                        <img src="{{ asset('assets/media/logos/logo-ppbi-small-nobg.png') }}" alt="Logo PPBI"
-                            class="w-50 mx-auto d-block">
-                    </div>
-                    <h2 class="text-center mb-5 fs-2 fw-bold text-dark border-bottom pb-3">Daftar Akun Peserta</h2>
 
-                    {{-- Grup Nama Lengkap dan No. Anggota --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3 mb-md-0"> {{-- Kolom untuk Nama Lengkap, mb-3 untuk mobile, mb-md-0 untuk desktop --}}
-                            <label for="name" class="form-label fw-semibold">{{ __('Nama Lengkap') }}</label>
-                            <input id="name" type="text"
-                                class="form-control form-control-lg @error('name') is-invalid @enderror" name="name"
-                                value="{{ old('name') }}" required autocomplete="name" autofocus
-                                placeholder="Masukkan nama lengkap">
-                            @error('name')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="col-md-6"> {{-- Kolom untuk No. Anggota --}}
-                            <label for="no_anggota" class="form-label fw-semibold">{{ __('No. Anggota') }}</label>
-                            <input id="no_anggota" type="text"
-                                class="form-control form-control-lg @error('no_anggota') is-invalid @enderror"
-                                name="no_anggota" value="{{ old('no_anggota') }}" placeholder="Masukkan nomor anggota">
-                            @error('no_anggota')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
+                {{-- Logo + Title --}}
+                <div class="text-center mb-4">
+                    <img src="{{ asset('assets/media/logos/logo-ppbi-small-nobg.png') }}" alt="Logo PPBI" style="height:50px;"
+                        class="mb-3">
+                    <h3 class="fw-bold">Daftar Akun Peserta</h3>
+                </div>
+
+                @php
+                    $cities = collect($cities)->sortBy('name')->values()->all();
+                @endphp
+
+                <div class="row g-3">
+                    {{-- Nama Lengkap --}}
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Nama Lengkap</label>
+                        <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                            class="form-control @error('name') is-invalid @enderror" placeholder="Masukkan nama lengkap">
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
-                    {{-- Grup Username dan Cabang --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3 mb-md-0"> {{-- Kolom untuk Username --}}
-                            <label for="username" class="form-label fw-semibold">{{ __('Username') }}</label>
-                            <input id="username" type="text"
-                                class="form-control form-control-lg @error('username') is-invalid @enderror" name="username"
-                                value="{{ old('username') }}" required autocomplete="username"
-                                placeholder="Buat username unik">
-                            @error('username')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="col-md-6"> {{-- Kolom untuk Cabang --}}
-                            <label for="cabang" class="form-label fw-semibold">{{ __('Cabang') }}</label>
-                            <select id="cabang" name="cabang" class="form-control form-control-lg">
-                                <option value="">Pilih Cabang</option>
-                                <option value="jakarta" {{ old('cabang') == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
-                                <option value="surabaya" {{ old('cabang') == 'surabaya' ? 'selected' : '' }}>Surabaya
-                                </option>
-                                <option value="bandung" {{ old('cabang') == 'bandung' ? 'selected' : '' }}>Bandung</option>
-                                {{-- Tambahkan opsi cabang lainnya sesuai kebutuhan --}}
-                            </select>
-                        </div>
+                    {{-- No. Anggota --}}
+                    <div class="col-md-6">
+                        <label for="no_anggota" class="form-label">No. Anggota</label>
+                        <input id="no_anggota" type="text" name="no_anggota" value="{{ old('no_anggota') }}"
+                            class="form-control @error('no_anggota') is-invalid @enderror"
+                            placeholder="Masukkan no. anggota">
+                        @error('no_anggota')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
-                    {{-- Grup No. HP dan Email --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3 mb-md-0"> {{-- Kolom untuk No. HP --}}
-                            <label for="no_hp" class="form-label fw-semibold">{{ __('No. HP') }}</label>
-                            <input id="no_hp" type="tel"
-                                class="form-control form-control-lg @error('no_hp') is-invalid @enderror" name="no_hp"
-                                value="{{ old('no_hp') }}" placeholder="Contoh: 081234567890">
-                            @error('no_hp')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="col-md-6"> {{-- Kolom untuk Email --}}
-                            <label for="email" class="form-label fw-semibold">{{ __('Alamat Email') }}</label>
-                            <input id="email" type="email"
-                                class="form-control form-control-lg @error('email') is-invalid @enderror" name="email"
-                                value="{{ old('email') }}" required autocomplete="email" placeholder="contoh@domain.com">
-                            @error('email')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
+                    {{-- Username --}}
+                    <div class="col-md-6">
+                        <label for="username" class="form-label">Username</label>
+                        <input id="username" type="text" name="username" value="{{ old('username') }}" required
+                            class="form-control @error('username') is-invalid @enderror" placeholder="Buat username unik">
+                        @error('username')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
-                    {{-- Alamat (tetap satu baris penuh) --}}
-                    <div class="row mb-4">
-                        <div class="col-12"> {{-- Kolom tunggal untuk Alamat --}}
-                            <label for="alamat" class="form-label fw-semibold">{{ __('Alamat Lengkap') }}</label>
-                            <textarea id="alamat" class="form-control form-control-lg" name="alamat" rows="3"
-                                placeholder="Masukkan alamat lengkap Anda"></textarea>
-                        </div>
+                    {{-- Cabang --}}
+                    <div class="col-md-6">
+                        <label for="cabang" class="form-label">Cabang</label>
+                        <input list="citiesList" id="cabang" name="cabang" value="{{ old('cabang') }}" required
+                            class="form-control @error('cabang') is-invalid @enderror" placeholder="Pilih kota/kabupaten">
+                        <datalist id="citiesList">
+                            @foreach ($cities as $c)
+                                <option value="{{ $c['name'] }}">
+                            @endforeach
+                        </datalist>
+                        @error('cabang')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
-                    {{-- Grup Password dan Konfirmasi Password --}}
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3 mb-md-0"> {{-- Kolom untuk Password --}}
-                            <label for="password" class="form-label fw-semibold">{{ __('Kata Sandi') }}</label>
-                            <div class="input-group input-group-lg">
-                                <input id="password" type="password"
-                                    class="form-control @error('password') is-invalid @enderror" name="password" required
-                                    autocomplete="new-password" placeholder="Minimal 8 karakter">
-                                <button type="button" class="btn btn-outline-secondary"
-                                    onclick="togglePassword('password')">
-                                    <i class="bi bi-eye-fill" id="password-eye"></i>
-                                    <i class="bi bi-eye-slash-fill d-none" id="password-slash-eye"></i>
-                                </button>
-                            </div>
+                    {{-- No. HP --}}
+                    <div class="col-md-6">
+                        <label for="no_hp" class="form-label">No. HP</label>
+                        <input id="no_hp" type="tel" name="no_hp" value="{{ old('no_hp') }}"
+                            class="form-control @error('no_hp') is-invalid @enderror" placeholder="081234567890">
+                        @error('no_hp')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Email --}}
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                            class="form-control @error('email') is-invalid @enderror" placeholder="contoh@domain.com">
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Alamat Lengkap (full-width) --}}
+                    <div class="col-12">
+                        <label for="alamat" class="form-label">Alamat Lengkap</label>
+                        <textarea id="alamat" name="alamat" rows="3" class="form-control @error('alamat') is-invalid @enderror"
+                            placeholder="Masukkan alamat lengkap">{{ old('alamat') }}</textarea>
+                        @error('alamat')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Kata Sandi --}}
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">Kata Sandi</label>
+                        <div class="input-group">
+                            <input id="password" type="password" name="password" required
+                                class="form-control @error('password') is-invalid @enderror"
+                                placeholder="Minimal 8 karakter">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password')">
+                                <i class="bi bi-eye-fill" id="password-eye"></i>
+                                <i class="bi bi-eye-slash-fill d-none" id="password-slash-eye"></i>
+                            </button>
                             @error('password')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-6"> {{-- Kolom untuk Konfirmasi Password --}}
-                            <label for="password-confirm"
-                                class="form-label fw-semibold">{{ __('Konfirmasi Kata Sandi') }}</label>
-                            <div class="input-group input-group-lg">
-                                <input id="password-confirm" type="password" class="form-control"
-                                    name="password_confirmation" required autocomplete="new-password"
-                                    placeholder="Ulangi kata sandi">
-                                <button type="button" class="btn btn-outline-secondary"
-                                    onclick="togglePassword('password-confirm')">
-                                    <i class="bi bi-eye-fill" id="password-confirm-eye"></i>
-                                    <i class="bi bi-eye-slash-fill d-none" id="password-confirm-slash-eye"></i>
-                                </button>
-                            </div>
+                    </div>
+
+                    {{-- Ulangi Kata Sandi --}}
+                    <div class="col-md-6">
+                        <label for="password_confirmation" class="form-label">Ulangi Kata Sandi</label>
+                        <div class="input-group">
+                            <input id="password_confirmation" type="password" name="password_confirmation" required
+                                class="form-control @error('password_confirmation') is-invalid @enderror"
+                                placeholder="Ulangi kata sandi">
+                            <button type="button" class="btn btn-outline-secondary"
+                                onclick="togglePassword('password_confirmation')">
+                                <i class="bi bi-eye-fill" id="password_confirmation-eye"></i>
+                                <i class="bi bi-eye-slash-fill d-none" id="password_confirmation-slash-eye"></i>
+                            </button>
+                            @error('password_confirmation')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
+                </div>
 
-                    <div class="d-flex gap-2 my-5 justify-content-center fs-6">
-                        <span class="text-secondary">Sudah punya akun?</span>
-                        <a href="{{ route('login') }}" class="text-decoration-none fw-bold text-primary">Login di
-                            sini</a>
-                    </div>
+                {{-- Submit --}}
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-100">Daftar Sekarang</button>
+                </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-3 fs-4 fw-bold">
-                        {{ __('Daftar Sekarang') }}
-                    </button>
+                {{-- Link ke login --}}
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        Sudah punya akun?
+                        <a href="{{ route('login') }}">Login di sini</a>
+                    </small>
                 </div>
             </form>
         </div>
     </div>
 
+    {{-- Toggle password visibility --}}
     <script>
-        function togglePassword(id) {
-            const input = document.getElementById(id);
-            const eyeIcon = document.getElementById(id + '-eye');
-            const slashEyeIcon = document.getElementById(id + '-slash-eye');
-
-            if (input.type === "password") {
-                input.type = "text";
-                eyeIcon.classList.add("d-none");
-                slashEyeIcon.classList.remove("d-none");
+        function togglePassword(fieldId) {
+            const inp = document.getElementById(fieldId);
+            const eye = document.getElementById(fieldId + '-eye');
+            const slash = document.getElementById(fieldId + '-slash-eye');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                eye.classList.add('d-none');
+                slash.classList.remove('d-none');
             } else {
-                input.type = "password";
-                eyeIcon.classList.remove("d-none");
-                slashEyeIcon.classList.add("d-none");
-            }
-        }
-    </script>
-@endsection
-
-@section('script')
-    <script>
-        function togglePassword(e) {
-            const x = document.getElementById(e);
-
-            if (x.type === "password") {
-                x.type = "text";
-                document.getElementById(e + '-eye').classList.add('d-none');
-                document.getElementById(e + '-slash-eye').classList.remove('d-none');
-            } else {
-                x.type = "password";
-                document.getElementById(e + '-eye').classList.remove('d-none');
-                document.getElementById(e + '-slash-eye').classList.add('d-none');
+                inp.type = 'password';
+                eye.classList.remove('d-none');
+                slash.classList.add('d-none');
             }
         }
     </script>

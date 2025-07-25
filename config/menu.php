@@ -113,10 +113,30 @@ $dropdown = [
 
     // ====================ANGGOTA/PESERTA=========================
     [
-        'menu' => 'Penilaian',
-        'description' => 'Anda dapat melihat riwayat penilaian dari semua kontes yang telah diadakan.',
+        'menu' => 'Bonsai Saya',
+        'description' => 'Anda dapat melihat bonsai milik anda yang sudah pernah di daftarkan.',
         'submenu' => [],
-        'link' => '/peserta/nilai',
+        'link' => '/peserta/bonsai-saya',
+        'role' => ['anggota'],
+    ],
+    [
+        'menu' => 'Kontes',
+        'description' => 'Khusus Peserta',
+        'submenu' => [
+            [
+                'judul' => 'Pendaftaran Peserta',
+                'description' => 'Anda dapat mendaftarkan peserta dan bonsai milik anda pada kontes yang sedang berlangsung.',
+                'link' => '/kontes/pendaftaran-peserta',
+                'role' => ['anggota'],
+            ],
+            [
+                'judul' => 'Rekap Nilai',
+                'description' => 'Anda dapat melihat rekap nilai dari bonsai milik anda yang telah dinilai oleh semua juri pada kontes yang sedang berlangsung.',
+                'link' => '/rekap-nilai',
+                'role' => ['anggota'],
+            ],
+        ],
+        'link' => '#',
         'role' => ['anggota'],
     ],
     [
