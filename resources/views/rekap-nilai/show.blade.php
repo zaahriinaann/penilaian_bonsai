@@ -10,7 +10,40 @@
 
 @section('content')
     <div class="container py-4">
-        <div class="card shadow-sm rounded-4">
+        {{-- Skala Nilai Hasil Akhir --}}
+        <div class="mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header text-center align-content-center">
+                    <strong>Skala Nilai Hasil Akhir</strong>
+                </div>
+                <div class="card-body p-6">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><strong>Himpunan</strong></span>
+                            <span><strong>Rentang Skor</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Baik Sekali</span>
+                            <span>321 - 360</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Baik</span>
+                            <span>281 - 320</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Cukup</span>
+                            <span>241 - 280</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Kurang</span>
+                            <span>&lt; 241</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-4 mb-4">
             <div class="card-header align-items-center">
                 <h3 class="mb-0">Detail Nilai Akhir Bonsai</h3>
             </div>
@@ -60,6 +93,20 @@
                 @empty
                     <div class="alert alert-warning">Data kategori tidak ditemukan.</div>
                 @endforelse
+
+                {{-- Kalimat deskriptif akhir --}}
+                <div class="card border rounded p-3 bg-success mt-4 text-center">
+                    <p class="mb-0">
+                        Dengan mempertimbangkan seluruh aspek penilaian,
+                    </p>
+                    <p>
+                        Pohon bonsai
+                        <strong>{{ $detail['nama_pohon'] }}</strong>
+                        meraih skor akhir <strong>{{ number_format($detail['skor_akhir'], 2) }}</strong> dan
+                        tergolong dalam kategori <strong>{{ $detail['himpunan_akhir'] }}</strong>
+                        pada penilaian Estetika Pohon Bonsai.
+                    </p>
+                </div>
 
             </div>
         </div>
