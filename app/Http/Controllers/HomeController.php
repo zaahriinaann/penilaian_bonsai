@@ -44,39 +44,46 @@ class HomeController extends Controller
             'Bonsai'  => [Bonsai::count(), 'd63031'],
         ];
 
-        // 2. GRAFIK PER TAHUN (5 tahun terakhir)
         $tahunSekarang  = now()->year;
         $tahunRange     = range($tahunSekarang - 4, $tahunSekarang);
 
+        // 2. DATA 5 TAHUN TERAKHIR
         $kontesPerTahun = [];
         $bonsaiPerTahun = [];
         $juriPerTahun   = [];
 
         foreach ($tahunRange as $tahun) {
-            $kontesPerTahun[] = Kontes::whereYear('created_at', $tahun)->count();
-            $bonsaiPerTahun[] = PendaftaranKontes::whereYear('created_at', $tahun)->count();
-            $juriPerTahun[]   = User::where('role', 'juri')->whereYear('created_at', $tahun)->count();
+            // Kontes per tahun
+            $kontesPerTahun[] = Kontes::whereYear('tanggal_mulai_kontes', $tahun)->count();
+
+            // Bonsai per tahun → dari pendaftaran_kontes
+            $bonsaiPerTahun[] = PendaftaranKontes::whereHas('kontes', function ($q) use ($tahun) {
+                $q->whereYear('tanggal_mulai_kontes', $tahun);
+            })->count();
+
+            // Juri per tahun → dari tabel nilai
+            $juriPerTahun[] = Nilai::join('kontes', 'nilais.id_kontes', '=', 'kontes.id')
+                ->whereYear('kontes.tanggal_mulai_kontes', $tahun)
+                ->distinct('nilais.id_juri')
+                ->count('nilais.id_juri');
         }
 
-        // 3. Tren rata-rata skor per kriteria per tahun (menggunakan HelperDomain)
+        // 3. TREND KRITERIA PER TAHUN
         $kriteriaList = HelperDomain::select('id_kriteria', 'kriteria')->distinct()->get();
         $kriteriaTren = [];
 
         foreach ($kriteriaList as $item) {
-            $idK           = $item->id_kriteria;
-            $nama          = $item->kriteria;
             $scoresPerTahun = [];
-
             foreach ($tahunRange as $tahun) {
                 $avgScore = DB::table('hasil')
-                    ->whereYear('created_at', $tahun)
-                    ->where('id_kriteria', $idK)
+                    ->join('kontes', 'hasil.id_kontes', '=', 'kontes.id')
+                    ->whereBetween('kontes.tanggal_mulai_kontes', [$tahun . '-01-01', $tahun . '-12-31'])
+                    ->whereBetween('kontes.tanggal_selesai_kontes', [$tahun . '-01-01', $tahun . '-12-31'])
+                    ->where('id_kriteria', $item->id_kriteria)
                     ->avg('rata_defuzzifikasi');
-
                 $scoresPerTahun[] = $avgScore ? round($avgScore, 2) : 0;
             }
-
-            $kriteriaTren[$nama] = $scoresPerTahun;
+            $kriteriaTren[$item->kriteria] = $scoresPerTahun;
         }
 
         // 4. KONTEST AKTIF & STATISTIK SLOT/BONSAI
@@ -101,42 +108,51 @@ class HomeController extends Controller
                 ->count();
         }
 
-        // 5. PREDIKSI TREN BONSAI & MEJA
-        $bonsaiPrediksi = [];
-        foreach ($tahunRange as $tahun) {
-            $bonsaiPrediksi[$tahun] = PendaftaranKontes::whereYear('created_at', $tahun)->count();
+        // 5. DATA PER KONTES TAHUN BERJALAN
+        $kontesSetahun = Kontes::whereYear('tanggal_mulai_kontes', $tahunSekarang)
+            ->orderBy('tanggal_mulai_kontes')
+            ->get();
+
+        $namaKontes      = [];
+        $bonsaiPerKontes = [];
+        $juriPerKontes   = [];
+
+        foreach ($kontesSetahun as $kontes) {
+            $namaKontes[] = $kontes->nama_kontes;
+
+            // Bonsai dari pendaftaran_kontes
+            $bonsaiPerKontes[] = PendaftaranKontes::where('kontes_id', $kontes->id)
+                ->count();
+
+            // Juri dari tabel nilais
+            $juriPerKontes[] = Nilai::where('id_kontes', $kontes->id)
+                ->distinct('id_juri')
+                ->count('id_juri');
         }
 
-        $years        = array_keys($bonsaiPrediksi);
-        $totalGrowth  = 0;
-        $countChanges = 0;
+        // 6. PREDIKSI BERDASARKAN KONTEST SEBELUMNYA
+        $kontesTerakhir = Kontes::where('status', 0)
+            ->orderByDesc('tanggal_mulai_kontes')
+            ->first();
 
-        for ($i = 1; $i < count($years); $i++) {
-            $prev = $bonsaiPrediksi[$years[$i - 1]];
-            $curr = $bonsaiPrediksi[$years[$i]];
+        $prediksiBonsai = 0;
+        $prediksiMeja   = 0;
 
-            if ($prev > 0) {
-                $growth = (($curr - $prev) / $prev) * 100;
-                $totalGrowth += $growth;
-                $countChanges++;
-            }
+        if ($kontesTerakhir) {
+            $prediksiBonsai = PendaftaranKontes::where('kontes_id', $kontesTerakhir->id)->count();
+            $prediksiMeja   = ceil($prediksiBonsai / 5);
         }
 
-        $avgGrowth      = $countChanges > 0 ? $totalGrowth / $countChanges : 0;
-        $lastCount      = end($bonsaiPrediksi);
-        $prediksiBonsai = ceil($lastCount * (1 + ($avgGrowth / 100)));
-        $prediksiMeja   = ceil($prediksiBonsai / 5);
-
-        // 6. TOP 3 BONSAI TERBAIK
+        // 7. TOP 3 BONSAI TERBAIK
         $topBonsai = RekapNilai::with('bonsai.pendaftaranKontes.user')
             ->when($kontesAktif, fn($q) => $q->where('id_kontes', $kontesAktif->id))
             ->orderByDesc('skor_akhir')
             ->take(3)
             ->get();
 
-        // 7. RETURN VIEW
         return view('dashboard.index', [
             'dataRender'     => $dataRender,
+            'tahunSekarang'  => $tahunSekarang,
             'tahun'          => $tahunRange,
             'data_kontes'    => $kontesPerTahun,
             'data_bonsai'    => $bonsaiPerTahun,
@@ -151,16 +167,19 @@ class HomeController extends Controller
             'slotSisa'       => $slotSisa,
             'prediksiBonsai' => $prediksiBonsai,
             'prediksiMeja'   => $prediksiMeja,
-            'rataKenaikan'   => round($avgGrowth, 2),
+            'rataKenaikan'   => 0,
             'topBonsai'      => $topBonsai,
             'pendingRanking' => $pendingRanking,
+            'namaKontes'     => $namaKontes,
+            'bonsaiPerKontes' => $bonsaiPerKontes,
+            'juriPerKontes'  => $juriPerKontes,
         ]);
     }
 
     public function dashboardJuri()
     {
         $user = Auth::user();
-        $juri = $user->juri; // Pastikan relasi User->juri() sudah terdefinisi
+        $juri = $user->juri;
 
         if (!$juri) {
             abort(403, 'User ini belum terdaftar sebagai juri.');
@@ -182,9 +201,7 @@ class HomeController extends Controller
         $bonsaiBelumDinilai  = 0;
 
         if ($kontesAktif) {
-            $totalBonsai = PendaftaranKontes::where('kontes_id', $kontesAktif->id)
-                ->count();
-
+            $totalBonsai = PendaftaranKontes::where('kontes_id', $kontesAktif->id)->count();
             $sudahDinilai = Nilai::where('id_kontes', $kontesAktif->id)
                 ->where('id_juri', $idJuri)
                 ->distinct('id_bonsai')
@@ -193,26 +210,27 @@ class HomeController extends Controller
             $bonsaiBelumDinilai = $totalBonsai - $sudahDinilai;
         }
 
-        // 3. Grafik jumlah bonsai yang dinilai per tahun (5 tahun terakhir)
-        $tahun          = range(now()->year - 4, now()->year);
-        $dataPenilaian  = collect($tahun)->map(function ($th) use ($idJuri) {
-            return Nilai::where('id_juri', $idJuri)
-                ->whereYear('created_at', $th)
-                ->distinct('id_bonsai')
-                ->count('id_bonsai');
+        // 3. Grafik jumlah bonsai yang dinilai per tahun
+        $tahun         = range(now()->year - 4, now()->year);
+        $dataPenilaian = collect($tahun)->map(function ($th) use ($idJuri) {
+            return Nilai::join('kontes', 'nilais.id_kontes', '=', 'kontes.id')
+                ->where('nilais.id_juri', $idJuri)
+                ->whereYear('kontes.tanggal_mulai_kontes', $th)
+                ->distinct('nilais.id_bonsai')
+                ->count('nilais.id_bonsai');
         });
 
-        // 4. Tren rata-rata skor per kriteria per tahun (menggunakan helper_domain)
-        $kriteriaList = HelperDomain::select('id_kriteria', 'kriteria')
-            ->distinct()
-            ->get();
-
+        // 4. Tren rata-rata skor per kriteria per tahun (pakai tanggal kontes)
+        $kriteriaList = HelperDomain::select('id_kriteria', 'kriteria')->distinct()->get();
         $kriteriaTren = [];
+
         foreach ($kriteriaList as $item) {
             $scores = [];
             foreach ($tahun as $th) {
                 $avg = DB::table('hasil')
-                    ->whereYear('created_at', $th)
+                    ->join('kontes', 'hasil.id_kontes', '=', 'kontes.id')
+                    ->whereBetween('kontes.tanggal_mulai_kontes', [$th . '-01-01', $th . '-12-31'])
+                    ->whereBetween('kontes.tanggal_selesai_kontes', [$th . '-01-01', $th . '-12-31'])
                     ->where('id_kriteria', $item->id_kriteria)
                     ->avg('rata_defuzzifikasi');
 
@@ -230,7 +248,6 @@ class HomeController extends Controller
             ->orderByDesc('tanggal_mulai_kontes')
             ->get();
 
-        // 6. Kirim semua data ke view
         return view('dashboard.juri', [
             'totalKontes'         => $totalKontes,
             'bonsaiDinilai'       => $bonsaiDinilai,
@@ -246,8 +263,6 @@ class HomeController extends Controller
     public function dashboardAnggota()
     {
         $user = Auth::user();
-
-        // Kontes aktif saat ini
         $kontesAktif = Kontes::where('status', 1)->first();
 
         // 1. Statistik pendaftaran peserta
@@ -270,11 +285,11 @@ class HomeController extends Controller
 
         // 2. Statistik slot kontes aktif
         if ($kontesAktif) {
-            $kontesAktif->slot_total   = $kontesAktif->limit_peserta;
-            $kontesAktif->slot_terisi  = PendaftaranKontes::where('kontes_id', $kontesAktif->id)->count();
+            $kontesAktif->slot_total  = $kontesAktif->limit_peserta;
+            $kontesAktif->slot_terisi = PendaftaranKontes::where('kontes_id', $kontesAktif->id)->count();
         }
 
-        // 3. Top 10 Bonsai terbaik (peringkat sudah terisi)
+        // 3. Top 10 Bonsai terbaik
         $bestTen = collect();
         if ($kontesAktif) {
             $bestTen = RekapNilai::with('bonsai.pendaftaranKontes.user')
@@ -285,29 +300,35 @@ class HomeController extends Controller
                 ->get();
         }
 
-        // 4. Grafik Bonsai Dinilai per tahun (5 tahun terakhir)
+        // 4. Grafik Bonsai Dinilai per tahun
         $tahun         = range(now()->year - 4, now()->year);
         $dataPenilaian = collect($tahun)->map(
             fn($th) =>
-            Nilai::whereHas(
-                'bonsai.pendaftaranKontes',
-                fn($q) =>
-                $q->where('user_id', $user->id)
-            )->whereYear('created_at', $th)
-                ->distinct('id_bonsai')
-                ->count('id_bonsai')
+            Nilai::join('kontes', 'nilais.id_kontes', '=', 'kontes.id')
+                ->whereHas(
+                    'bonsai.pendaftaranKontes',
+                    fn($q) =>
+                    $q->where('user_id', $user->id)
+                )
+                ->whereYear('kontes.tanggal_mulai_kontes', $th)
+                ->distinct('nilais.id_bonsai')
+                ->count('nilais.id_bonsai')
         );
 
-        // 5. Tren rata-rata skor per kriteria per tahun
+        // 5. Tren rata-rata skor per kriteria per tahun (pakai tanggal kontes)
         $kriteriaList = HelperDomain::select('id_kriteria', 'kriteria')->distinct()->get();
         $kriteriaTren = [];
+
         foreach ($kriteriaList as $item) {
             $scores = [];
             foreach ($tahun as $th) {
                 $avg = DB::table('hasil')
-                    ->whereYear('created_at', $th)
+                    ->join('kontes', 'hasil.id_kontes', '=', 'kontes.id')
+                    ->whereBetween('kontes.tanggal_mulai_kontes', [$th . '-01-01', $th . '-12-31'])
+                    ->whereBetween('kontes.tanggal_selesai_kontes', [$th . '-01-01', $th . '-12-31'])
                     ->where('id_kriteria', $item->id_kriteria)
                     ->avg('rata_defuzzifikasi');
+
                 $scores[] = $avg !== null ? round($avg, 2) : 0;
             }
             $kriteriaTren[$item->kriteria] = $scores;

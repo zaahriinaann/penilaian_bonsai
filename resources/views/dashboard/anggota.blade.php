@@ -86,16 +86,6 @@
             </div>
         </div>
 
-        {{-- Grafik Bonsai Dinilai per Tahun --}}
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-dark text-white align-content-center">
-                Grafik Bonsai Dinilai per Tahun
-            </div>
-            <div class="card-body">
-                <canvas id="chartPenilaian" height="80"></canvas>
-            </div>
-        </div>
-
         {{-- Tren Skor Rata-rata per Kriteria --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-dark text-white align-content-center">
@@ -103,50 +93,6 @@
             </div>
             <div class="card-body">
                 <canvas id="chartKategoriAnggota" height="80"></canvas>
-            </div>
-        </div>
-
-        {{-- Daftar Bonsai --}}
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-dark text-white align-content-center">
-                <strong>Daftar Bonsai Anda</strong>
-            </div>
-            <div class="card-body">
-                @if ($bonsaiAnggota->isEmpty())
-                    <p class="text-muted">Anda belum mendaftarkan bonsai untuk kontes mana pun.</p>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nama Pohon</th>
-                                    <th>Kontes</th>
-                                    <th>Tanggal</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($bonsaiAnggota as $i => $bonsai)
-                                    <tr>
-                                        <td>{{ $i + 1 }}</td>
-                                        <td>{{ $bonsai->nama_pohon }}</td>
-                                        <td>{{ $bonsai->pendaftaranKontes->kontes->nama_kontes }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($bonsai->pendaftaranKontes->kontes->tanggal_mulai_kontes)->format('d M Y') }}
-                                        </td>
-                                        <td>
-                                            @if ($bonsai->rekapNilai)
-                                                <span class="badge bg-success">Sudah Dinilai</span>
-                                            @else
-                                                <span class="badge bg-warning text-dark">Belum Dinilai</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
             </div>
         </div>
 

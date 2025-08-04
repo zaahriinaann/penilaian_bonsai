@@ -3,18 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\PendaftaranKontes;
-use App\Http\Controllers\Controller;
 use App\Models\Bonsai;
 use App\Models\Kontes;
 use App\Models\User;
-use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PendaftaranKontesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     protected $kontes;
 
     public function __construct()
@@ -25,9 +21,21 @@ class PendaftaranKontesController extends Controller
 
     public function index(Request $request)
     {
+        // Kalau tidak ada kontes aktif → kirim data kosong tapi tetap paginator
+        if (!$this->kontes) {
+            $peserta = collect();
+            $pendaftaran = new LengthAwarePaginator([], 0, 10, 1, [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]);
+
+            return view('admin.pendaftaran.index', compact('peserta', 'pendaftaran'))
+                ->with('kontesKosong', true);
+        }
+
         $kelasKontes = $this->kontes->tingkat_kontes;
 
-        // Ambil daftar peserta untuk modal create
+        // Ambil daftar peserta sesuai kelas
         $peserta = User::where('role', 'anggota')
             ->whereHas('bonsai', function ($query) use ($kelasKontes) {
                 $query->where('kelas', $kelasKontes);
@@ -37,14 +45,11 @@ class PendaftaranKontesController extends Controller
             }])
             ->get();
 
-        // Keyword pencarian
         $search = $request->input('search');
 
-        // Query dasar pendaftaran untuk kontes aktif
         $pendaftaranQuery = PendaftaranKontes::with(['bonsai', 'user'])
             ->where('kontes_id', $this->kontes->id);
 
-        // Filter berdasarkan nomor pendaftaran, nomor juri, nama bonsai, atau nama pemilik
         if ($search) {
             $pendaftaranQuery->where(function ($query) use ($search) {
                 $query->where('nomor_pendaftaran', 'like', "%{$search}%")
@@ -59,26 +64,15 @@ class PendaftaranKontesController extends Controller
             });
         }
 
-        // Pagination + urutkan berdasarkan nomor pendaftaran
         $pendaftaran = $pendaftaranQuery
             ->orderBy('nomor_pendaftaran')
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.pendaftaran.index', compact('peserta', 'pendaftaran'));
+        return view('admin.pendaftaran.index', compact('peserta', 'pendaftaran'))
+            ->with('kontesKosong', false);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -91,12 +85,11 @@ class PendaftaranKontesController extends Controller
                 return redirect()->back()->with('error', 'Tidak ada kontes yang sedang aktif.');
             }
 
-
             $data = $request->all();
             $data['kontes_id'] = $this->kontes->id;
             $data['kelas'] = $this->kontes->tingkat_kontes;
 
-            // Cek duplikat pendaftaran
+            // Cek duplikat
             $exists = PendaftaranKontes::where('kontes_id', $this->kontes->id)
                 ->where('user_id', $data['user_id'])
                 ->where('bonsai_id', $data['bonsai_id'])
@@ -106,18 +99,20 @@ class PendaftaranKontesController extends Controller
                 return redirect()->back()->with('error', 'Peserta dan bonsai ini sudah terdaftar pada kontes.');
             }
 
-            // Tentukan nomor juri dan nomor pendaftaran
-            $lastPendaftaran = PendaftaranKontes::where('kontes_id', $this->kontes->id)->latest()->first();
-            $lastKelas = PendaftaranKontes::where('kontes_id', $this->kontes->id)
-                ->latest()
+            // Ambil data terakhir
+            $lastPendaftaran = PendaftaranKontes::where('kontes_id', $this->kontes->id)
+                ->orderByDesc('id')
                 ->first();
 
             if ($lastPendaftaran) {
-                $data['nomor_pendaftaran'] = "P" . $lastKelas ? (int)$lastKelas->nomor_pendaftaran + 1 : (int)$lastPendaftaran->nomor_pendaftaran + 1;
-                $data['nomor_juri'] = "J" . $lastKelas ? (int)$lastKelas->nomor_juri + 1 : 1;
+                $lastNoPendaftaran = (int) filter_var($lastPendaftaran->nomor_pendaftaran, FILTER_SANITIZE_NUMBER_INT);
+                $lastNoJuri = (int) filter_var($lastPendaftaran->nomor_juri, FILTER_SANITIZE_NUMBER_INT);
+
+                $data['nomor_pendaftaran'] = 'P' . ($lastNoPendaftaran + 1);
+                $data['nomor_juri'] = 'J' . ($lastNoJuri + 1);
             } else {
-                $data['nomor_pendaftaran'] = "P" . 1;
-                $data['nomor_juri'] = "J" . 1;
+                $data['nomor_pendaftaran'] = 'P1';
+                $data['nomor_juri'] = 'J1';
             }
 
             PendaftaranKontes::create($data);
@@ -127,43 +122,32 @@ class PendaftaranKontesController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
-        $data = PendaftaranKontes::where('id', $id)->first();
+        $data = PendaftaranKontes::find($id);
+
+        if (!$data) {
+            return redirect()->back()->with('error', 'Data pendaftaran tidak ditemukan.');
+        }
 
         return view('admin.pendaftaran.show', compact('data'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(PendaftaranKontes $pendaftaranKontes)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, PendaftaranKontes $pendaftaranKontes)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         try {
-            $pendaftaran = PendaftaranKontes::findOrFail($id);
-            $pendaftaran->delete(); // Soft delete
+            $pendaftaran = PendaftaranKontes::find($id);
+
+            if (!$pendaftaran) {
+                return response()->json([
+                    'message' => 'Data tidak ditemukan.'
+                ], 404);
+            }
+
+            $pendaftaran->delete();
 
             return response()->json([
-                'message' => "Kontes {$pendaftaran->nama_kontes} berhasil dihapus."
+                'message' => "Data pendaftaran berhasil dihapus."
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -176,7 +160,6 @@ class PendaftaranKontesController extends Controller
     {
         $bonsai = Bonsai::where('user_id', $id)->get();
 
-        // dd($bonsai);
         return response()->json($bonsai);
     }
 }

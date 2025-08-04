@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Bonsai;
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -12,45 +11,127 @@ class BonsaiSeeder extends Seeder
 {
     public function run(): void
     {
-        $distribusi = [
-            2021 => 5,
-            2022 => 5,
-            2023 => 7,
-            2024 => 8,
-            2025 => 3,
+        $ukuranOptions = [
+            ['label' => 'Small', 'kode' => 1, 'min' => 10, 'max' => 50, 'format' => 'cm'],
+            ['label' => 'Medium', 'kode' => 2, 'min' => 51, 'max' => 100, 'format' => 'cm'],
+            ['label' => 'Large', 'kode' => 3, 'min' => 101, 'max' => 200, 'format' => 'cm']
         ];
 
-        $counter = 1;
-        $anggotaList = User::where('role', 'anggota')->pluck('id')->toArray();
+        $pesertaList = DB::table('users')
+            ->where('role', 'anggota')
+            ->pluck('id', 'username')
+            ->toArray();
 
-        foreach ($distribusi as $tahun => $jumlah) {
-            for ($i = 1; $i <= $jumlah; $i++) {
-                $created = Carbon::create($tahun, rand(1, 12), rand(1, 28));
-                $user_id = $anggotaList[array_rand($anggotaList)];
+        $namaPohonList = [
+            'Serut',
+            'Beringin',
+            'Sancang',
+            'Asam Jawa',
+            'Kimeng',
+            'Bougenville',
+            'Juniper',
+            'Anting Putri',
+            'Santigi'
+        ];
 
-                Bonsai::create([
-                    'user_id' => $user_id,
-                    'slug' => Str::slug("bonsai-{$counter}-{$tahun}"),
-                    'nama_pohon' => "Bonsai {$counter}",
-                    'nama_lokal' => "Lokal {$counter}",
-                    'nama_latin' => "Latin {$counter}",
-                    'ukuran' => ['Kecil', 'Sedang', 'Besar'][rand(0, 2)],
-                    'ukuran_1' => rand(20, 40) . ' cm',
-                    'ukuran_2' => rand(30, 60) . ' cm',
-                    'format_ukuran' => 'Custom',
+        // === Purwawidada Bonsai 1: Hokiantie ===
+        if (isset($pesertaList['purwa'])) {
+            $purwaId = $pesertaList['purwa'];
+            $ukuran = $ukuranOptions[array_rand($ukuranOptions)];
+            $tinggi = rand($ukuran['min'], $ukuran['max']);
+            $kelas = rand(1, 100) <= 70 ? 'Madya' : 'Utama';
+            $slug = $this->generateUniqueSlug('Hokiantie', 'purwa', $ukuran['label']);
 
-                    'no_induk_pohon' => "BNS-{$tahun}-{$counter}",
-                    'masa_pemeliharaan' => rand(1, 10) . ' tahun',
-                    'format_masa' => 'Tahun',
-                    'kelas' => ['Pemula', 'Madya', 'Utama'][rand(0, 2)],
-                    'foto' => 'foto-default.jpg',
+            DB::table('bonsai')->insert([
+                'user_id' => $purwaId,
+                'slug' => $slug,
+                'nama_pohon' => 'Hokiantie',
+                'nama_lokal' => null,
+                'nama_latin' => null,
+                'ukuran' => $ukuran['label'] . ' ( ' . $tinggi . ' ' . $ukuran['format'] . ' )',
+                'ukuran_1' => $ukuran['kode'],
+                'ukuran_2' => $tinggi,
+                'format_ukuran' => $ukuran['format'],
+                'no_induk_pohon' => 'BONSAI' . rand(10000000, 99999999),
+                'masa_pemeliharaan' => rand(6, 24),
+                'format_masa' => 'bulan',
+                'kelas' => $kelas,
+                'foto' => null,
+                'created_at' => Carbon::now()->subDays(rand(1, 10)),
+                'updated_at' => Carbon::now()->subDays(rand(1, 10)),
+                'deleted_at' => null,
+            ]);
 
-                    'created_at' => $created,
-                    'updated_at' => $created,
-                ]);
+            // === Purwawidada Bonsai 2: Random ===
+            $namaPohon = $namaPohonList[array_rand($namaPohonList)];
+            $ukuran = $ukuranOptions[array_rand($ukuranOptions)];
+            $tinggi = rand($ukuran['min'], $ukuran['max']);
+            $kelas = rand(1, 100) <= 70 ? 'Madya' : 'Utama';
+            $slug = $this->generateUniqueSlug($namaPohon, 'purwa', $ukuran['label']);
 
-                $counter++;
-            }
+            DB::table('bonsai')->insert([
+                'user_id' => $purwaId,
+                'slug' => $slug,
+                'nama_pohon' => $namaPohon,
+                'nama_lokal' => null,
+                'nama_latin' => null,
+                'ukuran' => $ukuran['label'] . ' ( ' . $tinggi . ' ' . $ukuran['format'] . ' )',
+                'ukuran_1' => $ukuran['kode'],
+                'ukuran_2' => $tinggi,
+                'format_ukuran' => $ukuran['format'],
+                'no_induk_pohon' => 'BONSAI' . rand(10000000, 99999999),
+                'masa_pemeliharaan' => rand(6, 24),
+                'format_masa' => 'bulan',
+                'kelas' => $kelas,
+                'foto' => null,
+                'created_at' => Carbon::now()->subDays(rand(1, 10)),
+                'updated_at' => Carbon::now()->subDays(rand(1, 10)),
+                'deleted_at' => null,
+            ]);
         }
+
+        // === Sisa 38 bonsai untuk peserta lain ===
+        for ($i = 0; $i < 38; $i++) {
+            $username = array_rand($pesertaList);
+            $userId = $pesertaList[$username];
+
+            $namaPohon = $namaPohonList[array_rand($namaPohonList)];
+            $ukuran = $ukuranOptions[array_rand($ukuranOptions)];
+            $tinggi = rand($ukuran['min'], $ukuran['max']);
+            $kelas = rand(1, 100) <= 70 ? 'Madya' : 'Utama';
+            $slug = $this->generateUniqueSlug($namaPohon, $username, $ukuran['label']);
+
+            DB::table('bonsai')->insert([
+                'user_id' => $userId,
+                'slug' => $slug,
+                'nama_pohon' => $namaPohon,
+                'nama_lokal' => null,
+                'nama_latin' => null,
+                'ukuran' => $ukuran['label'] . ' ( ' . $tinggi . ' ' . $ukuran['format'] . ' )',
+                'ukuran_1' => $ukuran['kode'],
+                'ukuran_2' => $tinggi,
+                'format_ukuran' => $ukuran['format'],
+                'no_induk_pohon' => 'BONSAI' . rand(10000000, 99999999),
+                'masa_pemeliharaan' => rand(6, 24),
+                'format_masa' => 'bulan',
+                'kelas' => $kelas,
+                'foto' => null,
+                'created_at' => Carbon::now()->subDays(rand(1, 10)),
+                'updated_at' => Carbon::now()->subDays(rand(1, 10)),
+                'deleted_at' => null,
+            ]);
+        }
+    }
+
+    private function generateUniqueSlug($namaPohon, $username, $ukuranLabel)
+    {
+        $baseSlug = Str::slug($namaPohon . '-' . $username . '-' . strtolower($ukuranLabel));
+        $slug = $baseSlug;
+        $counter = 1;
+        while (DB::table('bonsai')->where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+        return $slug;
     }
 }

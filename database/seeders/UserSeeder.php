@@ -28,40 +28,40 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Distribusi anggota per tahun
-        $distribusi = [
-            2021 => 6,
-            2022 => 5,
-            2023 => 8,
-            2024 => 7,
-            2025 => 7,
-        ];
+        // // Distribusi anggota per tahun
+        // $distribusi = [
+        //     2021 => 6,
+        //     2022 => 5,
+        //     2023 => 8,
+        //     2024 => 7,
+        //     2025 => 7,
+        // ];
 
-        $counter = 1;
+        // $counter = 1;
 
-        foreach ($distribusi as $tahun => $jumlah) {
-            for ($i = 1; $i <= $jumlah; $i++) {
-                $created = Carbon::create($tahun, rand(1, 12), rand(1, 28));
+        // foreach ($distribusi as $tahun => $jumlah) {
+        //     for ($i = 1; $i <= $jumlah; $i++) {
+        //         $created = Carbon::create($tahun, rand(1, 12), rand(1, 28));
 
-                User::create([
-                    'name' => "Anggota {$counter}",
-                    'username' => "anggota_{$counter}",
-                    'email' => "anggota{$counter}@example.com",
-                    'password' => Hash::make('password'),
-                    'role' => 'anggota',
+        //         User::create([
+        //             'name' => "Anggota {$counter}",
+        //             'username' => "anggota_{$counter}",
+        //             'email' => "anggota{$counter}@example.com",
+        //             'password' => Hash::make('password'),
+        //             'role' => 'anggota',
 
-                    'no_anggota' => "A-{$tahun}-{$i}",
-                    'cabang' => ['Cirebon', 'Bandung', 'Jakarta'][rand(0, 2)],
-                    'no_hp' => '08' . rand(1000000000, 9999999999),
-                    'alamat' => "Alamat anggota {$counter}",
-                    'foto' => 'foto-default.jpg',
+        //             'no_anggota' => "A-{$tahun}-{$i}",
+        //             'cabang' => ['Cirebon', 'Bandung', 'Jakarta'][rand(0, 2)],
+        //             'no_hp' => '08' . rand(1000000000, 9999999999),
+        //             'alamat' => "Alamat anggota {$counter}",
+        //             'foto' => 'foto-default.jpg',
 
-                    'created_at' => $created,
-                    'updated_at' => $created,
-                ]);
+        //             'created_at' => $created,
+        //             'updated_at' => $created,
+        //         ]);
 
-                $counter++;
-            }
-        }
+        //         $counter++;
+        //     }
+        // }
     }
 }
