@@ -17,11 +17,21 @@ use App\Http\Controllers\{
     RekapNilaiController,
     RiwayatController
 };
+use App\Http\Controllers\Auth\RegisterController;
 
 // ==================== Guest Routes ====================
+// untuk tamu (guest)
 Route::middleware('guest')->group(function () {
-    Route::view('/', 'auth.login');
-    Route::view('/register', 'auth.register');
+    // halaman login
+    Route::view('/', 'auth.login')->name('login');
+
+    // form registrasi (link <a href="{{ route('register') }}">)
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])
+        ->name('register');
+
+    // proses submit form registrasi
+    Route::post('/register', [RegisterController::class, 'register'])
+        ->name('register.submit');
 });
 
 Auth::routes();
@@ -55,13 +65,25 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::get('nilai/{juriId}', [NilaiController::class, 'showAdmin'])->name('nilai.show');
         Route::get('nilai/{juriId}/bonsai/{bonsaiId}', [NilaiController::class, 'detailAdmin'])->name('nilai.detail');
         // ==================== [ADMIN] RIWAYAT ====================
+        // ==================== [ADMIN] RIWAYAT ====================
         Route::prefix('riwayat')->name('riwayat.')->group(function () {
+            // Daftar Kontes
             Route::get('/kontes', [RiwayatController::class, 'riwayatAdminIndex'])->name('index');
-            // Route::get('/{kontes}/cetak-laporan-rekap', [RiwayatController::class, 'cetakLaporan'])->name('cetak');
+
+            // Daftar Peringkat
+            Route::get('/{kontes}/peringkat', [RiwayatController::class, 'riwayatAdminPeringkat'])
+                ->name('peringkat');
+
+            // Daftar Juri per Kontes
             Route::get('/{kontes}/juri', [RiwayatController::class, 'riwayatAdminJuri'])->name('juri');
+
+            // Daftar Peserta per Juri
             Route::get('/{kontes}/{juri}/peserta', [RiwayatController::class, 'riwayatAdminPeserta'])->name('peserta');
+
+            // Detail Nilai per Bonsai
             Route::get('/{kontes}/{juri}/peserta/{bonsai}', [RiwayatController::class, 'riwayatAdminDetail'])->name('detail');
         });
+
         // ==================== [ADMIN] KELOLA RULES (menu master | di folder penilaian) ====================
         Route::prefix('penilaian')->name('penilaian.')->group(function () {
             Route::get('fuzzy-rules', [FuzzyRuleController::class, 'index'])->name('fuzzy-rules.index');
@@ -77,9 +99,20 @@ Route::middleware(['auth', 'web'])->group(function () {
 
         // ==================== [JURI] RIWAYAT ====================
         Route::prefix('riwayat')->name('riwayat.')->group(function () {
+            // Daftar kontes yang sudah dinilai
             Route::get('/kontes', [RiwayatController::class, 'riwayatJuriIndex'])->name('index');
-            Route::get('/{kontes}/peserta', [RiwayatController::class, 'riwayatJuriPeserta'])->name('peserta');
-            Route::get('/{kontes}/peserta/detail/{bonsai}', [RiwayatController::class, 'riwayatJuriDetail'])->name('detail');
+
+            // Lihat Peringkat** → tambahkan sebelum peserta/detail
+            Route::get('/kontes/{kontes}/peringkat', [RiwayatController::class, 'riwayatJuriPeringkat'])
+                ->name('peringkat');
+
+            // Daftar peserta per kontes
+            Route::get('/kontes/{kontes}/peserta', [RiwayatController::class, 'riwayatJuriPeserta'])
+                ->name('peserta');
+
+            // Detail nilai per bonsai
+            Route::get('/kontes/{kontes}/peserta/detail/{bonsai}', [RiwayatController::class, 'riwayatJuriDetail'])
+                ->name('detail');
         });
     });
 
@@ -88,6 +121,9 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::get('/{id}', [RekapNilaiController::class, 'show'])->name('show');
         Route::get('/cetak/{kontesId}', [RekapNilaiController::class, 'cetakLaporan'])->name('cetak-laporan');
         Route::get('/{id}/cetak-rekap', [RekapNilaiController::class, 'cetakRekapPerBonsai'])->name('cetak-per-bonsai');
+        Route::post('/kontes/{kontes}/generate-ranking', [RekapNilaiController::class, 'generateRanking'])
+            ->name('generateRanking');
+
         // Route::get('/export/{nama_pohon}', [RekapNilaiController::class, 'exportPdf'])->name('export');
     });
 
@@ -109,5 +145,12 @@ Route::middleware(['auth', 'web'])->group(function () {
 
         // Daftar bonsai peserta dalam kontes tertentu
         Route::get('/riwayat/kontes/{kontes}/bonsai', [RiwayatController::class, 'riwayatAnggotaBonsai'])->name('riwayat.bonsai');
+
+        // Daftar bonsai milik anggota
+        Route::get('/bonsai-saya', [BonsaiController::class, 'bonsaiSayaPeserta'])->name('bonsaiSaya.index');
+
+        Route::post('/bonsai-saya', [BonsaiController::class, 'storeBonsaiPeserta'])->name('bonsaiSaya.store');
+        Route::put('/bonsai-saya/{slug}', [BonsaiController::class, 'updateBonsaiPeserta'])->name('bonsaiSaya.update');
+        Route::delete('/bonsai-saya/{slug}', [BonsaiController::class, 'destroyBonsaiPeserta'])->name('bonsaiSaya.destroy');
     });
 });

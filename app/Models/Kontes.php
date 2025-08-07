@@ -29,4 +29,10 @@ class Kontes extends Model
     {
         return $this->belongsToMany(Bonsai::class, 'pendaftaran_kontes', 'kontes_id', 'bonsai_id');
     }
+
+    public function rekapNilai()
+    {
+        // id_kontes adalah foreign key di tabel rekap_nilai
+        return $this->hasMany(RekapNilai::class, 'id_kontes');
+    }
 }

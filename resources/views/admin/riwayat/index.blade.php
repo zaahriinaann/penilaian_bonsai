@@ -54,11 +54,18 @@
                                     <td>{{ $kontes->nama_kontes }}</td>
                                     <td>{{ $kontes->tanggal_mulai_kontes }} s/d {{ $kontes->tanggal_selesai_kontes }}</td>
                                     <td>
-                                        <a href="{{ route('admin.riwayat.juri', $kontes->id) }}"
-                                            class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-list"></i> Daftar Juri
-                                        </a>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <a href="{{ route('admin.riwayat.juri', $kontes->id) }}"
+                                                class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-list"></i> Daftar Juri
+                                            </a>
+                                            <a href="{{ route('admin.riwayat.peringkat', $kontes->id) }}"
+                                                class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-chart-bar"></i> Daftar Peringkat
+                                            </a>
+                                        </div>
                                     </td>
+
                                 </tr>
                             @empty
                                 <tr>

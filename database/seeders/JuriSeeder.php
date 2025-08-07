@@ -2,71 +2,84 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Juri;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class JuriSeeder extends Seeder
 {
     public function run(): void
     {
-        $distribusi = [
-            2021 => 2,
-            2022 => 1,
-            2023 => 1,
-            2024 => 2,
-            2025 => 3,
+        $juris = [
+            [
+                'nama_juri' => 'Suryadi',
+                'username' => 'suryadi',
+                'email' => 'suryadi01@gmail.com',
+                'no_induk_juri' => 'JURI202578965078',
+                'sertifikat' => '019-SK-Juri utama-Suryadi.pdf',
+                'no_telepon' => '08123457896',
+                'created_at' => Carbon::create(2025, 8, 3, 14, 36, 35),
+            ],
+            [
+                'nama_juri' => 'Budi Santoso',
+                'username' => 'budi',
+                'email' => 'budi@gmail.com',
+                'no_induk_juri' => 'JURI202578965079',
+                'sertifikat' => '019-SK-Juri utama-Suryadi.pdf',
+                'no_telepon' => '08123457897',
+                'created_at' => Carbon::create(2025, 8, 4, 10, 0, 0),
+            ],
+            [
+                'nama_juri' => 'Ahmad Fauzi',
+                'username' => 'ahmad',
+                'email' => 'ahmad@gmail.com',
+                'no_induk_juri' => 'JURI202578965080',
+                'sertifikat' => '019-SK-Juri utama-Suryadi.pdf',
+                'no_telepon' => '08123457898',
+                'created_at' => Carbon::create(2025, 8, 5, 10, 0, 0),
+            ],
         ];
 
-        $counter = 1;
+        foreach ($juris as $index => $juri) {
+            // Insert ke tabel users
+            $userId = DB::table('users')->insertGetId([
+                'name' => $juri['nama_juri'],
+                'username' => $juri['username'],
+                'no_anggota' => $juri['no_induk_juri'],
+                'cabang' => null,
+                'no_hp' => null,
+                'alamat' => null,
+                'foto' => null,
+                'email' => $juri['email'],
+                'email_verified_at' => null,
+                'password' => Hash::make($juri['username']), // password = username
+                'role' => 'juri',
+                'remember_token' => null,
+                'created_at' => $juri['created_at'],
+                'updated_at' => $juri['created_at'],
+                'deleted_at' => null,
+            ]);
 
-        foreach ($distribusi as $tahun => $jumlah) {
-            for ($i = 1; $i <= $jumlah; $i++) {
-                $created = Carbon::create($tahun, rand(1, 12), rand(1, 28));
-                $username = "juri_{$counter}";
-
-                // Buat user juri dulu
-                $user = User::create([
-                    'name' => "Juri {$counter}",
-                    'username' => $username,
-                    'email' => "juri{$counter}@example.com",
-                    'password' => Hash::make($username), // ✅ password = username
-                    'role' => 'juri',
-
-                    'no_anggota' => "J-{$tahun}-{$i}",
-                    'cabang' => ['Cirebon', 'Bandung', 'Jakarta'][rand(0, 2)],
-                    'no_hp' => '08' . rand(1000000000, 9999999999),
-                    'alamat' => "Alamat juri {$counter}",
-                    'foto' => 'foto-default.jpg',
-
-                    'created_at' => $created,
-                    'updated_at' => $created,
-                ]);
-
-                // Masukkan ke tabel juri
-                Juri::create([
-                    'user_id' => $user->id,
-                    'slug' => Str::slug($username),
-                    'no_induk_juri' => "NIJ-{$tahun}{$i}",
-                    'nama_juri' => $user->name,
-                    'foto' => 'foto-default.jpg',
-                    'sertifikat' => "Sertifikat-J{$counter}.pdf",
-                    'no_telepon' => $user->no_hp,
-                    'email' => $user->email,
-                    'username' => $user->username,
-                    'password' => $user->password, // tetap simpan hash yang sama
-                    'status' => '1',
-                    'role' => 'juri',
-
-                    'created_at' => $created,
-                    'updated_at' => $created,
-                ]);
-
-                $counter++;
-            }
+            // Insert ke tabel juri
+            DB::table('juri')->insert([
+                'user_id' => $userId,
+                'slug' => Str::slug($juri['nama_juri'] . '-' . $juri['username'] . $juri['no_induk_juri']),
+                'no_induk_juri' => $juri['no_induk_juri'],
+                'nama_juri' => $juri['nama_juri'],
+                'foto' => null,
+                'sertifikat' => $juri['sertifikat'],
+                'no_telepon' => $juri['no_telepon'],
+                'email' => $juri['email'],
+                'username' => $juri['username'],
+                'password' => Hash::make($juri['username']), // password = username
+                'status' => '1',
+                'role' => 'juri',
+                'created_at' => $juri['created_at'],
+                'updated_at' => $juri['created_at'],
+                'deleted_at' => null,
+            ]);
         }
     }
 }

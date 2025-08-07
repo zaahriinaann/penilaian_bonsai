@@ -54,10 +54,16 @@
                                     <td>{{ $kontes->nama_kontes }}</td>
                                     <td>{{ $kontes->tanggal_mulai_kontes }} s/d {{ $kontes->tanggal_selesai_kontes }}</td>
                                     <td>
-                                        <a href="{{ route('juri.riwayat.peserta', $kontes->id) }}"
-                                            class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-people-fill"></i> Lihat Peserta
-                                        </a>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <a href="{{ route('juri.riwayat.peserta', $kontes->id) }}"
+                                                class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-people-fill"></i> Lihat Peserta
+                                            </a>
+                                            <a href="{{ route('juri.riwayat.peringkat', $kontes->id) }}"
+                                                class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-list-ol"></i> Lihat Peringkat
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
