@@ -2,7 +2,6 @@
 
 @section('title', 'Kelola Kriteria Penilaian')
 
-
 @section('button-toolbar')
     <div class="d-flex align-items-center gap-2 flex-wrap">
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_kriteria" type="button">
@@ -18,15 +17,11 @@
 @endsection
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success d-flex align-items-center justify-content-between d-none">
-            <span>
-                <i class="bi bi-check-square-fill text-success"></i>
-                {{ session('success') }}
-            </span>
-            <i class="bi bi-x-square-fill cursor-pointer text-danger" id="close-alert"></i>
-        </div>
-    @endif
+    {{-- form hidden untuk tombol "Generate Rules Sekarang" di SweetAlert --}}
+    <form id="gen-rules-form" action="{{ route('admin.penilaian.fuzzy-rules.auto-generate') }}" method="POST"
+        class="d-none">
+        @csrf
+    </form>
 
     <ul class="nav nav-tabs mb-3 nav-line-tabs" id="tabMenu" role="tablist">
         <li class="nav-item" role="presentation">
@@ -106,14 +101,9 @@
                                                                     class="btn btn-sm btn-danger w-100 ">
                                                                     <i class="fa fa-trash mx-0 px-0"></i>
                                                                     Hapus Data
-                                                                    {{-- {{ $item }} --}}
                                                                 </button>
                                                             </th>
                                                         </tr>
-                                                        {{-- <tr>
-                                                    <th>Semesta Pembicaraan</th>
-                                                    <th colspan="3">[50 - 90]</th>
-                                                </tr> --}}
                                                         @foreach ($penilaiansItem as $huruf => $range)
                                                             <tr>
                                                                 <td class="align-middle">
@@ -133,14 +123,6 @@
                                                                         name="{{ $slug }}[{{ $huruf }}][max]"
                                                                         value="{{ $range['max'] }}" placeholder="Max">
                                                                 </td>
-                                                                {{--  <td class="align-middle">
-                                                            <button type="button" class="btn btn-sm btn-danger w-100"
-                                                                id="delete-nilai-{{ $huruf }}-{{ $item }}"
-                                                                onclick="deleteNilai('{{ $huruf }}', '{{ $item }}')">
-                                                                <i class="fa fa-trash mx-0 px-0"></i>
-                                                                Hapus
-                                                            </button>
-                                                        </td> --}}
                                                             </tr>
                                                         @endforeach
                                                     </table>
@@ -340,7 +322,6 @@
         <input type="hidden" name="sub_kriteria">
         <input type="hidden" name="himpunan">
     </form>
-
 @endsection
 
 @section('script')
@@ -381,21 +362,6 @@
         }
 
         $(document).ready(function() {
-            // Tampilkan alert success dengan fade
-            const alertBox = $('.alert-success');
-            if (alertBox.length) {
-                alertBox.removeClass('d-none').hide().fadeIn('slow').delay(5000).fadeOut('slow', function() {
-                    $(this).addClass('d-none');
-                }); // setelah 4 detik;
-            }
-
-            // Tombol close
-            $('#close-alert').on('click', function() {
-                $(this).parent().fadeOut('slow', function() {
-                    $(this).addClass('d-none');
-                });
-            });
-
             $('.min-input, .max-input').on('change', function() {
                 $('.btn-simpan-nilai').removeClass('d-none');
             });
@@ -403,24 +369,74 @@
             $('.min-input, .max-input').on('input', function() {
                 $(this).closest('.card-body').find('.btn-simpan-nilai').removeClass('d-none');
             });
+
+            // SweetAlert notifikasi tengah
+            // SweetAlert notifikasi tengah (pakai localStorage biar tombol generate hilang setelah sukses)
+            @if (session('success'))
+                if (window.Swal) {
+                    const pesan = `{{ addslashes(session('success')) }}`;
+                    // deteksi variasi "fuzzy rules berhasil di/di-generate/digenerate/generated"
+                    let sudahGenerate = /(fuzzy\s*rules?).*(di\s*-?\s*generate|digenerate|generated)/i.test(pesan);
+
+                    // kalau sebelumnya kita baru klik generate, paksa treat sebagai "sudah generate"
+                    if (localStorage.getItem('rulesJustGenerated') === '1') {
+                        sudahGenerate = true;
+                    }
+
+                    const opts = {
+                        title: 'Berhasil!',
+                        html: `
+      <div class="mb-2"><strong>${pesan}</strong></div>
+      ${!sudahGenerate ? '<div class="text-muted">Untuk menjaga konsistensi FIS, segera generate ulang fuzzy rules.</div>' : ''}
+    `,
+                        icon: 'success',
+                        reverseButtons: true,
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: '',
+                            cancelButton: 'btn btn-light'
+                        }
+                    };
+
+                    if (sudahGenerate) {
+                        // Setelah generate: hanya tombol Tutup
+                        opts.showCancelButton = false;
+                        opts.showConfirmButton = true;
+                        opts.confirmButtonText = 'Tutup';
+                        opts.customClass.confirmButton = 'btn btn-light';
+                    } else {
+                        // Ada perubahan: tampilkan tombol Generate + Tutup
+                        opts.showCancelButton = true;
+                        opts.showConfirmButton = true;
+                        opts.confirmButtonText = '⚙️  Generate Rules Sekarang';
+                        opts.cancelButtonText = 'Tutup';
+                        opts.customClass.confirmButton = 'btn btn-warning';
+                    }
+
+                    Swal.fire(opts).then((res) => {
+                        if (res.isConfirmed && !sudahGenerate) {
+                            // set flag -> begitu reload, tombol generate tidak muncul lagi
+                            localStorage.setItem('rulesJustGenerated', '1');
+                            document.getElementById('gen-rules-form').submit();
+                        } else {
+                            // bersihin flag setelah pesan sukses "sudah generate" sudah ditampilkan sekali
+                            if (sudahGenerate) localStorage.removeItem('rulesJustGenerated');
+                        }
+                    });
+                }
+            @endif
+
         });
     </script>
 @endsection
 
 @section('style')
     <style>
-        /* .card-kriteria,
-                    .card-kelola {
-                        max-height: 400px;
-                        overflow-y: auto;
-                    } */
-
         .card-kriteria,
         .card-kelola {
             overflow-x: auto;
             overflow-y: visible;
         }
-
 
         @media (max-width: 768px) {
             .card-body {
